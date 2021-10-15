@@ -1,0 +1,38 @@
+{{ define "login" -}}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>{{.PageTitle}}</title>
+    <!-- Bootstrap core CSS -->
+    {{- range $link := .HeadFrameworkCSS}}
+        {{template "head_link" $link }}
+    {{- end}}
+    {{ range $link := .HeadCSS}}
+        {{template "head_link" $link }}
+    {{- end}}
+</head>
+<body{{if .BodyClass}} class="{{.BodyClass}}"{{end -}}>
+    <div class="centerbox" style="max-width: 330px">
+    <form method="post">
+        <img class="mb-4" src="{{.BotImage}}" alt="" width="100" height="100">
+        <h1 class="h3 mb-3 font-weight-normal">Login</h1>
+        {{- if .FormError }}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{.FormError}}
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {{- end }}
+        <input class="form-control" type="text" name="username" {{if .FormUsername}}value="{{.FormUsername}}" {{end}}placeholder="Username" aria-label="username">
+        <input class="form-control" type="password" name="password" {{if .FormPassword}}value="{{.FormPassword}}" {{end}}placeholder="Password" aria-label="password">
+        <button type="submit" class="btn btn-lg btn-primary btn-block">Login</button>
+    </form>
+    </div>
+    {{- range $link := .FooterScripts}}
+        {{template "script" $link }}
+    {{- end}}
+</body>
+</html>
+{{ end }}

@@ -1,0 +1,22 @@
+version: '3'
+services:
+  coredns:
+    build:
+      context: test
+      dockerfile: Dockerfile-coredns-test
+    ports:
+      - 127.0.0.1:53:53/udp
+  redis:
+    image: redis:6
+    ports:
+      - 127.0.0.1:6379:6379/tcp
+    restart: always
+  postgres:
+    image: postgres:13
+    ports:
+      - 127.0.0.1:5432:5432/tcp
+    environment:
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_USER=test
+      - POSTGRES_DB=test
+    restart: always

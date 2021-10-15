@@ -1,0 +1,23 @@
+{{ define "header" -}}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>robot[{{.PageTitle}}]</title>
+    <!-- Bootstrap core CSS -->
+    {{- range $link := .HeadFrameworkCSS}}
+        {{template "head_link" $link }}
+    {{- end}}
+    {{ range $link := .HeadCSS}}
+        {{template "head_link" $link }}
+    {{- end}}
+</head>
+<body{{if .BodyClass}} class="{{.BodyClass}}"{{end -}}>
+{{- template "navbar" . -}}
+{{- template "alert_bars" . -}}
+{{ end }}
+
+{{define "head_link" }}
+    <link href="{{ .HRef }}"{{if .Rel}} rel="{{ .Rel }}"{{end}}{{if .Integrity}} integrity="{{ .Integrity }}"{{end}}{{if .Sizes}} sizes="{{ .Sizes }}"{{end}}{{if .CrossOrigin}} crossorigin="{{ .CrossOrigin }}"{{end}}{{if .Type}} type="{{ .Type }}"{{end}}>{{end}}

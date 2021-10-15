@@ -1,0 +1,14 @@
+FROM golang:1.16
+
+WORKDIR /go/src/
+RUN git clone --branch v1.8.6 https://github.com/coredns/coredns.git app
+
+WORKDIR /go/src/app/
+
+RUN echo "redis:github.com/tyrm/redis" >> /go/src/app/plugin.cfg && \
+    go get github.com/tyrm/redis
+
+RUN make
+COPY Corefile /go/src/app/
+
+CMD ["/go/src/app/coredns", "-conf", "/go/src/app/Corefile"]

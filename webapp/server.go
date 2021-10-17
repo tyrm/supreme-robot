@@ -91,6 +91,9 @@ func NewServer(cfg *config.Config, r *redis.Client, d *models.Client) (*Server, 
 	protected.HandleFunc("/admin/users/add", server.AdminUserAddGetHandler).Methods("GET")
 	protected.HandleFunc("/admin/users/{id:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}}/edit", server.AdminUserEditGetHandler).Methods("GET")
 	protected.HandleFunc("/dns", server.DnsGetHandler).Methods("GET")
+	protected.HandleFunc("/dns/add", server.DnsDomainAddGetHandler).Methods("GET")
+	protected.HandleFunc("/dns/add", server.DnsDomainAddPostHandler).Methods("POST")
+	protected.HandleFunc("/dns/{id:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}}", server.DnsDomainGetHandler).Methods("GET")
 
 	return &server, nil
 }

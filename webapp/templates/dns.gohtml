@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">DNS Manager</h1>
+                <h1><i class="fas fa-map"></i> DNS Manager</h1>
             </div>
         </div>
     </div>
@@ -24,15 +24,91 @@
                 <tbody>
                 {{- range $index, $header := .Domains}}
                     <tr>
-                        <th scope="row"><a href="/app/dns/domain/{{$header.ID}}">{{$header.Title}}</a></th>
+                        <th scope="row"><a href="/app/dns/{{$header.ID}}">{{$header.Domain}}</a></th>
                         <td class="text-end">
-                            <a href="/app/dns/domain/{{$header.ID}}/edit" class="btn btn-outline-warning btn-sm"><i class="fas fa-edit"></i></a>
-                            <a href="/app/dns/domain/{{$header.ID}}/delete" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></a>
+                            <a href="/app/dns/{{$header.ID}}/edit" class="btn btn-outline-warning btn-sm"><i class="fas fa-edit"></i></a>
+                            <a href="/app/dns/{{$header.ID}}/delete" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                 {{- end}}
                 </tbody>
             </table>
+        </div>
+    </div>
+</div><!-- /.container -->
+{{- template "footer" . -}}
+{{- end }}
+
+{{ define "dns_domain" -}}
+{{- template "header" . -}}
+<div role="main" class="container">
+    <div class="row">
+        <div class="col">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1><i class="fas fa-map"></i> DNS Manager</h1>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center">
+                <h2>Domain {{.Domain.Domain}}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center">
+                <h3>Records</h3>
+                <a href="/app/dns/{{.Domain.ID}}/add_record" class="btn btn-outline-success btn-sm"><i class="fas fa-plus"></i></a>
+            </div>
+        </div>
+    </div>
+</div><!-- /.container -->
+{{- template "footer" . -}}
+{{- end }}
+
+{{ define "dns_domain_form" -}}
+{{- template "header" . -}}
+<div role="main" class="container">
+    <div class="row">
+        <div class="col">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1><i class="fas fa-map"></i> DNS Manager</h1>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            {{- template "breadcrumb" .Breadcrumbs -}}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center">
+                <h2>{{.TitleText}}</h2>
+            </div>
+            <form method="post">
+                {{- if .FormId}}
+                    <div class="form-group row">
+                        <label for="input-id" class="col-sm-2 col-form-label">ID</label>
+                        <div class="col-sm-10">
+                            {{- template "form_input_text" .FormId -}}
+                        </div>
+                    </div>
+                {{- end}}
+                <div class="form-group row">
+                    <label for="input-text" class="col-sm-2 col-form-label">Domain</label>
+                    <div class="col-sm-10">
+                        {{- template "form_input_text" .FormDomain -}}
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        {{- template "form_input_button" .FormSubmit -}}
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div><!-- /.container -->

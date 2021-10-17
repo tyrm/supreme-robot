@@ -163,7 +163,7 @@ func (s *Server) AdminUserEditGetHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	tmplVars.PageTitle = "Edit User"
+	tmplVars.PageTitle = fmt.Sprintf("Edit User %s", user.Username)
 	tmplVars.Breadcrumbs = &[]templateBreadcrumb{
 		{
 			Text: "Admin Dashboard",
@@ -174,11 +174,11 @@ func (s *Server) AdminUserEditGetHandler(w http.ResponseWriter, r *http.Request)
 			HRef: "/app/admin/users",
 		},
 		{
-			Text: "Edit User",
+			Text: fmt.Sprintf("Edit User %s", user.Username),
 		},
 	}
 
-	tmplVars.TitleText = "Edit User"
+	tmplVars.TitleText = fmt.Sprintf("Edit User %s", user.Username)
 	tmplVars.FormId = &templateFormInput{
 		ID:          "id",
 		Name:        "id",

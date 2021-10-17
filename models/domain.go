@@ -2,8 +2,12 @@ package models
 
 import (
 	"database/sql"
+	"regexp"
+	"strings"
 	"time"
 )
+
+var reValidDomain = regexp.MustCompile("^[a-zA-Z0-9][a-zA-Z0-9-.]*\\.$")
 
 type Domain struct {
 	Domain string `db:"domain" json:"domain"`
@@ -38,7 +42,25 @@ func (d *Domain) Create(c *Client) error {
 	return err
 }
 
+func (d *Domain) ValidateDomain() bool {
+	return reValidDomain.MatchString(d.Domain)
+}
+
 // Client Functions
+func (c *Client) ReadDomain(id string) (*Domain, error) {
+	var domain Domain
+	err := c.db.
+		Get(&domain, `SELECT id, domain, owner_id, created_at, updated_at
+		FROM public.domains WHERE id = $1 AND deleted_at IS NULL;`, id)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &domain, nil
+}
+
 func (c *Client) ReadDomainsForUser(user *User) (*[]Domain, error) {
 	var domains []Domain
 	err := c.db.
@@ -51,4 +73,38 @@ func (c *Client) ReadDomainsForUser(user *User) (*[]Domain, error) {
 	}
 
 	return &domains, nil
+}
+
+func (c *Client) ReadDomainsPageForUser (user *User, index, count int, orderBy string, asc bool) (*[]Domain, error) {
+	var domainList []Domain
+
+	// build query
+	query := "SELECT id, domain, owner_id, created_at, updated_at FROM public.domains WHERE owner_id = $1 AND deleted_at IS NULL ORDER BY "
+
+	switch strings.ToLower(orderBy) {
+	case "created_at":
+		query = query + "created_at "
+	case "domain":
+		query = query + "domain "
+	default:
+		return nil, ErrUnknownAttribute
+	}
+
+	if asc {
+		query = query + "ASC "
+	} else {
+		query = query + "DESC "
+	}
+
+	query = query + "OFFSET $2 LIMIT $3;"
+
+	// run query
+	offset := index * count
+	err := c.db.Select(&domainList, query, user.ID, offset, count)
+	if err != nil && err != sql.ErrNoRows {
+		logger.Errorf("cant get user page: %s")
+		return nil, err
+	}
+
+	return &domainList, nil
 }

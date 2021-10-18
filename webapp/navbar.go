@@ -29,7 +29,7 @@ func makeNavbar(r *http.Request) (navbar *[]templateNavbarNode) {
 	if r.Context().Value(UserKey) != nil {
 		user := r.Context().Value(UserKey).(*models.User)
 
-		if util.ContainsOneOfStrings(user.Groups, models.GroupsAllAdmins) {
+		if util.ContainsOneOfUUIDs(&user.Groups, &models.GroupsAllAdmins) {
 
 			adminMenu := templateNavbarNode{
 				Text:     "Admin",
@@ -38,7 +38,7 @@ func makeNavbar(r *http.Request) (navbar *[]templateNavbarNode) {
 				URL:      "#",
 			}
 
-			if util.ContainsOneOfStrings(user.Groups, models.GroupsUserAdmin) {
+			if util.ContainsOneOfUUIDs(&user.Groups, &models.GroupsUserAdmin) {
 				adminMenu.Children = append(adminMenu.Children, &templateNavbarNode{
 					Text:     "Users",
 					MatchStr: "^/app/admin/users",

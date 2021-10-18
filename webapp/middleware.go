@@ -97,7 +97,7 @@ func (s *Server) MiddlewareRequireAuth(next http.Handler) http.Handler {
 
 		// Check for Superadmin
 		user := r.Context().Value(UserKey).(*models.User)
-		superadmin := util.ContainsString(user.Groups, models.GroupSuperadmin)
+		superadmin := util.ContainsUUID(&user.Groups, &models.GroupSuperadmin)
 
 		if !superadmin {
 			s.returnErrorPage(w, r, http.StatusUnauthorized, "You aren't authorized")

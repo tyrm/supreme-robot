@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gomodule/redigo v1.8.5
+	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/sessions v1.2.1
 	github.com/jinzhu/copier v0.3.2

@@ -2,6 +2,7 @@ package webapp
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/tyrm/supreme-robot/models"
 	"net/http"
@@ -145,7 +146,12 @@ func (s *Server) AdminUserAddGetHandler(w http.ResponseWriter, r *http.Request) 
 func (s *Server) AdminUserEditGetHandler(w http.ResponseWriter, r *http.Request) {
 	// get requested user
 	vars := mux.Vars(r)
-	user, err := s.db.ReadUser(vars["id"])
+	id, err := uuid.Parse(vars["id"])
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+	user, err := s.db.ReadUser(id)
 	if err != nil {
 		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
 		return
@@ -182,7 +188,7 @@ func (s *Server) AdminUserEditGetHandler(w http.ResponseWriter, r *http.Request)
 	tmplVars.FormId = &templateFormInput{
 		ID:          "id",
 		Name:        "id",
-		Value:       user.ID,
+		Value:       user.ID.String(),
 		Placeholder: "Username",
 		Disabled:    true,
 	}

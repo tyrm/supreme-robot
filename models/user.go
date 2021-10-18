@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
 	"time"
@@ -11,9 +12,9 @@ type User struct {
 	Username string `db:"username" json:"username"`
 	Password string `db:"password" json:"-"`
 
-	Groups []string `json:"groups"`
+	Groups []uuid.UUID `json:"groups"`
 
-	ID        string    `db:"id" json:"id"`
+	ID        uuid.UUID `db:"id" json:"id"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
@@ -27,7 +28,7 @@ func (u *User) CheckPasswordHash(password string) bool {
 func (u *User) Create(c *Client) error {
 	// encode password
 	var (
-		err error
+		err          error
 		passwordHash string
 	)
 	passwordHash, err = hashPassword(u.Password)
@@ -36,7 +37,7 @@ func (u *User) Create(c *Client) error {
 	}
 
 	// add to database
-	if u.ID == "" {
+	if u.ID == uuid.Nil {
 		// id doesn't exist
 		err = c.db.
 			QueryRowx(`INSERT INTO "public"."users"("username", "password")
@@ -64,7 +65,7 @@ func (u *User) SetPassword(password string) error {
 }
 
 // Client Functions
-func (c *Client) ReadUser(id string) (*User, error) {
+func (c *Client) ReadUser(id uuid.UUID) (*User, error) {
 	var user User
 	err := c.db.
 		Get(&user, `SELECT id ,username, password, created_at, updated_at 
@@ -75,7 +76,7 @@ func (c *Client) ReadUser(id string) (*User, error) {
 		return nil, err
 	}
 
-	var groups []string
+	var groups []uuid.UUID
 	err = c.db.
 		Select(&groups, `SELECT group_id 
 		FROM public.group_membership WHERE user_id = $1 AND deleted_at IS NULL;`, user.ID)
@@ -98,7 +99,7 @@ func (c *Client) ReadUserByUsername(username string) (*User, error) {
 		return nil, err
 	}
 
-	var groups []string
+	var groups []uuid.UUID
 	err = c.db.
 		Select(&groups, `SELECT group_id 
 		FROM public.group_membership WHERE user_id = $1 AND deleted_at IS NULL;`, user.ID)
@@ -110,7 +111,7 @@ func (c *Client) ReadUserByUsername(username string) (*User, error) {
 	return &user, nil
 }
 
-func (c *Client) ReadUsersPage (index, count int, orderBy string, asc bool) (*[]User, error) {
+func (c *Client) ReadUsersPage(index, count int, orderBy string, asc bool) (*[]User, error) {
 	var userList []User
 
 	// build query

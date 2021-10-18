@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"github.com/google/uuid"
 	"regexp"
 	"strings"
 	"time"
@@ -10,12 +11,12 @@ import (
 var reValidDomain = regexp.MustCompile("^[a-zA-Z0-9][a-zA-Z0-9-.]*\\.$")
 
 type Domain struct {
-	Domain string `db:"domain" json:"domain"`
-	OwnerID string `db:"owner_id" json:"-"`
+	Domain  string `db:"domain" json:"domain"`
+	OwnerID uuid.UUID `db:"owner_id" json:"-"`
 
 	Owner *User `db:"-" json:"owner"`
 
-	ID        string    `db:"id" json:"id"`
+	ID        uuid.UUID `db:"id" json:"id"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
@@ -25,7 +26,7 @@ func (d *Domain) Create(c *Client) error {
 	var err error
 
 	// add to database
-	if d.ID == "" {
+	if d.ID == uuid.Nil {
 		// id doesn't exist
 		err = c.db.
 			QueryRowx(`INSERT INTO "public"."domains"("domain", "owner_id")
@@ -48,7 +49,7 @@ func (d *Domain) Delete(c *Client) error {
 		SET deleted_at=CURRENT_TIMESTAMP
 		WHERE id=$1;`, d.ID).
 		Scan()
-	if  err == sql.ErrNoRows {
+	if err == sql.ErrNoRows {
 		return nil
 	}
 
@@ -102,7 +103,7 @@ func (c *Client) ReadDomainsForUser(user *User) (*[]Domain, error) {
 	return &domains, nil
 }
 
-func (c *Client) ReadDomainsPageForUser (user *User, index, count int, orderBy string, asc bool) (*[]Domain, error) {
+func (c *Client) ReadDomainsPageForUser(user *User, index, count int, orderBy string, asc bool) (*[]Domain, error) {
 	var domainList []Domain
 
 	// build query

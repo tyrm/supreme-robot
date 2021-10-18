@@ -49,6 +49,8 @@ func (s *Server) DnsGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tmplVars.PageTitle = "Domains"
+
 	// handle pagination
 	page, count, _, err := paginationFromRequest(r, 50)
 	if err != nil {
@@ -85,7 +87,7 @@ func (s *Server) DnsGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) DnsDomainAddGetHandler(w http.ResponseWriter, r *http.Request) {
-	s.displayAddPage(w, r, "", "")
+	s.displayDomainAddPage(w, r, "", "")
 }
 
 func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -96,6 +98,20 @@ func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// check if domain exists already
+	dbDomain, err := s.db.ReadDomainByDomain(r.Form.Get("domain"))
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if dbDomain != nil {
+		s.displayDomainAddPage(w, r, r.Form.Get("domain"), "domain exists")
+		return
+	}
+
+	// TODO check if domain is parent of existing domain
+	// TODO check if domain is child of existing domain
+
 	// check domain validity
 	user := r.Context().Value(UserKey).(*models.User)
 	domain := models.Domain{
@@ -104,7 +120,7 @@ func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request)
 	}
 	valid := domain.ValidateDomain()
 	if !valid {
-		s.displayAddPage(w, r, r.Form.Get("domain"), "invalid domain")
+		s.displayDomainAddPage(w, r, r.Form.Get("domain"), "invalid domain")
 		return
 	}
 
@@ -126,6 +142,68 @@ func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request)
 
 	// redirect home
 	http.Redirect(w, r, fmt.Sprintf("/app/dns/%s", domain.ID), http.StatusFound)
+}
+
+func (s *Server) DnsDomainDeleteGetHandler(w http.ResponseWriter, r *http.Request) {
+	// get requested domain
+	vars := mux.Vars(r)
+	domain, err := s.db.ReadDomain(vars["id"])
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if domain == nil {
+		s.returnErrorPage(w, r, http.StatusNotFound, "domain not found")
+		return
+	}
+
+	// does the user own this domain
+	user := r.Context().Value(UserKey).(*models.User)
+	if domain.OwnerID != user.ID {
+		s.returnErrorPage(w, r, http.StatusUnauthorized, "you don't own that domain")
+		return
+	}
+
+	s.displayDomainDeletePage(w, r, domain.Domain, "")
+}
+
+func (s *Server) DnsDomainDeletePostHandler(w http.ResponseWriter, r *http.Request) {
+	// get requested domain
+	vars := mux.Vars(r)
+	domain, err := s.db.ReadDomain(vars["id"])
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if domain == nil {
+		s.returnErrorPage(w, r, http.StatusNotFound, "domain not found")
+		return
+	}
+
+	// does the user own this domain
+	user := r.Context().Value(UserKey).(*models.User)
+	if domain.OwnerID != user.ID {
+		s.returnErrorPage(w, r, http.StatusUnauthorized, "you don't own that domain")
+		return
+	}
+
+	// do delete
+	err = domain.Delete(s.db)
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// redirect to domain page
+	us := r.Context().Value(SessionKey).(*sessions.Session)
+	us.Values["page-alert-success"] = templateAlert{Text: "Domain deleted"}
+	err = us.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/app/dns", http.StatusFound)
 }
 
 func (s *Server) DnsDomainGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -175,7 +253,7 @@ func (s *Server) DnsDomainGetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) displayAddPage(w http.ResponseWriter, r *http.Request, domain, formError string) {
+func (s *Server) displayDomainAddPage(w http.ResponseWriter, r *http.Request, domain, formError string) {
 	// Init template variables
 	tmplVars := &DnsDomainFormTemplate{}
 	err := initTemplate(w, r, tmplVars)
@@ -220,7 +298,7 @@ func (s *Server) displayAddPage(w http.ResponseWriter, r *http.Request, domain, 
 	}
 }
 
-func (s *Server) displayEditPage(w http.ResponseWriter, r *http.Request, domain, formError string) {
+func (s *Server) displayDomainDeletePage(w http.ResponseWriter, r *http.Request, domain, formError string) {
 	// Init template variables
 	tmplVars := &DnsDomainFormTemplate{}
 	err := initTemplate(w, r, tmplVars)
@@ -229,14 +307,14 @@ func (s *Server) displayEditPage(w http.ResponseWriter, r *http.Request, domain,
 		return
 	}
 
-	tmplVars.PageTitle = "Edit Domain"
+	tmplVars.PageTitle = "Delete Domain"
 	tmplVars.Breadcrumbs = &[]templateBreadcrumb{
 		{
 			Text: "DNS Manager",
-			HRef: "/dns",
+			HRef: "/app/dns",
 		},
 		{
-			Text: "Add Domain",
+			Text: "Delete Domain",
 		},
 	}
 
@@ -246,11 +324,17 @@ func (s *Server) displayEditPage(w http.ResponseWriter, r *http.Request, domain,
 		Name:        "domain",
 		Value:       domain,
 		Placeholder: "example.com.",
-		Required:    true,
+		Disabled:    true,
 	}
 	tmplVars.FormSubmit = &templateFormButton{
-		Color: "success",
-		Text:  "Add",
+		Color: "danger",
+		Text:  "Delete",
+	}
+
+	if formError != "" {
+		tmplVars.AlertError = &templateAlert{
+			Text: formError,
+		}
 	}
 
 	err = s.templates.ExecuteTemplate(w, "dns_domain_form", tmplVars)

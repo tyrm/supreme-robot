@@ -42,6 +42,19 @@ func (d *Domain) Create(c *Client) error {
 	return err
 }
 
+func (d *Domain) Delete(c *Client) error {
+	err := c.db.
+		QueryRowx(`UPDATE "public"."domains"
+		SET deleted_at=CURRENT_TIMESTAMP
+		WHERE id=$1;`, d.ID).
+		Scan()
+	if  err == sql.ErrNoRows {
+		return nil
+	}
+
+	return err
+}
+
 func (d *Domain) ValidateDomain() bool {
 	return reValidDomain.MatchString(d.Domain)
 }
@@ -52,6 +65,20 @@ func (c *Client) ReadDomain(id string) (*Domain, error) {
 	err := c.db.
 		Get(&domain, `SELECT id, domain, owner_id, created_at, updated_at
 		FROM public.domains WHERE id = $1 AND deleted_at IS NULL;`, id)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &domain, nil
+}
+
+func (c *Client) ReadDomainByDomain(d string) (*Domain, error) {
+	var domain Domain
+	err := c.db.
+		Get(&domain, `SELECT id, domain, owner_id, created_at, updated_at
+		FROM public.domains WHERE domain = $1 AND deleted_at IS NULL;`, d)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	} else if err != nil {

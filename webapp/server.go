@@ -94,6 +94,8 @@ func NewServer(cfg *config.Config, r *redis.Client, d *models.Client) (*Server, 
 	protected.HandleFunc("/dns/add", server.DnsDomainAddGetHandler).Methods("GET")
 	protected.HandleFunc("/dns/add", server.DnsDomainAddPostHandler).Methods("POST")
 	protected.HandleFunc("/dns/{id:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}}", server.DnsDomainGetHandler).Methods("GET")
+	protected.HandleFunc("/dns/{id:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}}/delete", server.DnsDomainDeleteGetHandler).Methods("GET")
+	protected.HandleFunc("/dns/{id:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}}/delete", server.DnsDomainDeletePostHandler).Methods("POST")
 
 	return &server, nil
 }

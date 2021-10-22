@@ -61,11 +61,28 @@ func (d *Domain) ValidateDomain() bool {
 }
 
 // Client Functions
-func (c *Client) ReadDomain(id string) (*Domain, error) {
+
+// ReadDomain reads an undeleted domain from the database by uuid
+func (c *Client) ReadDomain(id uuid.UUID) (*Domain, error) {
 	var domain Domain
 	err := c.db.
 		Get(&domain, `SELECT id, domain, owner_id, created_at, updated_at
 		FROM public.domains WHERE id = $1 AND deleted_at IS NULL;`, id)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &domain, nil
+}
+
+// ReadDomainZ reads an any domain from the database by uuid even after deleted by user
+func (c *Client) ReadDomainZ(id uuid.UUID) (*Domain, error) {
+	var domain Domain
+	err := c.db.
+		Get(&domain, `SELECT id, domain, owner_id, created_at, updated_at
+		FROM public.domains WHERE id = $1;`, id)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	} else if err != nil {

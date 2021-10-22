@@ -21,9 +21,9 @@ var ErrCantConnect = errors.New("can't connect to redis")
 
 func NewClient(cfg *config.Config) (*Client, error) {
 	client := Client{
-		redisAddress:  cfg.RedisAddress,
-		redisDB:       cfg.RedisDB,
-		redisPassword: cfg.RedisPassword,
+		redisAddress:  cfg.RedisDnsAddress,
+		redisDB:       cfg.RedisDnsDB,
+		redisPassword: cfg.RedisDnsPassword,
 	}
 
 	// connect to redis
@@ -41,6 +41,6 @@ func NewClient(cfg *config.Config) (*Client, error) {
 		},
 	}
 
-	logger.Tracef("new redis client created: %s(%d)", cfg.RedisAddress, cfg.RedisDB)
+	logger.Tracef("new redis client created: %s(%d)", cfg.RedisDnsAddress, cfg.RedisDnsDB)
 	return &client, nil
 }

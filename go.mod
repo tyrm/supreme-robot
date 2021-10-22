@@ -3,6 +3,8 @@ module github.com/tyrm/supreme-robot
 go 1.17
 
 require (
+	github.com/contribsys/faktory v1.5.5
+	github.com/contribsys/faktory_worker_go v1.5.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gomodule/redigo v1.8.5
 	github.com/google/uuid v1.1.2
@@ -15,6 +17,7 @@ require (
 	github.com/markbates/pkger v0.17.1
 	github.com/rbcervilla/redisstore/v8 v8.1.0
 	github.com/rubenv/sql-migrate v0.0.0-20210614095031-55d5740dbbcc
+	github.com/spf13/cobra v0.0.6
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 )
 
@@ -23,10 +26,12 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/gobuffalo/here v0.6.0 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
 	github.com/lunixbochs/vtclean v0.0.0-20160125035106-4fbf7632a2c6 // indirect
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.3 // indirect
+	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect
 	gopkg.in/gorp.v1 v1.7.2 // indirect

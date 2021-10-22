@@ -6,11 +6,13 @@ services:
       dockerfile: Dockerfile-coredns-test
     ports:
       - 127.0.0.1:53:53/udp
-  redis:
-    image: redis:6
+  faktory:
+    image: contribsys/faktory:latest
     ports:
-      - 127.0.0.1:6379:6379/tcp
-    restart: always
+      - 127.0.0.1:7419:7419/tcp
+      - 127.0.0.1:7420:7420/tcp
+    environment:
+      - FAKTORY_PASSWORD=test
   postgres:
     image: postgres:13
     ports:
@@ -19,4 +21,15 @@ services:
       - POSTGRES_PASSWORD=test
       - POSTGRES_USER=test
       - POSTGRES_DB=test
+    restart: always
+  redis-dns:
+    image: redis:6
+    ports:
+      - 127.0.0.1:6379:6379/tcp
+    restart: always
+  redis-sessions:
+    image: redis:6
+    command: redis-server --requirepass test
+    ports:
+      - 127.0.0.1:6380:6379/tcp
     restart: always

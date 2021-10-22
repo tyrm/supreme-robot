@@ -2,6 +2,7 @@ package webapp
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/tyrm/supreme-robot/models"
@@ -131,6 +132,13 @@ func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// schedule update
+	err = s.scheduler.AddDomain(domain.ID)
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	// redirect to domain page
 	us := r.Context().Value(SessionKey).(*sessions.Session)
 	us.Values["page-alert-success"] = templateAlert{Text: "Domain added"}
@@ -147,7 +155,12 @@ func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request)
 func (s *Server) DnsDomainDeleteGetHandler(w http.ResponseWriter, r *http.Request) {
 	// get requested domain
 	vars := mux.Vars(r)
-	domain, err := s.db.ReadDomain(vars["id"])
+	id, err := uuid.Parse(vars["id"])
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+	domain, err := s.db.ReadDomain(id)
 	if err != nil {
 		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
 		return
@@ -170,7 +183,12 @@ func (s *Server) DnsDomainDeleteGetHandler(w http.ResponseWriter, r *http.Reques
 func (s *Server) DnsDomainDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 	// get requested domain
 	vars := mux.Vars(r)
-	domain, err := s.db.ReadDomain(vars["id"])
+	id, err := uuid.Parse(vars["id"])
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+	domain, err := s.db.ReadDomain(id)
 	if err != nil {
 		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
 		return
@@ -194,6 +212,13 @@ func (s *Server) DnsDomainDeletePostHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// schedule update
+	err = s.scheduler.RemoveDomain(domain.ID)
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	// redirect to domain page
 	us := r.Context().Value(SessionKey).(*sessions.Session)
 	us.Values["page-alert-success"] = templateAlert{Text: "Domain deleted"}
@@ -209,7 +234,12 @@ func (s *Server) DnsDomainDeletePostHandler(w http.ResponseWriter, r *http.Reque
 func (s *Server) DnsDomainGetHandler(w http.ResponseWriter, r *http.Request) {
 	// get requested domain
 	vars := mux.Vars(r)
-	domain, err := s.db.ReadDomain(vars["id"])
+	id, err := uuid.Parse(vars["id"])
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+	domain, err := s.db.ReadDomain(id)
 	if err != nil {
 		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
 		return

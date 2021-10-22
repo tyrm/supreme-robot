@@ -10,6 +10,7 @@ import (
 	"github.com/tyrm/supreme-robot/config"
 	"github.com/tyrm/supreme-robot/models"
 	"github.com/tyrm/supreme-robot/redis"
+	"github.com/tyrm/supreme-robot/scheduler"
 	"html/template"
 	"net/http"
 	"time"
@@ -19,8 +20,8 @@ import (
 
 type Server struct {
 	// data stuff
-	db    *models.Client
-	redis *redis.Client
+	db        *models.Client
+	scheduler *scheduler.Client
 
 	// web stuff
 	store     *redisstore.RedisStore
@@ -29,10 +30,10 @@ type Server struct {
 	templates *template.Template
 }
 
-func NewServer(cfg *config.Config, r *redis.Client, d *models.Client) (*Server, error) {
+func NewServer(cfg *config.Config, s *scheduler.Client, d *models.Client) (*Server, error) {
 	server := Server{
-		db: d,
-		redis: r,
+		db:        d,
+		scheduler: s,
 	}
 
 	// Load Templates
@@ -45,9 +46,9 @@ func NewServer(cfg *config.Config, r *redis.Client, d *models.Client) (*Server, 
 
 	// Redis client
 	client := redisCon.NewClient(&redisCon.Options{
-		Addr:     cfg.RedisAddress,
-		DB:       cfg.RedisDB,
-		Password: cfg.RedisPassword,
+		Addr:     cfg.RedisWebappAddress,
+		DB:       cfg.RedisWebappDB,
+		Password: cfg.RedisWebappPassword,
 	})
 
 	// Fetch new store.

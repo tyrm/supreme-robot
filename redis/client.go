@@ -2,9 +2,8 @@ package redis
 
 import (
 	"errors"
+	"github.com/tyrm/supreme-robot/startup"
 	"time"
-
-	"github.com/tyrm/supreme-robot/config"
 
 	redisCon "github.com/gomodule/redigo/redis"
 )
@@ -19,7 +18,7 @@ type Client struct {
 
 var ErrCantConnect = errors.New("can't connect to redis")
 
-func NewClient(cfg *config.Config) (*Client, error) {
+func NewClient(cfg *startup.StartupConfig) (*Client, error) {
 	client := Client{
 		redisAddress:  cfg.RedisDnsAddress,
 		redisDB:       cfg.RedisDnsDB,

@@ -15,7 +15,6 @@ CREATE TABLE "public"."domain_records" (
     retry integer,
     expire integer,
     mbox character varying,
-    ns character varying,
     tag character varying,
     created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -11,6 +11,7 @@ import (
 	"github.com/tyrm/supreme-robot/models"
 	"github.com/tyrm/supreme-robot/redis"
 	"github.com/tyrm/supreme-robot/scheduler"
+	"github.com/tyrm/supreme-robot/startup"
 	"html/template"
 	"net/http"
 	"time"
@@ -20,6 +21,7 @@ import (
 
 type Server struct {
 	// data stuff
+	config    config.Config
 	db        *models.Client
 	scheduler *scheduler.Client
 
@@ -30,8 +32,9 @@ type Server struct {
 	templates *template.Template
 }
 
-func NewServer(cfg *config.Config, s *scheduler.Client, d *models.Client) (*Server, error) {
+func NewServer(scfg *startup.StartupConfig, s *scheduler.Client, d *models.Client, c config.Config) (*Server, error) {
 	server := Server{
+		config:    c,
 		db:        d,
 		scheduler: s,
 	}
@@ -46,9 +49,9 @@ func NewServer(cfg *config.Config, s *scheduler.Client, d *models.Client) (*Serv
 
 	// Redis client
 	client := redisCon.NewClient(&redisCon.Options{
-		Addr:     cfg.RedisWebappAddress,
-		DB:       cfg.RedisWebappDB,
-		Password: cfg.RedisWebappPassword,
+		Addr:     scfg.RedisWebappAddress,
+		DB:       scfg.RedisWebappDB,
+		Password: scfg.RedisWebappPassword,
 	})
 
 	// Fetch new store.
@@ -61,7 +64,7 @@ func NewServer(cfg *config.Config, s *scheduler.Client, d *models.Client) (*Serv
 	server.store.KeyPrefix(redis.KeySession)
 	server.store.Options(sessions.Options{
 		Path:   "/",
-		Domain: cfg.ExtHostname,
+		Domain: scfg.ExtHostname,
 		MaxAge: 86400 * 60,
 	})
 

@@ -6,9 +6,9 @@ import (
 	"github.com/juju/loggo"
 	"github.com/juju/loggo/loggocolor"
 	"github.com/spf13/cobra"
-	"github.com/tyrm/supreme-robot/config"
 	"github.com/tyrm/supreme-robot/models"
 	"github.com/tyrm/supreme-robot/redis"
+	"github.com/tyrm/supreme-robot/startup"
 	"github.com/tyrm/supreme-robot/worker"
 	"log"
 	"os"
@@ -31,7 +31,7 @@ var workerCmd = &cobra.Command{
 			"REDIS_DNS_ADDRESS",
 			"SECRET",
 		}
-		c, err := config.CollectConfig(requiredVars)
+		c, err := startup.CollectStartupConfig(requiredVars)
 		if err != nil {
 			log.Fatalf("error gathering configuration: %s", err.Error())
 			return

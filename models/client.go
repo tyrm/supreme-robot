@@ -6,7 +6,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/markbates/pkger"
 	"github.com/rubenv/sql-migrate"
-	"github.com/tyrm/supreme-robot/config"
+	"github.com/tyrm/supreme-robot/startup"
 )
 
 var logger = loggo.GetLogger("models")
@@ -15,7 +15,7 @@ type Client struct {
 	db *sqlx.DB
 }
 
-func NewClient(cfg *config.Config) (*Client, error) {
+func NewClient(cfg *startup.StartupConfig) (*Client, error) {
 	client, err := sqlx.Connect("postgres", cfg.PostgresDsn)
 	if err != nil {
 		return nil, err

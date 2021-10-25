@@ -6,9 +6,9 @@ import (
 	"github.com/juju/loggo"
 	"github.com/juju/loggo/loggocolor"
 	"github.com/spf13/cobra"
-	"github.com/tyrm/supreme-robot/config"
 	"github.com/tyrm/supreme-robot/models"
 	"github.com/tyrm/supreme-robot/scheduler"
+	"github.com/tyrm/supreme-robot/startup"
 	"github.com/tyrm/supreme-robot/webapp"
 	"log"
 	"os"
@@ -31,7 +31,7 @@ var webappCmd = &cobra.Command{
 			"REDIS_WEBAPP_ADDRESS",
 			"SECRET",
 		}
-		c, err := config.CollectConfig(requiredVars)
+		c, err := startup.CollectStartupConfig(requiredVars)
 		if err != nil {
 			log.Fatalf("error gathering configuration: %s", err.Error())
 			return
@@ -67,7 +67,7 @@ var webappCmd = &cobra.Command{
 		}
 
 		// create web server
-		ws, err := webapp.NewServer(c, sc, dc)
+		ws, err := webapp.NewServer(c, sc, dc, dc.ConfigProvider())
 		if err != nil {
 			logger.Errorf("new webapp server: %s", err.Error())
 			return

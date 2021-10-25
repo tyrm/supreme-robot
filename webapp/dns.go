@@ -1,12 +1,15 @@
 package webapp
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/tyrm/supreme-robot/config"
 	"github.com/tyrm/supreme-robot/models"
 	"net/http"
+	"strconv"
 )
 
 type DnsPageTemplate struct {
@@ -14,7 +17,6 @@ type DnsPageTemplate struct {
 
 	Domains *[]models.Domain
 }
-
 
 type DnsDomainPageTemplate struct {
 	templateCommon
@@ -27,10 +29,16 @@ type DnsDomainFormTemplate struct {
 	templateCommon
 	Breadcrumbs *[]templateBreadcrumb
 
-	TitleText  string
-	FormId     *templateFormInput
-	FormDomain *templateFormInput
-	FormSubmit *templateFormButton
+	TitleText      string
+	FormId         *templateFormInput
+	FormDomain     *templateFormInput
+	FormSubmit     *templateFormButton
+	FormSoaTTL     *templateFormInput
+	FormSoaMBox    *templateFormInput
+	FormSoaNS      *templateFormInput
+	FormSoaRefresh *templateFormInput
+	FormSoaRetry   *templateFormInput
+	FormSoaExpire  *templateFormInput
 }
 
 var (
@@ -88,7 +96,7 @@ func (s *Server) DnsGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) DnsDomainAddGetHandler(w http.ResponseWriter, r *http.Request) {
-	s.displayDomainAddPage(w, r, "", "")
+	s.displayDomainAddPage(w, r, "", "300", "", "604800", "86400", "2419200","")
 }
 
 func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +114,7 @@ func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	if dbDomain != nil {
-		s.displayDomainAddPage(w, r, r.Form.Get("domain"), "domain exists")
+		s.displayDomainAddPage(w, r, r.Form.Get("domain"), r.Form.Get("soa_ttl"), r.Form.Get("soa_mbox"), r.Form.Get("soa_refresh"), r.Form.Get("soa_retry"), r.Form.Get("soa_expire"), "domain exists")
 		return
 	}
 
@@ -121,12 +129,75 @@ func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request)
 	}
 	valid := domain.ValidateDomain()
 	if !valid {
-		s.displayDomainAddPage(w, r, r.Form.Get("domain"), "invalid domain")
+		s.displayDomainAddPage(w, r, r.Form.Get("domain"), r.Form.Get("soa_ttl"), r.Form.Get("soa_mbox"), r.Form.Get("soa_refresh"), r.Form.Get("soa_retry"), r.Form.Get("soa_expire"), "domain exists")
+		return
+	}
+
+	// validation soa
+	ttl, err := strconv.Atoi(r.Form.Get("soa_ttl"))
+	if err != nil {
+		s.displayDomainAddPage(w, r, r.Form.Get("domain"), r.Form.Get("soa_ttl"), r.Form.Get("soa_mbox"), r.Form.Get("soa_refresh"), r.Form.Get("soa_retry"), r.Form.Get("soa_expire"), "ttl is not integer")
+		return
+	}
+	// TODO validate value of mbox
+	refresh, err := strconv.Atoi(r.Form.Get("soa_refresh"))
+	if err != nil {
+		s.displayDomainAddPage(w, r, r.Form.Get("domain"), r.Form.Get("soa_ttl"), r.Form.Get("soa_mbox"), r.Form.Get("soa_refresh"), r.Form.Get("soa_retry"), r.Form.Get("soa_expire"), "refresh is not integer")
+		return
+	}
+	retry, err := strconv.Atoi(r.Form.Get("soa_retry"))
+	if err != nil {
+		s.displayDomainAddPage(w, r, r.Form.Get("domain"), r.Form.Get("soa_ttl"), r.Form.Get("soa_mbox"), r.Form.Get("soa_refresh"), r.Form.Get("soa_retry"), r.Form.Get("soa_expire"), "retry is not integer")
+		return
+	}
+	expire, err := strconv.Atoi(r.Form.Get("soa_expire"))
+	if err != nil {
+		s.displayDomainAddPage(w, r, r.Form.Get("domain"), r.Form.Get("soa_ttl"), r.Form.Get("soa_mbox"), r.Form.Get("soa_refresh"), r.Form.Get("soa_retry"), r.Form.Get("soa_expire"), "expire is not integer")
+		return
+	}
+
+	//
+	ns, err := s.config.Get(config.KeySoaNS)
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// add to database
 	err = domain.Create(s.db)
+	if err != nil {
+		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// create soa record
+	record := models.Record{
+		Name: "@",
+		DomainID: domain.ID,
+		Type: "SOA",
+		Value: ns,
+		TTL: sql.NullInt32{
+			Int32: int32(ttl),
+			Valid: true,
+		},
+		MBox: sql.NullString{
+			String: r.Form.Get("soa_mbox"),
+			Valid: true,
+		},
+		Refresh: sql.NullInt32{
+			Int32: int32(refresh),
+			Valid: true,
+		},
+		Retry: sql.NullInt32{
+			Int32: int32(retry),
+			Valid: true,
+		},
+		Expire: sql.NullInt32{
+			Int32: int32(expire),
+			Valid: true,
+		},
+	}
+	err = record.Create(s.db)
 	if err != nil {
 		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
 		return
@@ -283,7 +354,7 @@ func (s *Server) DnsDomainGetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) displayDomainAddPage(w http.ResponseWriter, r *http.Request, domain, formError string) {
+func (s *Server) displayDomainAddPage(w http.ResponseWriter, r *http.Request, domain, soaTtl, soaMBox, soaRefresh, soaRetry, soaExpire, formError string) {
 	// Init template variables
 	tmplVars := &DnsDomainFormTemplate{}
 	err := initTemplate(w, r, tmplVars)
@@ -311,6 +382,43 @@ func (s *Server) displayDomainAddPage(w http.ResponseWriter, r *http.Request, do
 		Placeholder: "example.com.",
 		Required:    true,
 	}
+
+	tmplVars.FormSoaTTL = &templateFormInput{
+		ID:          "soa_ttl",
+		Name:        "soa_ttl",
+		Value:       soaTtl,
+		Placeholder: "300",
+		Required:    true,
+	}
+	tmplVars.FormSoaMBox = &templateFormInput{
+		ID:          "soa_mbox",
+		Name:        "soa_mbox",
+		Value:       soaMBox,
+		Placeholder: "hostmaster.example.com.",
+		Required:    true,
+	}
+	tmplVars.FormSoaRefresh = &templateFormInput{
+		ID:          "soa_refresh",
+		Name:        "soa_refresh",
+		Value:       soaRefresh,
+		Placeholder: "604800",
+		Required:    true,
+	}
+	tmplVars.FormSoaRetry = &templateFormInput{
+		ID:          "soa_retry",
+		Name:        "soa_retry",
+		Value:       soaRetry,
+		Placeholder: "86400",
+		Required:    true,
+	}
+	tmplVars.FormSoaExpire = &templateFormInput{
+		ID:          "soa_expire",
+		Name:        "soa_expire",
+		Value:       soaExpire,
+		Placeholder: "2419200",
+		Required:    true,
+	}
+
 	tmplVars.FormSubmit = &templateFormButton{
 		Color: "success",
 		Text:  "Add",

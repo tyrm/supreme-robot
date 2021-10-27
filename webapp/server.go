@@ -91,6 +91,8 @@ func NewServer(scfg *startup.StartupConfig, s *scheduler.Client, d *models.Clien
 	protected := server.router.PathPrefix("/app/").Subrouter()
 	protected.Use(server.MiddlewareRequireAuth)
 	protected.HandleFunc("/", server.HomeGetHandler).Methods("GET")
+	protected.HandleFunc("/admin/dns", server.AdminDnsGetHandler).Methods("GET")
+	protected.HandleFunc("/admin/dns", server.AdminDnsPostHandler).Methods("POST")
 	protected.HandleFunc("/admin/users", server.AdminUsersGetHandler).Methods("GET")
 	protected.HandleFunc("/admin/users/add", server.AdminUserAddGetHandler).Methods("GET")
 	protected.HandleFunc("/admin/users/{id:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}}/edit", server.AdminUserEditGetHandler).Methods("GET")

@@ -22,7 +22,8 @@ type DnsDomainPageTemplate struct {
 	templateCommon
 	Breadcrumbs *[]templateBreadcrumb
 
-	Domain *models.Domain
+	Domain  *models.Domain
+	Records *[]models.Record
 }
 
 type DnsDomainFormTemplate struct {
@@ -96,7 +97,7 @@ func (s *Server) DnsGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) DnsDomainAddGetHandler(w http.ResponseWriter, r *http.Request) {
-	s.displayDomainAddPage(w, r, "", "300", "", "604800", "86400", "2419200","")
+	s.displayDomainAddPage(w, r, "", "300", "", "604800", "86400", "2419200", "")
 }
 
 func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -156,10 +157,14 @@ func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	//
+	// get server ns
 	ns, err := s.config.Get(config.KeySoaNS)
 	if err != nil {
 		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if ns == nil {
+		s.returnErrorPage(w, r, http.StatusInternalServerError, "NS not defined")
 		return
 	}
 
@@ -172,17 +177,17 @@ func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request)
 
 	// create soa record
 	record := models.Record{
-		Name: "@",
+		Name:     "@",
 		DomainID: domain.ID,
-		Type: "SOA",
-		Value: ns,
+		Type:     "SOA",
+		Value:    *ns,
 		TTL: sql.NullInt32{
 			Int32: int32(ttl),
 			Valid: true,
 		},
 		MBox: sql.NullString{
 			String: r.Form.Get("soa_mbox"),
-			Valid: true,
+			Valid:  true,
 		},
 		Refresh: sql.NullInt32{
 			Int32: int32(refresh),
@@ -312,6 +317,7 @@ func (s *Server) DnsDomainGetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	domain, err := s.db.ReadDomain(id)
 	if err != nil {
+		logger.Errorf("db error: %s", err.Error())
 		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -347,6 +353,13 @@ func (s *Server) DnsDomainGetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmplVars.Domain = domain
+	records, err := domain.Records(s.db)
+	if err != nil {
+		logger.Errorf("db error: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tmplVars.Records = records
 
 	err = s.templates.ExecuteTemplate(w, "dns_domain", tmplVars)
 	if err != nil {

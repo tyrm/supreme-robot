@@ -7,7 +7,7 @@ var (
 
 	KeySession = KeyBase + "session:"
 	KeyDomains = KeyBase + "domains"
-	KeyZones = KeyBase + "dns:"
+	KeyZones   = KeyBase + "dns:"
 )
 
-func KeyZone(d string) string { return fmt.Sprintf("%s%s", KeyZones, d)}
+func KeyZone(d string) string { return fmt.Sprintf("%s%s", KeyZones, d) }

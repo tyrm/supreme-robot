@@ -39,8 +39,8 @@ func (r *Record) Create(c *Client) error {
 			QueryRowx(`INSERT INTO "public"."domain_records"("name", "domain_id", "type", "value", "ttl",
             "priority", "port", "weight", "refresh", "retry", "expire", "mbox", "tag")
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id, created_at, updated_at;`,
-			r.Name, r.DomainID, r.Type, r.Value, r. TTL, r.Priority, r.Port, r.Weight, r.Refresh, r.Retry, r.Expire,
-			r.MBox, r.Tag).
+				r.Name, r.DomainID, r.Type, r.Value, r.TTL, r.Priority, r.Port, r.Weight, r.Refresh, r.Retry, r.Expire,
+				r.MBox, r.Tag).
 			Scan(&r.ID, &r.CreatedAt, &r.UpdatedAt)
 	} else {
 		// id exists
@@ -48,8 +48,8 @@ func (r *Record) Create(c *Client) error {
 			QueryRowx(`INSERT INTO "public"."domain_records"("id", "name", "domain_id", "type", "value", "ttl",
             "priority", "port", "weight", "refresh", "retry", "expire", "mbox", "tag")
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id, created_at, updated_at;`,
-			r.ID, r.Name, r.DomainID, r.Type, r.Value, r. TTL, r.Priority, r.Port, r.Weight, r.Refresh, r.Retry,
-			r.Expire, r.MBox, r.Tag).
+				r.ID, r.Name, r.DomainID, r.Type, r.Value, r.TTL, r.Priority, r.Port, r.Weight, r.Refresh, r.Retry,
+				r.Expire, r.MBox, r.Tag).
 			Scan(&r.CreatedAt, &r.UpdatedAt)
 	}
 
@@ -75,6 +75,38 @@ func (c *Client) ReadRecord(id uuid.UUID) (*Record, error) {
 	return &record, nil
 }
 
+func (c *Client) ReadRecordsForDomain(domain *Domain, orderBy string, asc bool) (*[]Record, error) {
+	var recordList []Record
+
+	// build query
+	query := "SELECT id, name, domain_id, type, value, ttl, priority, port, weight, refresh, retry, " +
+		"expire, mbox, tag, created_at, updated_at FROM public.domain_records " +
+		"WHERE domain_id = $1 AND deleted_at IS NULL ORDER BY "
+
+	switch strings.ToLower(orderBy) {
+	case "created_at":
+		query = query + "created_at "
+	case "name":
+		query = query + "name "
+	default:
+		return nil, ErrUnknownAttribute
+	}
+
+	if asc {
+		query = query + "ASC;"
+	} else {
+		query = query + "DESC;"
+	}
+
+	// run query
+	err := c.db.Select(&recordList, query, domain.ID)
+	if err != nil && err != sql.ErrNoRows {
+		logger.Errorf("cant get record page: %s", err.Error())
+		return nil, err
+	}
+
+	return &recordList, nil
+}
 
 func (c *Client) ReadRecordsPageForDomain(domain *Domain, index, count int, orderBy string, asc bool) (*[]Record, error) {
 	var recordList []Record

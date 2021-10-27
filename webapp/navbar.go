@@ -47,6 +47,15 @@ func makeNavbar(r *http.Request) (navbar *[]templateNavbarNode) {
 				})
 			}
 
+			if util.ContainsOneOfUUIDs(&user.Groups, &models.GroupsDnsAdmin) {
+				adminMenu.Children = append(adminMenu.Children, &templateNavbarNode{
+					Text:     "DNS Server",
+					MatchStr: "^/app/admin/dns",
+					FAIcon:   "compass",
+					URL:      "/app/admin/dns",
+				})
+			}
+
 			newNavbar = append(newNavbar, adminMenu)
 		}
 	}

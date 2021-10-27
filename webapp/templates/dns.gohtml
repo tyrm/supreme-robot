@@ -66,6 +66,30 @@
                 <h3>Records</h3>
                 <a href="/app/dns/{{.Domain.ID}}/add_record" class="btn btn-outline-success btn-sm"><i class="fas fa-plus"></i></a>
             </div>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Value</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {{- $domainId := .Domain.ID -}}
+                {{- range $index, $record := .Records}}
+                    <tr>
+                        <th scope="row"><a href="/app/dns/{{$domainId}}/{{$record.ID}}">{{$record.Name}}</a></th>
+                        <td>{{$record.Type}}</td>
+                        <td>{{$record.Value}}</td>
+                        <td class="text-end">
+                            <a href="/app/dns/{{$domainId}}/{{$record.ID}}/edit" class="btn btn-outline-warning btn-sm"><i class="fas fa-edit"></i></a>
+                            <a href="/app/dns/{{$domainId}}/{{$record.ID}}/delete" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></a>
+                        </td>
+                    </tr>
+                {{- end}}
+                </tbody>
+            </table>
         </div>
     </div>
 </div><!-- /.container -->

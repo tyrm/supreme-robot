@@ -84,7 +84,7 @@ func (s *Server) AdminUsersGetHandler(w http.ResponseWriter, r *http.Request) {
 
 	userList, err := s.db.ReadUsersPage(int(page-1), int(count), orderBy, orderAsc)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		s.returnErrorPage(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 	tmplVars.Users = *userList

@@ -38,10 +38,10 @@ type templateCommon struct {
 	AlertSuccess *templateAlert
 	AlertWarn    *templateAlert
 
-	BodyClass     string
-	NavBar        *[]templateNavbarNode
-	PageTitle     string
-	User          *models.User
+	BodyClass string
+	NavBar    *[]templateNavbarNode
+	PageTitle string
+	User      *models.User
 }
 
 func (t *templateCommon) SetAlertError(a *templateAlert) {

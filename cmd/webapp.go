@@ -77,7 +77,7 @@ var webappCmd = &cobra.Command{
 		errChan := make(chan error)
 
 		// start web server
-		logger.Debugf("starting web app")
+		logger.Infof("starting web app")
 		go func(errChan chan error) {
 			err := ws.ListenAndServe()
 			if err != nil {
@@ -100,4 +100,3 @@ var webappCmd = &cobra.Command{
 		logger.Infof("main process done")
 	},
 }
-

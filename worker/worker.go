@@ -19,9 +19,9 @@ func (w *Worker) Run() error {
 
 func NewWorker(r *redis.Client, d *models.Client) (*Worker, error) {
 	worker := Worker{
-		db:    d,
+		db:      d,
 		manager: faktory.NewManager(),
-		redis: r,
+		redis:   r,
 	}
 
 	worker.manager.Register("AddDomain", worker.addDomainHandler)

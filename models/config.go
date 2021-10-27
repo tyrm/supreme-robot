@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"time"
 )
 
@@ -18,22 +19,14 @@ type Config struct {
 // Model Functions
 
 func (cnf *Config) Create(c *Client) error {
-	var err error
-
-	// add to database
-	if cnf.ID == uuid.Nil {
-		// id doesn't exist
-		err = c.db.
-			QueryRowx(`INSERT INTO "public"."config"("key", "value")
-			VALUES ($1, $2) RETURNING id, created_at, updated_at;`, cnf.Key, cnf.Value).
-			Scan(&cnf.ID, &cnf.CreatedAt, &cnf.UpdatedAt)
-	} else {
-		// id exists
-		err = c.db.
-			QueryRowx(`INSERT INTO "public"."config"("id", "key", "value")
-			VALUES ($1, $2, $3) RETURNING created_at, updated_at;`, cnf.ID, cnf.Key, cnf.Value).
-			Scan(&cnf.CreatedAt, &cnf.UpdatedAt)
+	if cnf.ID != uuid.Nil {
+		return ErrAlreadyCreated
 	}
+
+	err := c.db.
+		QueryRowx(`INSERT INTO "public"."config"("key", "value")
+			VALUES ($1, $2) RETURNING id, created_at, updated_at;`, cnf.Key, cnf.Value).
+		Scan(&cnf.ID, &cnf.CreatedAt, &cnf.UpdatedAt)
 
 	return err
 }
@@ -58,6 +51,20 @@ func (c *Client) ReadConfigByKey(k string) (*Config, error) {
 	err := c.db.
 		Get(&config, `SELECT id, key, "value", created_at, updated_at
 		FROM public.config WHERE key = $1;`, k)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &config, nil
+}
+
+func (c *Client) ReadConfigsByKeys(k *[]string) (*[]Config, error) {
+	var config []Config
+	err := c.db.
+		Select(&config, `SELECT id, key, "value", created_at, updated_at
+		FROM public.config WHERE key = ANY($1);`, pq.Array(k))
 	if err == sql.ErrNoRows {
 		return nil, nil
 	} else if err != nil {

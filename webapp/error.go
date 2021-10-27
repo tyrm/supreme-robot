@@ -18,9 +18,9 @@ type ErrorPageTemplate struct {
 }
 
 var (
-	ErrInvalidCount      = errors.New("value of count must be greater than zero")
-	ErrInvalidPage       = errors.New("value of page must be greater than zero")
-	ErrUnknownAttribute  = errors.New("unknown attribute")
+	ErrInvalidCount     = errors.New("value of count must be greater than zero")
+	ErrInvalidPage      = errors.New("value of page must be greater than zero")
+	ErrUnknownAttribute = errors.New("unknown attribute")
 )
 
 func (s *Server) returnErrorPage(w http.ResponseWriter, r *http.Request, code int, errStr string) {

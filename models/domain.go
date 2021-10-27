@@ -11,7 +11,7 @@ import (
 var reValidDomain = regexp.MustCompile("^[a-zA-Z0-9][a-zA-Z0-9-.]*\\.$")
 
 type Domain struct {
-	Domain  string `db:"domain" json:"domain"`
+	Domain  string    `db:"domain" json:"domain"`
 	OwnerID uuid.UUID `db:"owner_id" json:"-"`
 
 	Owner *User `db:"-" json:"owner"`
@@ -22,6 +22,7 @@ type Domain struct {
 }
 
 // Model Functions
+
 func (d *Domain) Create(c *Client) error {
 	var err error
 
@@ -54,6 +55,14 @@ func (d *Domain) Delete(c *Client) error {
 	}
 
 	return err
+}
+
+func (d *Domain) Records(c *Client) (*[]Record, error) {
+	records, err := c.ReadRecordsForDomain(d, "name", true)
+	if err != nil {
+		return nil, err
+	}
+	return records, nil
 }
 
 func (d *Domain) ValidateDomain() bool {

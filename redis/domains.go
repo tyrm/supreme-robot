@@ -54,8 +54,8 @@ func (c *Client) GetDomains() (*[]string, error) {
 
 	var (
 		reply interface{}
-		err error
-		vals []string
+		err   error
+		vals  []string
 	)
 
 	reply, err = conn.Do("SMEMBERS", KeyDomains)

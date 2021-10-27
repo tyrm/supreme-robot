@@ -16,3 +16,7 @@ var GroupsAllAdmins = []uuid.UUID{
 var GroupsUserAdmin = []uuid.UUID{
 	GroupSuperadmin,
 }
+
+var GroupsDnsAdmin = []uuid.UUID{
+	GroupSuperadmin,
+}

@@ -13,7 +13,7 @@ type Client struct {
 	redisDB       int
 	redisPassword string
 
-	db  *redisCon.Pool
+	db *redisCon.Pool
 }
 
 var ErrCantConnect = errors.New("can't connect to redis")

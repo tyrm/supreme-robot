@@ -37,7 +37,11 @@
     <input type="text" class="form-control" id="input-{{.ID}}"{{if ne .Placeholder ""}} placeholder="{{.Placeholder}}"{{end}} name="{{.Name}}"{{if ne .Value ""}} value="{{.Value}}"{{end}}{{if .Disabled}} disabled{{end}}{{if .Required}} required{{end}}>
 {{- end }}
 
-{{ define "form_input_password" -}}
+{{ define "form_input_text_hidden" -}}
+    <input type="hidden" id="input-{{.ID}}" name="{{.Name}}" value="{{.Value}}">
+{{- end }}
+
+{{ define "form_input_text_password" -}}
     <input type="password" class="form-control" id="input-{{.ID}}"{{if ne .Placeholder ""}} placeholder="{{.Placeholder}}"{{end}} name="{{.Name}}"{{if ne .Value ""}} value="{{.Value}}"{{end}}{{if .Disabled}} disabled{{end}}{{if .Required}} required{{end}}>
 {{- end }}
 

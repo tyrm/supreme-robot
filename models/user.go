@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"github.com/google/uuid"
+	"github.com/tyrm/supreme-robot/util"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
 	"time"
@@ -52,6 +53,10 @@ func (u *User) Create(c *Client) error {
 	}
 
 	return err
+}
+
+func (u *User) IsMemberOfGroup(groups *[]uuid.UUID) bool {
+	return util.ContainsOneOfUUIDs(&u.Groups, groups)
 }
 
 func (u *User) SetPassword(password string) error {

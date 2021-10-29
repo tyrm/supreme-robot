@@ -2,7 +2,6 @@ package redis
 
 import (
 	"errors"
-	"github.com/tyrm/supreme-robot/startup"
 	"time"
 
 	redisCon "github.com/gomodule/redigo/redis"
@@ -18,11 +17,11 @@ type Client struct {
 
 var ErrCantConnect = errors.New("can't connect to redis")
 
-func NewClient(cfg *startup.StartupConfig) (*Client, error) {
+func NewClient(address string, db int, password string) (*Client, error) {
 	client := Client{
-		redisAddress:  cfg.RedisDnsAddress,
-		redisDB:       cfg.RedisDnsDB,
-		redisPassword: cfg.RedisDnsPassword,
+		redisAddress:  address,
+		redisDB:       db,
+		redisPassword: password,
 	}
 
 	// connect to redis
@@ -40,6 +39,6 @@ func NewClient(cfg *startup.StartupConfig) (*Client, error) {
 		},
 	}
 
-	logger.Tracef("new redis client created: %s(%d)", cfg.RedisDnsAddress, cfg.RedisDnsDB)
+	logger.Tracef("new redis client created: %s(%d)", address, db)
 	return &client, nil
 }

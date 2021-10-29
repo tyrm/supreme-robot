@@ -7,9 +7,13 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
-type StartupConfig struct {
+type Config struct {
+	AccessSecret     string
+	AccessExpiration time.Duration
+
 	ExtHostname string
 
 	LoggerConfig string
@@ -23,11 +27,31 @@ type StartupConfig struct {
 	RedisWebappDB       int
 	RedisWebappPassword string
 
+	RefreshSecret     string
+	RefreshExpiration time.Duration
+
 	Secret string
 }
 
-func CollectStartupConfig(requiredVars []string) (*StartupConfig, error) {
-	var config StartupConfig
+func CollectStartupConfig(requiredVars []string) (*Config, error) {
+	var config Config
+
+	// ACCESS_SECRET
+	config.AccessSecret = os.Getenv("ACCESS_SECRET")
+	if config.AccessSecret != "" {
+		requiredVars = util.FastPopString(requiredVars, "ACCESS_SECRET")
+	}
+
+	// ACCESS_EXP
+	if os.Getenv("ACCESS_EXP") == "" {
+		config.AccessExpiration = time.Minute * 15
+	} else {
+		exp, err := strconv.Atoi(os.Getenv("ACCESS_EXP"))
+		if err != nil {
+			return nil, err
+		}
+		config.AccessExpiration = time.Second * time.Duration(exp)
+	}
 
 	// EXT_HOSTNAME
 	config.ExtHostname = os.Getenv("EXT_HOSTNAME")
@@ -89,6 +113,22 @@ func CollectStartupConfig(requiredVars []string) (*StartupConfig, error) {
 	// REDIS_WEBAPP_PASSWORD
 	config.RedisWebappPassword = os.Getenv("REDIS_WEBAPP_PASSWORD")
 
+	// REFRESH_SECRET
+	config.RefreshSecret = os.Getenv("REFRESH_SECRET")
+	if config.RefreshSecret != "" {
+		requiredVars = util.FastPopString(requiredVars, "REFRESH_SECRET")
+	}
+
+	// REFRESH_EXP
+	if os.Getenv("REFRESH_EXP") == "" {
+		config.RefreshExpiration = time.Hour * 24 * 7
+	} else {
+		exp, err := strconv.Atoi(os.Getenv("REFRESH_EXP"))
+		if err != nil {
+			return nil, err
+		}
+		config.RefreshExpiration = time.Second * time.Duration(exp)
+	}
 	// SECRET
 	config.Secret = os.Getenv("SECRET")
 	if config.Secret != "" {

@@ -15,7 +15,7 @@ type Client struct {
 	db *sqlx.DB
 }
 
-func NewClient(cfg *startup.StartupConfig) (*Client, error) {
+func NewClient(cfg *startup.Config) (*Client, error) {
 	client, err := sqlx.Connect("postgres", cfg.PostgresDsn)
 	if err != nil {
 		return nil, err

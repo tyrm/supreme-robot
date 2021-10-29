@@ -42,6 +42,11 @@ var (
 )
 
 func (s *Server) AdminUsersGetHandler(w http.ResponseWriter, r *http.Request) {
+	if u := r.Context().Value(UserKey).(*models.User); !u.IsMemberOfGroup(&models.GroupsUserAdmin) {
+		s.returnErrorPage(w, r, http.StatusUnauthorized, "You aren't authorized")
+		return
+	}
+
 	// Init template variables
 	tmplVars := &AdminUsersPageTemplate{}
 	err := initTemplate(w, r, tmplVars)
@@ -96,6 +101,11 @@ func (s *Server) AdminUsersGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) AdminUserAddGetHandler(w http.ResponseWriter, r *http.Request) {
+	if u := r.Context().Value(UserKey).(*models.User); !u.IsMemberOfGroup(&models.GroupsUserAdmin) {
+		s.returnErrorPage(w, r, http.StatusUnauthorized, "You aren't authorized")
+		return
+	}
+
 	// Init template variables
 	tmplVars := &AdminUsersFormTemplate{}
 	err := initTemplate(w, r, tmplVars)
@@ -144,6 +154,11 @@ func (s *Server) AdminUserAddGetHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *Server) AdminUserEditGetHandler(w http.ResponseWriter, r *http.Request) {
+	if u := r.Context().Value(UserKey).(*models.User); !u.IsMemberOfGroup(&models.GroupsUserAdmin) {
+		s.returnErrorPage(w, r, http.StatusUnauthorized, "You aren't authorized")
+		return
+	}
+
 	// get requested user
 	vars := mux.Vars(r)
 	id, err := uuid.Parse(vars["id"])
@@ -214,3 +229,4 @@ func (s *Server) AdminUserEditGetHandler(w http.ResponseWriter, r *http.Request)
 		logger.Errorf("could not render dns template: %s", err.Error())
 	}
 }
+

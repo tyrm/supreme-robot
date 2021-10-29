@@ -32,7 +32,7 @@ type Server struct {
 	templates *template.Template
 }
 
-func NewServer(scfg *startup.StartupConfig, s *scheduler.Client, d *models.Client, c config.Config) (*Server, error) {
+func NewServer(scfg *startup.Config, s *scheduler.Client, d *models.Client, c config.Config) (*Server, error) {
 	server := Server{
 		config:    c,
 		db:        d,

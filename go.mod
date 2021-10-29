@@ -5,11 +5,13 @@ go 1.17
 require (
 	github.com/contribsys/faktory v1.5.5
 	github.com/contribsys/faktory_worker_go v1.5.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gomodule/redigo v1.8.5
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/sessions v1.2.1
+	github.com/graphql-go/graphql v0.8.0
 	github.com/jinzhu/copier v0.3.2
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/juju/loggo v0.0.0-20210728185423-eebad3a902c4

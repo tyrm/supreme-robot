@@ -1,7 +1,9 @@
 package webapp
 
 import (
+	"github.com/gorilla/sessions"
 	"github.com/tyrm/supreme-robot/config"
+	"github.com/tyrm/supreme-robot/models"
 	"net/http"
 )
 
@@ -15,6 +17,12 @@ type AdminDnsPageTemplate struct {
 }
 
 func (s *Server) AdminDnsGetHandler(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value(UserKey).(*models.User)
+	if !user.IsMemberOfGroup(&models.GroupsDnsAdmin) {
+		s.returnErrorPage(w, r, http.StatusUnauthorized, "You aren't authorized")
+		return
+	}
+
 	// Init template variables
 	tmplVars := &AdminDnsPageTemplate{}
 	err := initTemplate(w, r, tmplVars)
@@ -73,6 +81,12 @@ func (s *Server) AdminDnsGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) AdminDnsPostHandler(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value(UserKey).(*models.User)
+	if !user.IsMemberOfGroup(&models.GroupsDnsAdmin) {
+		s.returnErrorPage(w, r, http.StatusUnauthorized, "You aren't authorized")
+		return
+	}
+
 	// parse form data
 	err := r.ParseForm()
 	if err != nil {
@@ -98,5 +112,13 @@ func (s *Server) AdminDnsPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// redirect to reload page
+	us := r.Context().Value(SessionKey).(*sessions.Session)
+	us.Values["page-alert-success"] = templateAlert{Text: "Update successful"}
+	err = us.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	http.Redirect(w, r, "/app/admin/dns", http.StatusFound)
 }

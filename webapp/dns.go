@@ -126,7 +126,7 @@ func (s *Server) DnsDomainAddPostHandler(w http.ResponseWriter, r *http.Request)
 	user := r.Context().Value(UserKey).(*models.User)
 	domain := models.Domain{
 		Domain: r.Form.Get("domain"),
-		Owner:  user,
+		OwnerID:  user.ID,
 	}
 	valid := domain.ValidateDomain()
 	if !valid {
@@ -353,7 +353,7 @@ func (s *Server) DnsDomainGetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmplVars.Domain = domain
-	records, err := domain.Records(s.db)
+	records, err := domain.GetRecords(s.db)
 	if err != nil {
 		logger.Errorf("db error: %s", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

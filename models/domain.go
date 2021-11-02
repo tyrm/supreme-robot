@@ -14,7 +14,7 @@ type Domain struct {
 	Domain  string    `db:"domain" json:"domain"`
 	OwnerID uuid.UUID `db:"owner_id" json:"-"`
 
-	Owner *User `db:"-" json:"owner"`
+	Records *[]Record `db:"-" json:"records"`
 
 	ID        uuid.UUID `db:"id" json:"id"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
@@ -31,13 +31,13 @@ func (d *Domain) Create(c *Client) error {
 		// id doesn't exist
 		err = c.db.
 			QueryRowx(`INSERT INTO "public"."domains"("domain", "owner_id")
-			VALUES ($1, $2) RETURNING id, created_at, updated_at;`, d.Domain, d.Owner.ID).
+			VALUES ($1, $2) RETURNING id, created_at, updated_at;`, d.Domain, d.OwnerID).
 			Scan(&d.ID, &d.CreatedAt, &d.UpdatedAt)
 	} else {
 		// id exists
 		err = c.db.
 			QueryRowx(`INSERT INTO "public"."domains"("id", "domain", "owner_id")
-			VALUES ($1, $2, $3) RETURNING created_at, updated_at;`, d.ID, d.Domain, d.Owner.ID).
+			VALUES ($1, $2, $3) RETURNING created_at, updated_at;`, d.ID, d.Domain, d.OwnerID).
 			Scan(&d.CreatedAt, &d.UpdatedAt)
 	}
 
@@ -57,7 +57,7 @@ func (d *Domain) Delete(c *Client) error {
 	return err
 }
 
-func (d *Domain) Records(c *Client) (*[]Record, error) {
+func (d *Domain) GetRecords(c *Client) (*[]Record, error) {
 	records, err := c.ReadRecordsForDomain(d, "name", true)
 	if err != nil {
 		return nil, err
@@ -115,11 +115,11 @@ func (c *Client) ReadDomainByDomain(d string) (*Domain, error) {
 	return &domain, nil
 }
 
-func (c *Client) ReadDomainsForUser(user *User) (*[]Domain, error) {
+func (c *Client) ReadDomainsForUser(userId uuid.UUID) (*[]Domain, error) {
 	var domains []Domain
 	err := c.db.
 		Select(&domains, `SELECT id, domain, owner_id, created_at, updated_at
-		FROM public.domains WHERE owner_id = $1 AND deleted_at IS NULL;`, user.ID)
+		FROM public.domains WHERE owner_id = $1 AND deleted_at IS NULL;`, userId)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	} else if err != nil {

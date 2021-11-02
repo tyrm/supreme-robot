@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/graphql-go/graphql"
+	"github.com/tyrm/supreme-robot/models"
 	"net/http"
 )
 
@@ -15,11 +16,41 @@ type postData struct {
 }
 
 // types
-var accessTokenType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "AccessToken",
+var domainType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Domain",
 	Fields: graphql.Fields{
-		"access_token": &graphql.Field{
+		"id": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"domain": &graphql.Field{
 			Type: graphql.String,
+		},
+		"records": &graphql.Field{
+			Type: graphql.NewList(recordType),
+		},
+		"created_at": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if d, ok := p.Source.(models.Domain); ok {
+					return d.CreatedAt.Unix(), nil
+				}
+				if d, ok := p.Source.(*models.Domain); ok {
+					return d.CreatedAt.Unix(), nil
+				}
+				return nil, nil
+			},
+		},
+		"updated_at": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if d, ok := p.Source.(models.Domain); ok {
+					return d.UpdatedAt.Unix(), nil
+				}
+				if d, ok := p.Source.(*models.Domain); ok {
+					return d.UpdatedAt.Unix(), nil
+				}
+				return nil, nil
+			},
 		},
 	},
 })
@@ -45,17 +76,263 @@ var logoutType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
+var recordType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Record",
+	Fields: graphql.Fields{
+		"id": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"name": &graphql.Field{
+			Type: graphql.String,
+		},
+		"type": &graphql.Field{
+			Type: graphql.String,
+		},
+		"value": &graphql.Field{
+			Type: graphql.String,
+		},
+		"ttl": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if r, ok := p.Source.(models.Record); ok {
+					if r.TTL.Valid {
+						return r.TTL.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				if r, ok := p.Source.(*models.Record); ok {
+					if r.TTL.Valid {
+						return r.TTL.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				return nil, nil
+			},
+		},
+		"priority": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if r, ok := p.Source.(models.Record); ok {
+					if r.Priority.Valid {
+						return r.Priority.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				if r, ok := p.Source.(*models.Record); ok {
+					if r.Priority.Valid {
+						return r.Priority.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				return nil, nil
+			},
+		},
+		"port": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if r, ok := p.Source.(models.Record); ok {
+					if r.Port.Valid {
+						return r.Port.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				if r, ok := p.Source.(*models.Record); ok {
+					if r.Port.Valid {
+						return r.Port.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				return nil, nil
+			},
+		},
+		"weight": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if r, ok := p.Source.(models.Record); ok {
+					if r.Weight.Valid {
+						return r.Weight.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				if r, ok := p.Source.(*models.Record); ok {
+					if r.Weight.Valid {
+						return r.Weight.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				return nil, nil
+			},
+		},
+		"refresh": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if r, ok := p.Source.(models.Record); ok {
+					if r.Refresh.Valid {
+						return r.Refresh.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				if r, ok := p.Source.(*models.Record); ok {
+					if r.Refresh.Valid {
+						return r.Refresh.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				return nil, nil
+			},
+		},
+		"retry": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if r, ok := p.Source.(models.Record); ok {
+					if r.Retry.Valid {
+						return r.Retry.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				if r, ok := p.Source.(*models.Record); ok {
+					if r.Retry.Valid {
+						return r.Retry.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				return nil, nil
+			},
+		},
+		"expire": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if r, ok := p.Source.(models.Record); ok {
+					if r.Expire.Valid {
+						return r.Expire.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				if r, ok := p.Source.(*models.Record); ok {
+					if r.Expire.Valid {
+						return r.Expire.Int32, nil
+					} else {
+						return nil, nil
+					}
+				}
+				return nil, nil
+			},
+		},
+		"mbox": &graphql.Field{
+			Type: graphql.String,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if r, ok := p.Source.(models.Record); ok {
+					if r.MBox.Valid {
+						return r.MBox.String, nil
+					} else {
+						return nil, nil
+					}
+				}
+				if r, ok := p.Source.(*models.Record); ok {
+					if r.MBox.Valid {
+						return r.MBox.String, nil
+					} else {
+						return nil, nil
+					}
+				}
+				return nil, nil
+			},
+		},
+		"tag": &graphql.Field{
+			Type: graphql.String,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if r, ok := p.Source.(models.Record); ok {
+					if r.Tag.Valid {
+						return r.Tag.String, nil
+					} else {
+						return nil, nil
+					}
+				}
+				if r, ok := p.Source.(*models.Record); ok {
+					if r.Tag.Valid {
+						return r.Tag.String, nil
+					} else {
+						return nil, nil
+					}
+				}
+				return nil, nil
+			},
+		},
+		"created_at": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if r, ok := p.Source.(models.Record); ok {
+					return r.CreatedAt.Unix(), nil
+				}
+				if r, ok := p.Source.(*models.Record); ok {
+					return r.CreatedAt.Unix(), nil
+				}
+				return nil, nil
+			},
+		},
+		"updated_at": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if r, ok := p.Source.(models.Record); ok {
+					return r.UpdatedAt.Unix(), nil
+				}
+				if r, ok := p.Source.(*models.Record); ok {
+					return r.UpdatedAt.Unix(), nil
+				}
+				return nil, nil
+			},
+		},
+	},
+})
+
 var userType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "User",
 	Fields: graphql.Fields{
 		"id": &graphql.Field{
-			Type: graphql.String,
+			Type: graphql.NewNonNull(graphql.String),
 		},
 		"username": &graphql.Field{
 			Type: graphql.String,
 		},
-		"password": &graphql.Field{
-			Type: graphql.Boolean,
+		"groups": &graphql.Field{
+			Type: graphql.NewList(graphql.String),
+		},
+		"created_at": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if u, ok := p.Source.(models.User); ok {
+					return u.CreatedAt.Unix(), nil
+				}
+				if u, ok := p.Source.(*models.User); ok {
+					return u.CreatedAt.Unix(), nil
+				}
+				return nil, nil
+			},
+		},
+		"updated_at": &graphql.Field{
+			Type: graphql.Int,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if u, ok := p.Source.(models.User); ok {
+					return u.UpdatedAt.Unix(), nil
+				}
+				if u, ok := p.Source.(*models.User); ok {
+					return u.UpdatedAt.Unix(), nil
+				}
+				return nil, nil
+			},
 		},
 	},
 })
@@ -78,11 +355,13 @@ func (s *Server) rootMutation() *graphql.Object {
 				},
 				Resolve: s.loginMutator,
 			},
+
 			"logout": &graphql.Field{
 				Type:        logoutType,
 				Description: "Logout of the system",
 				Resolve: s.logoutMutator,
 			},
+
 			"refreshAccessToken": &graphql.Field{
 				Type:        jwtTokensType,
 				Description: "Refresh jwt token",
@@ -102,6 +381,29 @@ func (s *Server) rootQuery() *graphql.Object {
 	return graphql.NewObject(graphql.ObjectConfig{
 		Name: "RootQuery",
 		Fields: graphql.Fields{
+			"domain": &graphql.Field{
+				Type:        domainType,
+				Description: "Get info about a domain",
+				Args: graphql.FieldConfigArgument{
+					"id": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+				},
+				Resolve: s.domainQuery,
+			},
+
+			"me": &graphql.Field{
+				Type:        userType,
+				Description: "Get logged in user",
+				Resolve: s.meQuery,
+			},
+
+			"myDomains": &graphql.Field{
+				Type:        graphql.NewList(domainType),
+				Description: "Get my domains",
+				Resolve: s.myDomainsQuery,
+			},
+
 			"user": &graphql.Field{
 				Type:        userType,
 				Description: "Get single user",

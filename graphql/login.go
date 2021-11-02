@@ -52,9 +52,7 @@ func (s *Server) logoutMutator(params graphql.ResolveParams) (interface{}, error
 	if params.Context.Value(MetadataKey) == nil {
 		return nil, ErrUnauthorized
 	}
-
 	metadata := params.Context.Value(MetadataKey).(*AccessDetails)
-	logger.Tracef("metadata: %v", metadata)
 
 	err := s.deleteTokens(metadata)
 	if err != nil {

@@ -28,7 +28,7 @@ var domainType = graphql.NewObject(graphql.ObjectConfig{
 		"records": &graphql.Field{
 			Type: graphql.NewList(recordType),
 		},
-		"created_at": &graphql.Field{
+		"createdAt": &graphql.Field{
 			Type: graphql.Int,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				if d, ok := p.Source.(models.Domain); ok {
@@ -40,7 +40,7 @@ var domainType = graphql.NewObject(graphql.ObjectConfig{
 				return nil, nil
 			},
 		},
-		"updated_at": &graphql.Field{
+		"updatedAt": &graphql.Field{
 			Type: graphql.Int,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				if d, ok := p.Source.(models.Domain); ok {
@@ -58,10 +58,10 @@ var domainType = graphql.NewObject(graphql.ObjectConfig{
 var jwtTokensType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "JwtToken",
 	Fields: graphql.Fields{
-		"access_token": &graphql.Field{
+		"accessToken": &graphql.Field{
 			Type: graphql.String,
 		},
-		"refresh_token": &graphql.Field{
+		"refreshToken": &graphql.Field{
 			Type: graphql.String,
 		},
 	},
@@ -271,7 +271,7 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 				return nil, nil
 			},
 		},
-		"created_at": &graphql.Field{
+		"createdAt": &graphql.Field{
 			Type: graphql.Int,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				if r, ok := p.Source.(models.Record); ok {
@@ -283,7 +283,7 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 				return nil, nil
 			},
 		},
-		"updated_at": &graphql.Field{
+		"updatedAt": &graphql.Field{
 			Type: graphql.Int,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				if r, ok := p.Source.(models.Record); ok {
@@ -310,7 +310,7 @@ var userType = graphql.NewObject(graphql.ObjectConfig{
 		"groups": &graphql.Field{
 			Type: graphql.NewList(graphql.String),
 		},
-		"created_at": &graphql.Field{
+		"createdAt": &graphql.Field{
 			Type: graphql.Int,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				if u, ok := p.Source.(models.User); ok {
@@ -322,7 +322,7 @@ var userType = graphql.NewObject(graphql.ObjectConfig{
 				return nil, nil
 			},
 		},
-		"updated_at": &graphql.Field{
+		"updatedAt": &graphql.Field{
 			Type: graphql.Int,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				if u, ok := p.Source.(models.User); ok {
@@ -342,6 +342,17 @@ func (s *Server) rootMutation() *graphql.Object {
 	return graphql.NewObject(graphql.ObjectConfig{
 		Name: "RootMutation",
 		Fields: graphql.Fields{
+			"addDomain": &graphql.Field{
+				Type:        domainType,
+				Description: "Add new domain",
+				Args: graphql.FieldConfigArgument{
+					"domain": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+				},
+				Resolve: s.addDomainMutator,
+			},
+
 			"login": &graphql.Field{
 				Type:        jwtTokensType,
 				Description: "Login to system",
@@ -366,7 +377,7 @@ func (s *Server) rootMutation() *graphql.Object {
 				Type:        jwtTokensType,
 				Description: "Refresh jwt token",
 				Args: graphql.FieldConfigArgument{
-					"refresh_token": &graphql.ArgumentConfig{
+					"refreshToken": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
 				},
@@ -435,6 +446,10 @@ func (s *Server) graphqlHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
+
+	logger.Tracef("query: %s", p.Query)
+	logger.Tracef("operation: %s", p.Operation)
+	logger.Tracef("variables: %v", p.Variables)
 
 	ctx := r.Context()
 

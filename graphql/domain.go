@@ -7,6 +7,25 @@ import (
 	"github.com/tyrm/supreme-robot/util"
 )
 
+func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, error) {
+	logger.Tracef("trying to add domain")
+
+	// get id
+	domainStr, _ := params.Args["domain"].(string)
+	soaObj, _ := params.Args["soa"].(map[string]interface{})
+
+	logger.Tracef("%s: %v", domainStr, soaObj)
+
+	// did user authenticate
+	if params.Context.Value(MetadataKey) == nil {
+		return nil, ErrUnauthorized
+	}
+	metadata := params.Context.Value(MetadataKey).(*AccessDetails)
+	logger.Tracef("metadata: %v", metadata)
+
+	return nil, nil
+}
+
 func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) {
 	logger.Tracef("trying to get domain")
 

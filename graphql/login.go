@@ -69,7 +69,7 @@ func (s *Server) refreshAccessTokenMutator(params graphql.ResolveParams) (interf
 	logger.Tracef("trying to refresh token")
 
 	// marshall and cast the argument values
-	refreshToken, _ := params.Args["refresh_token"].(string)
+	refreshToken, _ := params.Args["refreshToken"].(string)
 
 	//verify the token
 	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {

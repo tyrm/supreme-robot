@@ -6,37 +6,38 @@ import (
 	"github.com/tyrm/supreme-robot/models"
 	"github.com/tyrm/supreme-robot/redis"
 	"github.com/tyrm/supreme-robot/scheduler"
-	"github.com/tyrm/supreme-robot/startup"
 	"net/http"
 	"time"
 )
 
 type Server struct {
 	// data stuff
-	config    config.Config
 	db        *models.Client
 	redis     *redis.Client
 	scheduler *scheduler.Client
 
+	// dns stuff
+	primaryNS string
+
 	// web stuff
-	accessExpiration time.Duration
-	accessSecret  []byte
+	accessExpiration  time.Duration
+	accessSecret      []byte
 	refreshExpiration time.Duration
-	refreshSecret []byte
-	router        *mux.Router
-	server        *http.Server
+	refreshSecret     []byte
+	router            *mux.Router
+	server            *http.Server
 }
 
-func NewServer(scfg *startup.Config, s *scheduler.Client, d *models.Client, r *redis.Client, c config.Config) (*Server, error) {
+func NewServer(cfg *config.Config, s *scheduler.Client, d *models.Client, r *redis.Client) (*Server, error) {
 	server := Server{
-		accessExpiration: scfg.AccessExpiration,
-		accessSecret:  []byte(scfg.AccessSecret),
-		config:        c,
-		db:            d,
-		redis:         r,
-		refreshExpiration: scfg.RefreshExpiration,
-		refreshSecret: []byte(scfg.RefreshSecret),
-		scheduler:     s,
+		accessExpiration:  cfg.AccessExpiration,
+		accessSecret:      []byte(cfg.AccessSecret),
+		db:                d,
+		primaryNS:         cfg.PrimaryNS,
+		redis:             r,
+		refreshExpiration: cfg.RefreshExpiration,
+		refreshSecret:     []byte(cfg.RefreshSecret),
+		scheduler:         s,
 	}
 
 	// Setup Router

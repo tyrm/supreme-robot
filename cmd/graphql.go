@@ -6,11 +6,11 @@ import (
 	"github.com/juju/loggo"
 	"github.com/juju/loggo/loggocolor"
 	"github.com/spf13/cobra"
+	"github.com/tyrm/supreme-robot/config"
 	"github.com/tyrm/supreme-robot/graphql"
 	"github.com/tyrm/supreme-robot/models"
 	"github.com/tyrm/supreme-robot/redis"
 	"github.com/tyrm/supreme-robot/scheduler"
-	"github.com/tyrm/supreme-robot/startup"
 	"log"
 	"os"
 	"os/signal"
@@ -30,10 +30,11 @@ var graphqlCmd = &cobra.Command{
 			"ACCESS_SECRET",
 			"EXT_HOSTNAME",
 			"POSTGRES_DSN",
+			"PRIMARY_NS",
 			"REDIS_WEBAPP_ADDRESS",
 			"REFRESH_SECRET",
 		}
-		c, err := startup.CollectStartupConfig(requiredVars)
+		c, err := config.CollectStartupConfig(requiredVars)
 		if err != nil {
 			log.Fatalf("error gathering configuration: %s", err.Error())
 			return
@@ -76,7 +77,7 @@ var graphqlCmd = &cobra.Command{
 		}
 
 		// create web server
-		ws, err := graphql.NewServer(c, sc, dc, rc, dc.ConfigProvider())
+		ws, err := graphql.NewServer(c, sc, dc, rc)
 		if err != nil {
 			logger.Errorf("new webapp server: %s", err.Error())
 			return

@@ -91,8 +91,8 @@ var jwtTokensType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
-var logoutType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Logout",
+var successType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Success",
 	Fields: graphql.Fields{
 		"success": &graphql.Field{
 			Type: graphql.Boolean,
@@ -380,6 +380,20 @@ func (s *Server) rootMutation() *graphql.Object {
 				Resolve: s.addDomainMutator,
 			},
 
+			"addUser": &graphql.Field{
+				Type:        domainType,
+				Description: "Add new domain",
+				Args: graphql.FieldConfigArgument{
+					"username": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"soa": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(soaInputType),
+					},
+				},
+				Resolve: s.addDomainMutator,
+			},
+
 			"login": &graphql.Field{
 				Type:        jwtTokensType,
 				Description: "Login to system",
@@ -395,9 +409,9 @@ func (s *Server) rootMutation() *graphql.Object {
 			},
 
 			"logout": &graphql.Field{
-				Type:        logoutType,
+				Type:        successType,
 				Description: "Logout of the system",
-				Resolve: s.logoutMutator,
+				Resolve:     s.logoutMutator,
 			},
 
 			"refreshAccessToken": &graphql.Field{
@@ -424,7 +438,7 @@ func (s *Server) rootQuery() *graphql.Object {
 				Description: "Get info about a domain",
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
-						Type: graphql.String,
+						Type: graphql.NewNonNull(graphql.String),
 					},
 				},
 				Resolve: s.domainQuery,
@@ -447,10 +461,7 @@ func (s *Server) rootQuery() *graphql.Object {
 				Description: "Get single user",
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
-						Type: graphql.String,
-					},
-					"username": &graphql.ArgumentConfig{
-						Type: graphql.String,
+						Type: graphql.NewNonNull(graphql.String),
 					},
 				},
 				Resolve: s.userQuery,

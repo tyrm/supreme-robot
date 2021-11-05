@@ -40,7 +40,7 @@ pipeline {
             }
           } else {
             docker.withRegistry('', registryCredential) {
-              dockerImage.push(env.BRANCH)
+              dockerImage.push(env.BRANCH_NAME)
             }
           }
         }

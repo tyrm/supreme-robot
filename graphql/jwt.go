@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/tyrm/supreme-robot/models"
 	"net/http"
-	"reflect"
 	"strings"
 	"time"
 )
@@ -132,8 +131,6 @@ func (s *Server) extractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 			return nil, err
 		}
 		groups := claims[ClaimGroups].([]interface{})
-		typeOf := reflect.TypeOf(groups)
-		logger.Tracef("groups: %v, %s", groups, typeOf)
 		groupIds := make([]uuid.UUID, len(groups))
 		for i, g := range groups {
 			gu, err := uuid.Parse(g.(string))

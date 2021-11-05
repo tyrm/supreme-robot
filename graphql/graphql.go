@@ -15,6 +15,30 @@ type postData struct {
 	Variables map[string]interface{} `json:"variables"`
 }
 
+// input types
+var soaInputType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "SOA",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"ttl": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Int),
+			},
+			"mbox": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"refresh": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Int),
+			},
+			"retry": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Int),
+			},
+			"expire": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.Int),
+			},
+		},
+	},
+)
+
 // types
 var domainType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Domain",
@@ -348,6 +372,9 @@ func (s *Server) rootMutation() *graphql.Object {
 				Args: graphql.FieldConfigArgument{
 					"domain": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
+					},
+					"soa": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(soaInputType),
 					},
 				},
 				Resolve: s.addDomainMutator,

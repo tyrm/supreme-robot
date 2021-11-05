@@ -21,6 +21,46 @@ type User struct {
 }
 
 // Model Functions
+func (u *User) AddGroup(c *Client, groups ...uuid.UUID) error {
+	// start transaction
+	tx, err := c.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	for _, group := range groups {
+		logger.Tracef("adding group %s to %s", GroupTitle[group], u.Username)
+
+		// add
+		_, err = tx.
+			Exec(`INSERT INTO "public"."group_membership"("user_id", "group_id")
+			VALUES ($1, $2)`, u.ID, group)
+
+		// rollback on error
+		if err != nil {
+			logger.Errorf("tx error: %s", err.Error())
+			rberr := tx.Rollback()
+			if rberr != nil {
+				logger.Errorf("rollback error: %s", rberr.Error())
+				// something went REALLY wrong
+				return rberr
+			}
+			return err
+		}
+
+		u.Groups = append(u.Groups, group)
+	}
+	// commit transaction
+	logger.Tracef("committing group memberships")
+	err = tx.Commit()
+	if err != nil {
+		logger.Errorf("commit transaction: %s", err.Error())
+		return err
+	}
+
+	return nil
+}
+
 func (u *User) CheckPasswordHash(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	return err == nil

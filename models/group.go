@@ -2,21 +2,36 @@ package models
 
 import "github.com/google/uuid"
 
-var GroupSuperadmin = uuid.Must(uuid.Parse("71df8f2b-f293-4fde-93b1-e40dbe5c97ea"))
+var GroupDnsAdmin = uuid.Must(uuid.Parse("0b1e0a88-37a4-48f0-8060-2814906fa9f7"))
+var GroupSuperAdmin = uuid.Must(uuid.Parse("71df8f2b-f293-4fde-93b1-e40dbe5c97ea"))
+var GroupUserAdmin = uuid.Must(uuid.Parse("fbc827a0-32db-4d71-b95e-632b414e7993"))
 
 var GroupTitle = map[uuid.UUID]string{
-	GroupSuperadmin: "SuperAdmin",
+	GroupDnsAdmin: "DNS Admin",
+	GroupSuperAdmin: "Super Admin",
+	GroupUserAdmin: "User Admin",
 }
 
 // groups of groups
-var GroupsAllAdmins = []uuid.UUID{
-	GroupSuperadmin,
+
+var GroupsAll = []uuid.UUID{
+	GroupDnsAdmin,
+	GroupSuperAdmin,
+	GroupUserAdmin,
 }
 
-var GroupsUserAdmin = []uuid.UUID{
-	GroupSuperadmin,
+var GroupsAllAdmins = []uuid.UUID{
+	GroupDnsAdmin,
+	GroupSuperAdmin,
+	GroupUserAdmin,
 }
 
 var GroupsDnsAdmin = []uuid.UUID{
-	GroupSuperadmin,
+	GroupDnsAdmin,
+	GroupSuperAdmin,
+}
+
+var GroupsUserAdmin = []uuid.UUID{
+	GroupSuperAdmin,
+	GroupUserAdmin,
 }

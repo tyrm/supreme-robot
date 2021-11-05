@@ -381,17 +381,20 @@ func (s *Server) rootMutation() *graphql.Object {
 			},
 
 			"addUser": &graphql.Field{
-				Type:        domainType,
-				Description: "Add new domain",
+				Type:        userType,
+				Description: "Add new user",
 				Args: graphql.FieldConfigArgument{
 					"username": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
-					"soa": &graphql.ArgumentConfig{
-						Type: graphql.NewNonNull(soaInputType),
+					"password": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"groups": &graphql.ArgumentConfig{
+						Type: graphql.NewList(graphql.String),
 					},
 				},
-				Resolve: s.addDomainMutator,
+				Resolve: s.addUserMutation,
 			},
 
 			"login": &graphql.Field{

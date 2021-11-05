@@ -3,20 +3,11 @@ pipeline {
     registry = "tyrm/supreme-robot-be"
     registryCredential = 'docker-io-tyrm'
     dockerImage = ''
-    gitDescribe = ''
   }
 
   agent any;
 
   stages {
-
-    stage('Setup') {
-      steps {
-        script {
-          gitDescribe = sh(script: "git describe", returnStdout: true).trim()
-        }
-      }
-    }
 
     stage('Test') {
       agent {
@@ -40,11 +31,17 @@ pipeline {
       }
     }
 
-    stage('Deploy our image') {
+    stage('Deploy image') {
       steps {
         script {
-          docker.withRegistry( '', registryCredential ) {
-            dockerImage.push(gitDescribe)
+          if (env.TAG_NAME) {
+            docker.withRegistry('', registryCredential) {
+              dockerImage.push(env.TAG_NAME)
+            }
+          } else {
+            docker.withRegistry('', registryCredential) {
+              dockerImage.push(env.BRANCH)
+            }
           }
         }
       }

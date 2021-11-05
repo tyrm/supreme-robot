@@ -21,14 +21,12 @@ pipeline {
     stage('Test') {
       agent {
         docker {
-          image 'gradle:6.7-jdk11'
-          // Run the container on the node specified at the top-level of the Pipeline, in the same workspace, rather than on a new node entirely:
-          reuseNode true
+          image 'golang:1.17'
         }
       }
       steps {
         script {
-          sh "docker run --rm -v $WORKSPACE:/app --workdir="/app" golang:1.17 go test ./..."
+          sh "go test ./..."
         }
       }
     }

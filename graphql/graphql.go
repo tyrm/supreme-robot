@@ -121,16 +121,14 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 				if r, ok := p.Source.(models.Record); ok {
 					if r.TTL.Valid {
 						return r.TTL.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				if r, ok := p.Source.(*models.Record); ok {
 					if r.TTL.Valid {
 						return r.TTL.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				return nil, nil
 			},
@@ -141,16 +139,14 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 				if r, ok := p.Source.(models.Record); ok {
 					if r.Priority.Valid {
 						return r.Priority.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				if r, ok := p.Source.(*models.Record); ok {
 					if r.Priority.Valid {
 						return r.Priority.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				return nil, nil
 			},
@@ -161,16 +157,14 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 				if r, ok := p.Source.(models.Record); ok {
 					if r.Port.Valid {
 						return r.Port.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				if r, ok := p.Source.(*models.Record); ok {
 					if r.Port.Valid {
 						return r.Port.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				return nil, nil
 			},
@@ -181,16 +175,14 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 				if r, ok := p.Source.(models.Record); ok {
 					if r.Weight.Valid {
 						return r.Weight.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				if r, ok := p.Source.(*models.Record); ok {
 					if r.Weight.Valid {
 						return r.Weight.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				return nil, nil
 			},
@@ -201,16 +193,14 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 				if r, ok := p.Source.(models.Record); ok {
 					if r.Refresh.Valid {
 						return r.Refresh.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				if r, ok := p.Source.(*models.Record); ok {
 					if r.Refresh.Valid {
 						return r.Refresh.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				return nil, nil
 			},
@@ -221,16 +211,14 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 				if r, ok := p.Source.(models.Record); ok {
 					if r.Retry.Valid {
 						return r.Retry.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				if r, ok := p.Source.(*models.Record); ok {
 					if r.Retry.Valid {
 						return r.Retry.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				return nil, nil
 			},
@@ -241,16 +229,14 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 				if r, ok := p.Source.(models.Record); ok {
 					if r.Expire.Valid {
 						return r.Expire.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				if r, ok := p.Source.(*models.Record); ok {
 					if r.Expire.Valid {
 						return r.Expire.Int32, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				return nil, nil
 			},
@@ -261,16 +247,14 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 				if r, ok := p.Source.(models.Record); ok {
 					if r.MBox.Valid {
 						return r.MBox.String, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				if r, ok := p.Source.(*models.Record); ok {
 					if r.MBox.Valid {
 						return r.MBox.String, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				return nil, nil
 			},
@@ -281,16 +265,14 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 				if r, ok := p.Source.(models.Record); ok {
 					if r.Tag.Valid {
 						return r.Tag.String, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				if r, ok := p.Source.(*models.Record); ok {
 					if r.Tag.Valid {
 						return r.Tag.String, nil
-					} else {
-						return nil, nil
 					}
+					return nil, nil
 				}
 				return nil, nil
 			},

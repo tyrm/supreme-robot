@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Server) addUserMutation(params graphql.ResolveParams) (interface{}, error) {
-	logger.Tracef("trying to add user")
+	logger.Debugf("trying to add user")
 
 	// acl
 	if params.Context.Value(MetadataKey) == nil { // did user authenticate
@@ -79,7 +79,7 @@ func (s *Server) addUserMutation(params graphql.ResolveParams) (interface{}, err
 }
 
 func (s *Server) meQuery(params graphql.ResolveParams) (interface{}, error) {
-	logger.Tracef("trying to get me")
+	logger.Debugf("trying to get me")
 
 	// acl
 	if params.Context.Value(MetadataKey) == nil { // did user authenticate
@@ -92,7 +92,7 @@ func (s *Server) meQuery(params graphql.ResolveParams) (interface{}, error) {
 }
 
 func (s *Server) userQuery(params graphql.ResolveParams) (interface{}, error) {
-	logger.Tracef("trying to get user")
+	logger.Debugf("trying to get user")
 
 	// marshall and cast the argument values
 	idStr, idOk := params.Args["id"].(string)

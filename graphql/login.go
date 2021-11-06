@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Server) loginMutator(params graphql.ResolveParams) (interface{}, error) {
-	logger.Tracef("trying to login")
+	logger.Debugf("trying to login")
 
 	// marshall and cast the argument values
 	username, _ := params.Args["username"].(string)
@@ -47,7 +47,7 @@ func (s *Server) loginMutator(params graphql.ResolveParams) (interface{}, error)
 }
 
 func (s *Server) logoutMutator(params graphql.ResolveParams) (interface{}, error) {
-	logger.Tracef("trying to logout")
+	logger.Debugf("trying to logout")
 
 	if params.Context.Value(MetadataKey) == nil {
 		return nil, ErrUnauthorized
@@ -66,7 +66,7 @@ func (s *Server) logoutMutator(params graphql.ResolveParams) (interface{}, error
 }
 
 func (s *Server) refreshAccessTokenMutator(params graphql.ResolveParams) (interface{}, error) {
-	logger.Tracef("trying to refresh token")
+	logger.Debugf("trying to refresh token")
 
 	// marshall and cast the argument values
 	refreshToken, _ := params.Args["refreshToken"].(string)

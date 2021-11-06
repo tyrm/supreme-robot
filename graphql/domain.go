@@ -8,13 +8,7 @@ import (
 )
 
 func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, error) {
-	logger.Tracef("trying to add domain")
-
-	// get id
-	domainStr, _ := params.Args["domain"].(string)
-	soaObj, _ := params.Args["soa"].(map[string]interface{})
-
-	logger.Tracef("%s: %v", domainStr, soaObj)
+	logger.Debugf("trying to add domain")
 
 	// did user authenticate
 	if params.Context.Value(MetadataKey) == nil {
@@ -23,11 +17,17 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 	metadata := params.Context.Value(MetadataKey).(*AccessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
+	// validate vars
+	domainStr, _ := params.Args["domain"].(string)
+	soaObj, _ := params.Args["soa"].(map[string]interface{})
+	logger.Tracef("domain: %s soa: %v", domainStr, soaObj)
+
+
 	return nil, nil
 }
 
 func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) {
-	logger.Tracef("trying to get domain")
+	logger.Debugf("trying to get domain")
 
 	// get id
 	idStr, _ := params.Args["id"].(string)
@@ -73,7 +73,7 @@ func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) 
 }
 
 func (s *Server) myDomainsQuery(params graphql.ResolveParams) (interface{}, error) {
-	logger.Tracef("trying to get my domains")
+	logger.Debugf("trying to get my domains")
 
 	// did user authenticate
 	if params.Context.Value(MetadataKey) == nil {

@@ -105,7 +105,7 @@ func (c *Client) ReadDomainByDomain(d string) (*Domain, error) {
 	var domain Domain
 	err := c.db.
 		Get(&domain, `SELECT id, domain, owner_id, created_at, updated_at
-		FROM public.domains WHERE domain = $1 AND deleted_at IS NULL;`, d)
+		FROM public.domains WHERE lower(domain) = lower($1) AND deleted_at IS NULL;`, d)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	} else if err != nil {

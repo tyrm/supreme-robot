@@ -51,6 +51,7 @@ func (u *User) AddGroup(c *Client, groups ...uuid.UUID) error {
 
 		u.Groups = append(u.Groups, group)
 	}
+
 	// commit transaction
 	logger.Tracef("committing group memberships")
 	err = tx.Commit()

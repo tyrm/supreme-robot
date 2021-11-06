@@ -1,6 +1,9 @@
 package graphql
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
 	"github.com/tyrm/supreme-robot/models"
@@ -17,13 +20,75 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 	metadata := params.Context.Value(MetadataKey).(*AccessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
-	// validate vars
-	domainStr, _ := params.Args["domain"].(string)
+	// collect vars
+	newDomain := models.Domain{
+		OwnerID: metadata.UserId,
+	}
+	newDomain.Domain, _ = params.Args["domain"].(string)
+
+	newSoaRecord := models.Record{
+		Name: "@",
+		Type: "SOA",
+		Value: s.primaryNS,
+	}
 	soaObj, _ := params.Args["soa"].(map[string]interface{})
-	logger.Tracef("domain: %s soa: %v", domainStr, soaObj)
+	mbox, _ := soaObj["mbox"].(string)
+	newSoaRecord.MBox = sql.NullString{
+		String: mbox,
+		Valid: true,
+	}
+	ttl, _ := soaObj["ttl"].(int)
+	newSoaRecord.TTL = sql.NullInt32{
+		Int32: int32(ttl),
+		Valid: true,
+	}
+	refresh, _ := soaObj["refresh"].(int)
+	newSoaRecord.Refresh = sql.NullInt32{
+		Int32: int32(refresh),
+		Valid: true,
+	}
+	retry, _ := soaObj["retry"].(int)
+	newSoaRecord.Retry = sql.NullInt32{
+		Int32: int32(retry),
+		Valid: true,
+	}
+	expire, _ := soaObj["expire"].(int)
+	newSoaRecord.Retry = sql.NullInt32{
+		Int32: int32(expire),
+		Valid: true,
+	}
+	logger.Tracef("domain: %s soa: %v", newDomain.Domain, soaObj)
 
+	// check for domain
+	d, err := s.db.ReadDomainByDomain(newDomain.Domain)
+	if err != nil {
+		logger.Errorf("db: %s", err.Error())
+		return nil, err
+	}
+	if d != nil {
+		return nil, errors.New(fmt.Sprintf("domain %s exists", newDomain.Domain))
+	}
 
-	return nil, nil
+	// add domain to database
+	err = newDomain.Create(s.db)
+	if err != nil {
+		logger.Errorf("db: %s", err.Error())
+		return nil, err
+	}
+
+	// add soa record
+	newSoaRecord.DomainID = newDomain.ID
+	err = newSoaRecord.Create(s.db)
+	if err != nil {
+		logger.Errorf("db: %s", err.Error())
+		return nil, err
+	}
+
+	domainList := make([]models.Record, 1)
+	domainList[0] = newSoaRecord
+	newDomain.Records = &domainList
+
+	return newDomain, nil
 }
 
 func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) {

@@ -71,7 +71,7 @@ func (u *User) CheckPasswordHash(password string) bool {
 	return err == nil
 }
 
-func (u *User) Create(c *Client) error {
+func (u *User) create(c *Client) error {
 	// encode password
 	var (
 		err          error
@@ -83,19 +83,11 @@ func (u *User) Create(c *Client) error {
 	}
 
 	// add to database
-	if u.ID == uuid.Nil {
-		// id doesn't exist
-		err = c.db.
-			QueryRowx(`INSERT INTO "public"."users"("username", "password")
+	err = c.db.
+		QueryRowx(`INSERT INTO "public"."users"("username", "password")
 			VALUES ($1, $2) RETURNING id, created_at, updated_at;`, u.Username, passwordHash).
-			Scan(&u.ID, &u.CreatedAt, &u.UpdatedAt)
-	} else {
-		// id exists
-		err = c.db.
-			QueryRowx(`INSERT INTO "public"."users"("id", "username", "password")
-			VALUES ($1, $2, $3) RETURNING created_at, updated_at;`, u.ID, u.Username, passwordHash).
-			Scan(&u.CreatedAt, &u.UpdatedAt)
-	}
+		Scan(&u.ID, &u.CreatedAt, &u.UpdatedAt)
+
 
 	return err
 }

@@ -24,28 +24,19 @@ type Domain struct {
 
 // Model Functions
 
-func (d *Domain) Create(c *Client) error {
+func (d *Domain) create(c *Client) error {
 	var err error
 
 	// add to database
-	if d.ID == uuid.Nil {
-		// id doesn't exist
-		err = c.db.
-			QueryRowx(`INSERT INTO "public"."domains"("domain", "owner_id")
+	err = c.db.
+		QueryRowx(`INSERT INTO "public"."domains"("domain", "owner_id")
 			VALUES ($1, $2) RETURNING id, created_at, updated_at;`, d.Domain, d.OwnerID).
-			Scan(&d.ID, &d.CreatedAt, &d.UpdatedAt)
-	} else {
-		// id exists
-		err = c.db.
-			QueryRowx(`INSERT INTO "public"."domains"("id", "domain", "owner_id")
-			VALUES ($1, $2, $3) RETURNING created_at, updated_at;`, d.ID, d.Domain, d.OwnerID).
-			Scan(&d.CreatedAt, &d.UpdatedAt)
-	}
+		Scan(&d.ID, &d.CreatedAt, &d.UpdatedAt)
 
 	return err
 }
 
-func (d *Domain) Delete(c *Client) error {
+func (d *Domain) delete(c *Client) error {
 	err := c.db.
 		QueryRowx(`UPDATE "public"."domains"
 		SET deleted_at=CURRENT_TIMESTAMP

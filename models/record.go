@@ -31,29 +31,17 @@ type Record struct {
 
 // Model Functions
 
-func (r *Record) Create(c *Client) error {
+func (r *Record) create(c *Client) error {
 	var err error
 
 	// add to database
-	if r.ID == uuid.Nil {
-		// id doesn't exist
-		err = c.db.
-			QueryRowx(`INSERT INTO "public"."domain_records"("name", "domain_id", "type", "value", "ttl",
+	err = c.db.
+		QueryRowx(`INSERT INTO "public"."domain_records"("name", "domain_id", "type", "value", "ttl",
             "priority", "port", "weight", "refresh", "retry", "expire", "mbox", "tag")
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id, created_at, updated_at;`,
-				r.Name, r.DomainID, r.Type, r.Value, r.TTL, r.Priority, r.Port, r.Weight, r.Refresh, r.Retry, r.Expire,
-				r.MBox, r.Tag).
-			Scan(&r.ID, &r.CreatedAt, &r.UpdatedAt)
-	} else {
-		// id exists
-		err = c.db.
-			QueryRowx(`INSERT INTO "public"."domain_records"("id", "name", "domain_id", "type", "value", "ttl",
-            "priority", "port", "weight", "refresh", "retry", "expire", "mbox", "tag")
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id, created_at, updated_at;`,
-				r.ID, r.Name, r.DomainID, r.Type, r.Value, r.TTL, r.Priority, r.Port, r.Weight, r.Refresh, r.Retry,
-				r.Expire, r.MBox, r.Tag).
-			Scan(&r.CreatedAt, &r.UpdatedAt)
-	}
+			r.Name, r.DomainID, r.Type, r.Value, r.TTL, r.Priority, r.Port, r.Weight, r.Refresh, r.Retry, r.Expire,
+			r.MBox, r.Tag).
+		Scan(&r.ID, &r.CreatedAt, &r.UpdatedAt)
 
 	return err
 }

@@ -15,9 +15,9 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 
 	// did user authenticate
 	if params.Context.Value(MetadataKey) == nil {
-		return nil, ErrUnauthorized
+		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*AccessDetails)
+	metadata := params.Context.Value(MetadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	// collect vars
@@ -91,9 +91,9 @@ func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) 
 
 	// did user authenticate
 	if params.Context.Value(MetadataKey) == nil {
-		return nil, ErrUnauthorized
+		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*AccessDetails)
+	metadata := params.Context.Value(MetadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	// do query
@@ -122,7 +122,7 @@ func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) 
 		return domain, nil
 	}
 
-	return nil, ErrUnauthorized
+	return nil, errUnauthorized
 }
 
 func (s *Server) myDomainsQuery(params graphql.ResolveParams) (interface{}, error) {
@@ -130,9 +130,9 @@ func (s *Server) myDomainsQuery(params graphql.ResolveParams) (interface{}, erro
 
 	// did user authenticate
 	if params.Context.Value(MetadataKey) == nil {
-		return nil, ErrUnauthorized
+		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*AccessDetails)
+	metadata := params.Context.Value(MetadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	// do query

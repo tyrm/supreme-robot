@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	ErrBadLogin            = errors.New("username/password combo invalid")
-	ErrRefreshExpired      = errors.New("refresh expired")
-	ErrUnauthorized        = errors.New("unauthorized")
-	ErrUnprocessableEntity = errors.New("unprocessable entity")
+	errBadLogin            = errors.New("username/password combo invalid")
+	errRefreshExpired      = errors.New("refresh expired")
+	errUnauthorized        = errors.New("unauthorized")
+	errUnprocessableEntity = errors.New("unprocessable entity")
 )
 
 func (s *Server) returnErrorPage(w http.ResponseWriter, status int, errStr string) {
@@ -29,16 +29,16 @@ func (s *Server) returnErrorPage(w http.ResponseWriter, status int, errStr strin
 	}
 }
 
-func (s *Server) MethodNotAllowedHandler() http.Handler {
+func (s *Server) methodNotAllowedHandler() http.Handler {
 	// wrap in middleware since middleware isn't run on error pages
-	return s.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return s.middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		s.returnErrorPage(w, http.StatusMethodNotAllowed, r.Method)
 	}))
 }
 
-func (s *Server) NotFoundHandler() http.Handler {
+func (s *Server) notFoundHandler() http.Handler {
 	// wrap in middleware since middleware isn't run on error pages
-	return s.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return s.middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		s.returnErrorPage(w, http.StatusNotFound, fmt.Sprintf("page not found: %s", r.URL.Path))
 	}))
 }

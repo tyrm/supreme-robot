@@ -1,17 +1,17 @@
 package redis
 
 var (
-	KeyBase = "sr:"
+	keyBase = "sr:"
 
-	KeySession = KeyBase + "session:"
-	KeyDomains = KeyBase + "domains"
-	KeyZones   = KeyBase + "dns:"
+	keySession = keyBase + "session:"
+	keyDomains = keyBase + "domains"
+	keyZones   = keyBase + "dns:"
 
-	KeyJwt          = KeyBase + "jwt:"
-	KeyJwtAccesses  = KeyJwt + "a:"
-	KeyJwtRefreshes = KeyJwt + "r:"
+	keyJwt          = keyBase + "jwt:"
+	keyJwtAccesses  = keyJwt + "a:"
+	keyJwtRefreshes = keyJwt + "r:"
 )
 
-func KeyZone(d string) string       { return KeyZones + d }
-func KeyJwtAccess(d string) string  { return KeyJwtAccesses + d }
-func KeyJwtRefresh(d string) string { return KeyJwtRefreshes + d }
+func keyZone(d string) string       { return keyZones + d }
+func keyJwtAccess(d string) string  { return keyJwtAccesses + d }
+func keyJwtRefresh(d string) string { return keyJwtRefreshes + d }

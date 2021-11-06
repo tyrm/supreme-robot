@@ -7,6 +7,7 @@ import (
 	redisCon "github.com/gomodule/redigo/redis"
 )
 
+// Client is a redis clint
 type Client struct {
 	redisAddress  string
 	redisDB       int
@@ -15,8 +16,9 @@ type Client struct {
 	db *redisCon.Pool
 }
 
-var ErrCantConnect = errors.New("can't connect to redis")
+var errCantConnect = errors.New("can't connect to redis")
 
+// NewClient creates a new redis client.
 func NewClient(address string, db int, password string) (*Client, error) {
 	client := Client{
 		redisAddress:  address,

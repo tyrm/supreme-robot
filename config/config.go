@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// Config hold config collected from the environment.
 type Config struct {
 	AccessSecret     string
 	AccessExpiration time.Duration
@@ -33,7 +34,8 @@ type Config struct {
 	RefreshExpiration time.Duration
 }
 
-func CollectStartupConfig(requiredVars []string) (*Config, error) {
+// CollectConfig will gather configuration from env vars and return a Config object
+func CollectConfig(requiredVars []string) (*Config, error) {
 	var config Config
 
 	// ACCESS_SECRET

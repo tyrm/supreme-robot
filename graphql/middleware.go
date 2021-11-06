@@ -7,29 +7,29 @@ import (
 
 const layoutCombined = "02/Jan/2006:15:04:05 -0700"
 
-type ResponseWriterX struct {
+type responseWriterX struct {
 	http.ResponseWriter
 	status     int
 	bodyLength int
 }
 
-func (w *ResponseWriterX) Write(b []byte) (n int, err error) {
+func (w *responseWriterX) Write(b []byte) (n int, err error) {
 	n, err = w.ResponseWriter.Write(b)
 	w.bodyLength += n
 	return
 }
 
-func (r *ResponseWriterX) WriteHeader(status int) {
-	r.ResponseWriter.WriteHeader(status)
-	r.status = status
+func (w *responseWriterX) WriteHeader(status int) {
+	w.ResponseWriter.WriteHeader(status)
+	w.status = status
 	return
 }
 
-func (s *Server) Middleware(next http.Handler) http.Handler {
+func (s *Server) middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		wx := &ResponseWriterX{
+		wx := &responseWriterX{
 			ResponseWriter: w,
 			status:         200,
 			bodyLength:     0,

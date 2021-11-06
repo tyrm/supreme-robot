@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// Server is a GraphQL api server
 type Server struct {
 	// data stuff
 	db        *models.Client
@@ -28,6 +29,7 @@ type Server struct {
 	server            *http.Server
 }
 
+// NewServer will create a new GraphQL server
 func NewServer(cfg *config.Config, s *scheduler.Client, d *models.Client, r *redis.Client) (*Server, error) {
 	server := Server{
 		accessExpiration:  cfg.AccessExpiration,
@@ -42,17 +44,18 @@ func NewServer(cfg *config.Config, s *scheduler.Client, d *models.Client, r *red
 
 	// Setup Router
 	server.router = mux.NewRouter()
-	server.router.Use(server.Middleware)
+	server.router.Use(server.middleware)
 
 	// Error Pages
-	server.router.NotFoundHandler = server.NotFoundHandler()
-	server.router.MethodNotAllowedHandler = server.MethodNotAllowedHandler()
+	server.router.NotFoundHandler = server.notFoundHandler()
+	server.router.MethodNotAllowedHandler = server.methodNotAllowedHandler()
 
 	server.router.HandleFunc("/graphql", server.graphqlHandler).Methods("POST")
 
 	return &server, nil
 }
 
+// Close will cleanly stop the server.
 func (s *Server) Close() {
 	err := s.server.Close()
 	if err != nil {
@@ -60,6 +63,7 @@ func (s *Server) Close() {
 	}
 }
 
+// ListenAndServe starts the web server.
 func (s *Server) ListenAndServe() error {
 	s.server = &http.Server{
 		Handler:      s.router,

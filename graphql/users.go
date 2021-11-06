@@ -13,15 +13,15 @@ func (s *Server) addUserMutation(params graphql.ResolveParams) (interface{}, err
 
 	// acl
 	if params.Context.Value(MetadataKey) == nil { // did user authenticate
-		return nil, ErrUnauthorized
+		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*AccessDetails)
+	metadata := params.Context.Value(MetadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	if !util.ContainsOneOfUUIDs(&models.GroupsUserAdmin, &metadata.Groups) {
 		// user is not user admin
 		logger.Tracef("user is not user admin")
-		return nil, ErrUnauthorized
+		return nil, errUnauthorized
 	}
 
 	// marshall and cast the argument values
@@ -83,9 +83,9 @@ func (s *Server) meQuery(params graphql.ResolveParams) (interface{}, error) {
 
 	// acl
 	if params.Context.Value(MetadataKey) == nil { // did user authenticate
-		return nil, ErrUnauthorized
+		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*AccessDetails)
+	metadata := params.Context.Value(MetadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	return s.db.ReadUser(metadata.UserId)
@@ -108,15 +108,15 @@ func (s *Server) userQuery(params graphql.ResolveParams) (interface{}, error) {
 
 	// acl
 	if params.Context.Value(MetadataKey) == nil { // did user authenticate
-		return nil, ErrUnauthorized
+		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*AccessDetails)
+	metadata := params.Context.Value(MetadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	if !util.ContainsOneOfUUIDs(&models.GroupsUserAdmin, &metadata.Groups) {
 		// user is not user admin
 		logger.Tracef("user is not user admin")
-		return nil, ErrUnauthorized
+		return nil, errUnauthorized
 	}
 
 	// find user

@@ -5,18 +5,19 @@ import (
 	redisCon "github.com/gomodule/redigo/redis"
 )
 
+// AddDomain will add a domain name to the list of domains.
 func (c *Client) AddDomain(d string) error {
 	// get connection
 	conn := c.db.Get()
 	if conn == nil {
 		fmt.Println("error connecting to redis")
-		return ErrCantConnect
+		return errCantConnect
 	}
 	defer conn.Close()
 
 	// add key
 	var err error
-	_, err = conn.Do("SADD", KeyDomains, d)
+	_, err = conn.Do("SADD", keyDomains, d)
 	if err != nil {
 		return err
 	}
@@ -24,18 +25,19 @@ func (c *Client) AddDomain(d string) error {
 	return nil
 }
 
+// RemoveDomain will remove a domain name from the list of domains.
 func (c *Client) RemoveDomain(d string) error {
 	// get connection
 	conn := c.db.Get()
 	if conn == nil {
 		fmt.Println("error connecting to redis")
-		return ErrCantConnect
+		return errCantConnect
 	}
 	defer conn.Close()
 
 	// remove key
 	var err error
-	_, err = conn.Do("SREM", KeyDomains, d)
+	_, err = conn.Do("SREM", keyDomains, d)
 	if err != nil {
 		return err
 	}
@@ -43,12 +45,13 @@ func (c *Client) RemoveDomain(d string) error {
 	return nil
 }
 
+// GetDomains returns all domains.
 func (c *Client) GetDomains() (*[]string, error) {
 	// get connection
 	conn := c.db.Get()
 	if conn == nil {
 		fmt.Println("error connecting to redis")
-		return nil, ErrCantConnect
+		return nil, errCantConnect
 	}
 	defer conn.Close()
 
@@ -58,7 +61,7 @@ func (c *Client) GetDomains() (*[]string, error) {
 		vals  []string
 	)
 
-	reply, err = conn.Do("SMEMBERS", KeyDomains)
+	reply, err = conn.Do("SMEMBERS", keyDomains)
 	if err != nil {
 		return nil, err
 	}

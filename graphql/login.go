@@ -21,12 +21,12 @@ func (s *Server) loginMutator(params graphql.ResolveParams) (interface{}, error)
 		return nil, err
 	}
 	if user == nil {
-		return nil, ErrBadLogin
+		return nil, errBadLogin
 	}
 
 	// check password validity
 	if !user.CheckPasswordHash(password) {
-		return nil, ErrBadLogin
+		return nil, errBadLogin
 	}
 
 	// create jwt
@@ -50,9 +50,9 @@ func (s *Server) logoutMutator(params graphql.ResolveParams) (interface{}, error
 	logger.Debugf("trying to logout")
 
 	if params.Context.Value(MetadataKey) == nil {
-		return nil, ErrUnauthorized
+		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*AccessDetails)
+	metadata := params.Context.Value(MetadataKey).(*accessDetails)
 
 	err := s.deleteTokens(metadata)
 	if err != nil {
@@ -87,21 +87,21 @@ func (s *Server) refreshAccessTokenMutator(params graphql.ResolveParams) (interf
 	}
 	//is token valid?
 	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
-		return nil, ErrUnauthorized
+		return nil, errUnauthorized
 	}
 
 	//Since token is valid, get the uuid:
 	claims, ok := token.Claims.(jwt.MapClaims) //the token claims should conform to MapClaims
 	if ok && token.Valid {
 		// read key data
-		refreshString, ok := claims[ClaimRefreshId].(string) //convert the interface to string
+		refreshString, ok := claims[claimRefreshId].(string) //convert the interface to string
 		if !ok {
-			logger.Tracef("claim %s missing", ClaimRefreshId)
-			return nil, ErrUnprocessableEntity
+			logger.Tracef("claim %s missing", claimRefreshId)
+			return nil, errUnprocessableEntity
 		}
-		userId, err := uuid.Parse(claims[ClaimUserId].(string))
+		userId, err := uuid.Parse(claims[claimUserId].(string))
 		if err != nil {
-			logger.Tracef("%s is an invalid uuid: %s", claims[ClaimUserId].(string), err.Error())
+			logger.Tracef("%s is an invalid uuid: %s", claims[claimUserId].(string), err.Error())
 			return nil, err
 		}
 
@@ -112,11 +112,11 @@ func (s *Server) refreshAccessTokenMutator(params graphql.ResolveParams) (interf
 			return nil, err
 		}
 		if user == nil {
-			return nil, ErrUnauthorized
+			return nil, errUnauthorized
 		}
 
 		// Delete the previous Refresh Token
-		deleted, err := s.redis.DelRefreshToken(refreshString)
+		deleted, err := s.redis.DeleteRefreshToken(refreshString)
 		if err != nil {
 			logger.Errorf("redis error: %s", err.Error())
 			return nil, err
@@ -144,5 +144,5 @@ func (s *Server) refreshAccessTokenMutator(params graphql.ResolveParams) (interf
 		return ts, nil
 	}
 
-	return nil, ErrRefreshExpired
+	return nil, errRefreshExpired
 }

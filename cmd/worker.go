@@ -31,7 +31,7 @@ var workerCmd = &cobra.Command{
 			"REDIS_DNS_ADDRESS",
 			"SECRET",
 		}
-		c, err := config.CollectStartupConfig(requiredVars)
+		c, err := config.CollectConfig(requiredVars)
 		if err != nil {
 			log.Fatalf("error gathering configuration: %s", err.Error())
 			return

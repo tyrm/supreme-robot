@@ -1,5 +1,6 @@
 package util
 
+// FastPopString will remove the first found string from group of strings without preserving the order
 func FastPopString(slice []string, elem string) []string {
 	// look for elem in slice
 	index := -1

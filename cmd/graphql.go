@@ -34,7 +34,7 @@ var graphqlCmd = &cobra.Command{
 			"REDIS_WEBAPP_ADDRESS",
 			"REFRESH_SECRET",
 		}
-		c, err := config.CollectStartupConfig(requiredVars)
+		c, err := config.CollectConfig(requiredVars)
 		if err != nil {
 			log.Fatalf("error gathering configuration: %s", err.Error())
 			return

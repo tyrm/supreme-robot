@@ -11,10 +11,12 @@ import (
 
 var logger = loggo.GetLogger("models")
 
+// Client is a database client.
 type Client struct {
 	db *sqlx.DB
 }
 
+// NewClient creates a new models Client from Config
 func NewClient(cfg *config.Config) (*Client, error) {
 	client, err := sqlx.Connect("postgres", cfg.PostgresDsn)
 	if err != nil {

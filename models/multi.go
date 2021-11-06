@@ -1,5 +1,6 @@
 package models
 
+// CreateDomainWRecords will create a domain and it's records in a single database transaction.
 func (c *Client) CreateDomainWRecords(domain *Domain, records ...*Record) error {
 	// start transaction
 	logger.Tracef("starting transaction")

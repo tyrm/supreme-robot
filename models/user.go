@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// User is used to login and keep authentication information
 type User struct {
 	Username string `db:"username" json:"username"`
 	Password string `db:"password" json:"-"`
@@ -22,6 +23,7 @@ type User struct {
 
 // Model Functions
 
+// AddGroup will add a group to the user and update update the database
 func (u *User) AddGroup(c *Client, groups ...uuid.UUID) error {
 	// start transaction
 	tx, err := c.db.Begin()
@@ -63,6 +65,7 @@ func (u *User) AddGroup(c *Client, groups ...uuid.UUID) error {
 	return nil
 }
 
+// CheckPasswordHash is used to validate that a given password matches the stored hash
 func (u *User) CheckPasswordHash(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	return err == nil
@@ -97,10 +100,12 @@ func (u *User) Create(c *Client) error {
 	return err
 }
 
-func (u *User) IsMemberOfGroup(groups *[]uuid.UUID) bool {
-	return util.ContainsOneOfUUIDs(&u.Groups, groups)
+// IsMemberOfGroup checks if a user is in a given set of groups
+func (u *User) IsMemberOfGroup(groups ...uuid.UUID) bool {
+	return util.ContainsOneOfUUIDs(&u.Groups, &groups)
 }
 
+// SetPassword updates the user object's password hash
 func (u *User) SetPassword(password string) error {
 	password, err := hashPassword(password)
 	if err != nil {
@@ -113,6 +118,7 @@ func (u *User) SetPassword(password string) error {
 
 // Client Functions
 
+// ReadUser will retrieve a user by their uuid from the database
 func (c *Client) ReadUser(id uuid.UUID) (*User, error) {
 	var user User
 	err := c.db.
@@ -136,6 +142,7 @@ func (c *Client) ReadUser(id uuid.UUID) (*User, error) {
 	return &user, nil
 }
 
+// ReadUserByUsername will read a user by username from the database
 func (c *Client) ReadUserByUsername(username string) (*User, error) {
 	var user User
 	err := c.db.
@@ -159,6 +166,7 @@ func (c *Client) ReadUserByUsername(username string) (*User, error) {
 	return &user, nil
 }
 
+// ReadUsersPage can retrieve a sorted and paginated list of users from the database
 func (c *Client) ReadUsersPage(index, count int, orderBy string, asc bool) (*[]User, error) {
 	var userList []User
 

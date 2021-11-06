@@ -29,6 +29,7 @@ type Record struct {
 }
 
 // Model Functions
+
 func (r *Record) Create(c *Client) error {
 	var err error
 
@@ -55,11 +56,15 @@ func (r *Record) Create(c *Client) error {
 
 	return err
 }
+
+// Domain will retrieve the domain associated with the Record
 func (r *Record) Domain(c *Client) (*Domain, error) {
 	return c.ReadDomain(r.DomainID)
 }
 
 // Client Functions
+
+// ReadRecord will read a record from the database by uuid.
 func (c *Client) ReadRecord(id uuid.UUID) (*Record, error) {
 	var record Record
 	err := c.db.
@@ -75,6 +80,7 @@ func (c *Client) ReadRecord(id uuid.UUID) (*Record, error) {
 	return &record, nil
 }
 
+// ReadRecordsForDomain will read all records for a given domain
 func (c *Client) ReadRecordsForDomain(domain *Domain, orderBy string, asc bool) (*[]Record, error) {
 	var recordList []Record
 
@@ -108,6 +114,7 @@ func (c *Client) ReadRecordsForDomain(domain *Domain, orderBy string, asc bool) 
 	return &recordList, nil
 }
 
+// ReadRecordsPageForDomain will read a sorted and paginated list of records for a given domain
 func (c *Client) ReadRecordsPageForDomain(domain *Domain, index, count int, orderBy string, asc bool) (*[]Record, error) {
 	var recordList []Record
 

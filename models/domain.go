@@ -10,6 +10,7 @@ import (
 
 var reValidDomain = regexp.MustCompile("^[a-zA-Z0-9][a-zA-Z0-9-.]*\\.$")
 
+// Domain represents a domain name to be served
 type Domain struct {
 	Domain  string    `db:"domain" json:"domain"`
 	OwnerID uuid.UUID `db:"owner_id" json:"-"`
@@ -57,6 +58,7 @@ func (d *Domain) Delete(c *Client) error {
 	return err
 }
 
+// GetRecords retrieves the Records for the domain from the database
 func (d *Domain) GetRecords(c *Client) (*[]Record, error) {
 	records, err := c.ReadRecordsForDomain(d, "name", true)
 	if err != nil {
@@ -65,6 +67,7 @@ func (d *Domain) GetRecords(c *Client) (*[]Record, error) {
 	return records, nil
 }
 
+// ValidateDomain checks that the domain name doesn't contain any invalid values
 func (d *Domain) ValidateDomain() bool {
 	return reValidDomain.MatchString(d.Domain)
 }
@@ -101,6 +104,7 @@ func (c *Client) ReadDomainZ(id uuid.UUID) (*Domain, error) {
 	return &domain, nil
 }
 
+// ReadDomainByDomain will read a domain from the database by domain name.
 func (c *Client) ReadDomainByDomain(d string) (*Domain, error) {
 	var domain Domain
 	err := c.db.
@@ -115,6 +119,7 @@ func (c *Client) ReadDomainByDomain(d string) (*Domain, error) {
 	return &domain, nil
 }
 
+// ReadDomainsForUser will read all domains for a given user.
 func (c *Client) ReadDomainsForUser(userId uuid.UUID) (*[]Domain, error) {
 	var domains []Domain
 	err := c.db.
@@ -129,6 +134,7 @@ func (c *Client) ReadDomainsForUser(userId uuid.UUID) (*[]Domain, error) {
 	return &domains, nil
 }
 
+// ReadDomainsPageForUser will read a sorted and paginated list of domains for a given user.
 func (c *Client) ReadDomainsPageForUser(user *User, index, count int, orderBy string, asc bool) (*[]Domain, error) {
 	var domainList []Domain
 

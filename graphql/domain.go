@@ -2,7 +2,6 @@ package graphql
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
@@ -66,7 +65,7 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 		return nil, err
 	}
 	if d != nil {
-		return nil, errors.New(fmt.Sprintf("domain %s exists", newDomain.Domain))
+		return nil, fmt.Errorf("domain %s exists", newDomain.Domain)
 	}
 
 	// add domain to database

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"github.com/tyrm/supreme-robot/util"
 	"os"
@@ -140,7 +139,7 @@ func CollectConfig(requiredVars []string) (*Config, error) {
 
 	// Validation
 	if len(requiredVars) > 0 {
-		return nil, errors.New(fmt.Sprintf("Environment variables missing: %v", requiredVars))
+		return nil, fmt.Errorf("Environment variables missing: %v", requiredVars)
 	}
 
 	return &config, nil

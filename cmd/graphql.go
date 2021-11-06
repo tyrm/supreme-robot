@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/juju/loggo"
 	"github.com/juju/loggo/loggocolor"
@@ -91,7 +90,7 @@ var graphqlCmd = &cobra.Command{
 		go func(errChan chan error) {
 			err := ws.ListenAndServe()
 			if err != nil {
-				errChan <- errors.New(fmt.Sprintf("webapp: %s", err.Error()))
+				errChan <- fmt.Errorf("webapp: %s", err.Error())
 			}
 		}(errChan)
 		defer ws.Close()

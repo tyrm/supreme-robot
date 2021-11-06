@@ -52,7 +52,7 @@ var workerCmd = &cobra.Command{
 		logger.Infof("starting worker process")
 
 		// create redis client
-		rc, err := redis.NewClient(c.RedisDnsAddress, c.RedisDnsDB, c.RedisDnsPassword)
+		rc, err := redis.NewClient(c.RedisDNSAddress, c.RedisDNSDB, c.RedisDNSPassword)
 		if err != nil {
 			logger.Errorf("new redis client: %s", err.Error())
 			return

@@ -88,7 +88,7 @@ func (s *Server) meQuery(params graphql.ResolveParams) (interface{}, error) {
 	metadata := params.Context.Value(metadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
-	return s.db.ReadUser(metadata.UserId)
+	return s.db.ReadUser(metadata.UserID)
 }
 
 func (s *Server) userQuery(params graphql.ResolveParams) (interface{}, error) {

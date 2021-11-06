@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// Record is a dns record.
 type Record struct {
 	Name     string    `db:"name"`
 	DomainID uuid.UUID `db:"domain_id"`

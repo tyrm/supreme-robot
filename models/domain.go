@@ -120,11 +120,11 @@ func (c *Client) ReadDomainByDomain(d string) (*Domain, error) {
 }
 
 // ReadDomainsForUser will read all domains for a given user.
-func (c *Client) ReadDomainsForUser(userId uuid.UUID) (*[]Domain, error) {
+func (c *Client) ReadDomainsForUser(userID uuid.UUID) (*[]Domain, error) {
 	var domains []Domain
 	err := c.db.
 		Select(&domains, `SELECT id, domain, owner_id, created_at, updated_at
-		FROM public.domains WHERE owner_id = $1 AND deleted_at IS NULL;`, userId)
+		FROM public.domains WHERE owner_id = $1 AND deleted_at IS NULL;`, userID)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	} else if err != nil {

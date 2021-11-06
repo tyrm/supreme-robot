@@ -21,7 +21,7 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 
 	// collect vars
 	newDomain := models.Domain{
-		OwnerID: metadata.UserId,
+		OwnerID: metadata.UserID,
 	}
 	newDomain.Domain, _ = params.Args["domain"].(string)
 
@@ -112,12 +112,12 @@ func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) 
 	}
 
 	// does user own domain
-	if domain.OwnerID == metadata.UserId {
+	if domain.OwnerID == metadata.UserID {
 		return domain, nil
 	}
 
 	// is user a dns admin
-	if util.ContainsOneOfUUIDs(&metadata.Groups, &models.GroupsDnsAdmin) {
+	if util.ContainsOneOfUUIDs(&metadata.Groups, &models.GroupsDNSAdmin) {
 		return domain, nil
 	}
 
@@ -135,7 +135,7 @@ func (s *Server) myDomainsQuery(params graphql.ResolveParams) (interface{}, erro
 	logger.Tracef("metadata: %v", metadata)
 
 	// do query
-	domains, err := s.db.ReadDomainsForUser(metadata.UserId)
+	domains, err := s.db.ReadDomainsForUser(metadata.UserID)
 	if err != nil {
 		logger.Errorf("db error: %s", err.Error())
 		return nil, err

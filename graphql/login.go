@@ -94,19 +94,19 @@ func (s *Server) refreshAccessTokenMutator(params graphql.ResolveParams) (interf
 	claims, ok := token.Claims.(jwt.MapClaims) //the token claims should conform to MapClaims
 	if ok && token.Valid {
 		// read key data
-		refreshString, ok := claims[claimRefreshId].(string) //convert the interface to string
+		refreshString, ok := claims[claimRefreshID].(string) //convert the interface to string
 		if !ok {
-			logger.Tracef("claim %s missing", claimRefreshId)
+			logger.Tracef("claim %s missing", claimRefreshID)
 			return nil, errUnprocessableEntity
 		}
-		userId, err := uuid.Parse(claims[claimUserId].(string))
+		userID, err := uuid.Parse(claims[claimUserID].(string))
 		if err != nil {
-			logger.Tracef("%s is an invalid uuid: %s", claims[claimUserId].(string), err.Error())
+			logger.Tracef("%s is an invalid uuid: %s", claims[claimUserID].(string), err.Error())
 			return nil, err
 		}
 
 		// get user
-		user, err := s.db.ReadUser(userId)
+		user, err := s.db.ReadUser(userID)
 		if err != nil {
 			logger.Errorf("getting user: %s", err.Error())
 			return nil, err
@@ -135,7 +135,7 @@ func (s *Server) refreshAccessTokenMutator(params graphql.ResolveParams) (interf
 		}
 
 		// save the tokens metadata to redis
-		saveErr := s.createAuth(userId, ts)
+		saveErr := s.createAuth(userID, ts)
 		if saveErr != nil {
 			logger.Tracef("error saving token: %s", createErr)
 			return nil, saveErr

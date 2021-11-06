@@ -12,21 +12,21 @@ import (
 )
 
 const claimGroups = "groups"
-const claimRefreshId = "refresh_uuid"
-const claimUserId = "user_uuid"
+const claimRefreshID = "refresh_uuid"
+const claimUserID = "user_uuid"
 
 type accessDetails struct {
-	AccessId uuid.UUID
-	UserId   uuid.UUID
+	AccessID uuid.UUID
+	UserID   uuid.UUID
 	Groups   []uuid.UUID
 }
 
 type tokenDetails struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
-	AccessUuid   uuid.UUID
-	RefreshUuid  string
-	AtExpires    int64
+	AccessUUID  uuid.UUID
+	RefreshUUID string
+	AtExpires   int64
 	RtExpires    int64
 }
 
@@ -35,12 +35,12 @@ func (s *Server) createAuth(userid uuid.UUID, td *tokenDetails) error {
 	rt := time.Unix(td.RtExpires, 0)
 	now := time.Now()
 
-	errAccess := s.redis.SetAccessToken(td.AccessUuid, userid, at.Sub(now))
+	errAccess := s.redis.SetAccessToken(td.AccessUUID, userid, at.Sub(now))
 	if errAccess != nil {
 		logger.Debugf("can't save access token: %s", errAccess.Error())
 		return errAccess
 	}
-	errRefresh := s.redis.SetRefreshToken(td.RefreshUuid, userid, rt.Sub(now))
+	errRefresh := s.redis.SetRefreshToken(td.RefreshUUID, userid, rt.Sub(now))
 	if errRefresh != nil {
 		logger.Debugf("can't save refresh token: %s", errRefresh.Error())
 		return errRefresh
@@ -51,18 +51,18 @@ func (s *Server) createAuth(userid uuid.UUID, td *tokenDetails) error {
 func (s *Server) createToken(user *models.User) (*tokenDetails, error) {
 	td := &tokenDetails{}
 	td.AtExpires = time.Now().Add(s.accessExpiration).Unix()
-	td.AccessUuid = uuid.New()
+	td.AccessUUID = uuid.New()
 
 	td.RtExpires = time.Now().Add(s.refreshExpiration).Unix()
-	td.RefreshUuid = td.AccessUuid.String() + "++" + user.ID.String()
+	td.RefreshUUID = td.AccessUUID.String() + "++" + user.ID.String()
 
 	var err error
 
 	//Creating Access Token
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
-	atClaims["access_uuid"] = td.AccessUuid
-	atClaims[claimUserId] = user.ID
+	atClaims["access_uuid"] = td.AccessUUID
+	atClaims[claimUserID] = user.ID
 	atClaims["exp"] = td.AtExpires
 	atClaims[claimGroups] = user.Groups
 	at := jwt.NewWithClaims(jwt.SigningMethodHS512, atClaims)
@@ -73,8 +73,8 @@ func (s *Server) createToken(user *models.User) (*tokenDetails, error) {
 
 	//Creating Refresh Token
 	rtClaims := jwt.MapClaims{}
-	rtClaims[claimRefreshId] = td.RefreshUuid
-	rtClaims[claimUserId] = user.ID
+	rtClaims[claimRefreshID] = td.RefreshUUID
+	rtClaims[claimUserID] = user.ID
 	rtClaims["exp"] = td.RtExpires
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS512, rtClaims)
 	td.RefreshToken, err = rt.SignedString(s.refreshSecret)
@@ -86,14 +86,14 @@ func (s *Server) createToken(user *models.User) (*tokenDetails, error) {
 
 func (s *Server) deleteTokens(authD *accessDetails) error {
 	//get the refresh uuid
-	refreshUuid := fmt.Sprintf("%s++%s", authD.AccessId, authD.UserId)
+	refreshUUID := fmt.Sprintf("%s++%s", authD.AccessID, authD.UserID)
 	//delete access token
-	deletedAt, err := s.redis.DeleteAccessToken(authD.AccessId)
+	deletedAt, err := s.redis.DeleteAccessToken(authD.AccessID)
 	if err != nil {
 		return err
 	}
 	//delete refresh token
-	deletedRt, err := s.redis.DeleteRefreshToken(refreshUuid)
+	deletedRt, err := s.redis.DeleteRefreshToken(refreshUUID)
 	if err != nil {
 		return err
 	}
@@ -122,11 +122,11 @@ func (s *Server) extractTokenMetadata(r *http.Request) (*accessDetails, error) {
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		accessId, err := uuid.Parse(claims["access_uuid"].(string))
+		accessID, err := uuid.Parse(claims["access_uuid"].(string))
 		if err != nil {
 			return nil, err
 		}
-		userId, err := uuid.Parse(claims[claimUserId].(string))
+		userID, err := uuid.Parse(claims[claimUserID].(string))
 		if err != nil {
 			return nil, err
 		}
@@ -142,20 +142,20 @@ func (s *Server) extractTokenMetadata(r *http.Request) (*accessDetails, error) {
 		}
 
 		return &accessDetails{
-			AccessId: accessId,
+			AccessID: accessID,
 			Groups:   groupIds,
-			UserId:   userId,
+			UserID:   userID,
 		}, nil
 	}
 	return nil, err
 }
 
 func (s *Server) fetchAuth(authD *accessDetails) (uuid.UUID, error) {
-	userid, err := s.redis.GetAccessToken(authD.AccessId)
+	userid, err := s.redis.GetAccessToken(authD.AccessID)
 	if err != nil {
 		return uuid.Nil, err
 	}
-	if authD.UserId != userid {
+	if authD.UserID != userid {
 		return uuid.Nil, errors.New("unauthorized")
 	}
 	return userid, nil

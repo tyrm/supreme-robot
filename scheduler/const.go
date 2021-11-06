@@ -1,4 +1,4 @@
 package scheduler
 
-// QueueDns is the queue name of dns change functions
-const QueueDns = "dns"
+// QueueDNS is the queue name of dns change functions
+const QueueDNS = "dns"

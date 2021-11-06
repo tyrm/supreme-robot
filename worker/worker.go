@@ -14,11 +14,13 @@ type Worker struct {
 	redis   *redis.Client
 }
 
+// Run runs the worker
 func (w *Worker) Run() error {
 	w.manager.Run()
 	return nil
 }
 
+// NewWorker creates a new faktory worker
 func NewWorker(r *redis.Client, d *models.Client) (*Worker, error) {
 	worker := Worker{
 		db:      d,
@@ -26,7 +28,7 @@ func NewWorker(r *redis.Client, d *models.Client) (*Worker, error) {
 		redis:   r,
 	}
 
-	worker.manager.ProcessStrictPriorityQueues("default", scheduler.QueueDns)
+	worker.manager.ProcessStrictPriorityQueues("default", scheduler.QueueDNS)
 
 	worker.manager.Register("AddDomain", worker.addDomainHandler)
 	worker.manager.Register("RemoveDomain", worker.removeDomainHandler)

@@ -22,9 +22,9 @@ type Config struct {
 
 	PrimaryNS string
 
-	RedisDnsAddress     string
-	RedisDnsDB          int
-	RedisDnsPassword    string
+	RedisDNSAddress     string
+	RedisDNSDB          int
+	RedisDNSPassword    string
 	RedisWebappAddress  string
 	RedisWebappDB       int
 	RedisWebappPassword string
@@ -81,24 +81,24 @@ func CollectConfig(requiredVars []string) (*Config, error) {
 	}
 
 	// REDIS_DNS_ADDRESS
-	config.RedisDnsAddress = os.Getenv("REDIS_DNS_ADDRESS")
-	if config.RedisDnsAddress != "" {
+	config.RedisDNSAddress = os.Getenv("REDIS_DNS_ADDRESS")
+	if config.RedisDNSAddress != "" {
 		requiredVars = util.FastPopString(requiredVars, "REDIS_DNS_ADDRESS")
 	}
 
 	// REDIS_DNS_DB
 	if os.Getenv("REDIS_DNS_DB") == "" {
-		config.RedisDnsDB = 0
+		config.RedisDNSDB = 0
 	} else {
 		var err error
-		config.RedisDnsDB, err = strconv.Atoi(os.Getenv("REDIS_DNS_DB"))
+		config.RedisDNSDB, err = strconv.Atoi(os.Getenv("REDIS_DNS_DB"))
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	// REDIS_DNS_PASSWORD
-	config.RedisDnsPassword = os.Getenv("REDIS_DNS_PASSWORD")
+	config.RedisDNSPassword = os.Getenv("REDIS_DNS_PASSWORD")
 
 	// REDIS_WEBAPP_ADDRESS
 	config.RedisWebappAddress = os.Getenv("REDIS_WEBAPP_ADDRESS")

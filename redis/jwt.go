@@ -7,7 +7,7 @@ import (
 )
 
 // DeleteAccessToken deletes an access token from redis.
-func (c *Client) DeleteAccessToken(accessTokenId uuid.UUID) (int, error) {
+func (c *Client) DeleteAccessToken(accessTokenID uuid.UUID) (int, error) {
 	// get connection
 	conn := c.db.Get()
 	if conn == nil {
@@ -21,7 +21,7 @@ func (c *Client) DeleteAccessToken(accessTokenId uuid.UUID) (int, error) {
 		err   error
 		reply interface{}
 	)
-	reply, err = conn.Do("DEL", keyJwtAccess(accessTokenId.String()))
+	reply, err = conn.Do("DEL", keyJwtAccess(accessTokenID.String()))
 	if err != nil {
 		return 0, err
 	}
@@ -30,7 +30,7 @@ func (c *Client) DeleteAccessToken(accessTokenId uuid.UUID) (int, error) {
 }
 
 // DeleteRefreshToken deletes a refresh token from redis.
-func (c *Client) DeleteRefreshToken(refreshTokenId string) (int, error) {
+func (c *Client) DeleteRefreshToken(refreshTokenID string) (int, error) {
 	// get connection
 	conn := c.db.Get()
 	if conn == nil {
@@ -44,7 +44,7 @@ func (c *Client) DeleteRefreshToken(refreshTokenId string) (int, error) {
 		err   error
 		reply interface{}
 	)
-	reply, err = conn.Do("DEL", keyJwtRefresh(refreshTokenId))
+	reply, err = conn.Do("DEL", keyJwtRefresh(refreshTokenID))
 	if err != nil {
 		return 0, err
 	}
@@ -53,7 +53,7 @@ func (c *Client) DeleteRefreshToken(refreshTokenId string) (int, error) {
 }
 
 // GetAccessToken retrieves an access token from redis.
-func (c *Client) GetAccessToken(accessTokenId uuid.UUID) (uuid.UUID, error) {
+func (c *Client) GetAccessToken(accessTokenID uuid.UUID) (uuid.UUID, error) {
 	// get connection
 	conn := c.db.Get()
 	if conn == nil {
@@ -68,7 +68,7 @@ func (c *Client) GetAccessToken(accessTokenId uuid.UUID) (uuid.UUID, error) {
 		val   string
 	)
 
-	reply, err = conn.Do("GET", keyJwtAccess(accessTokenId.String()))
+	reply, err = conn.Do("GET", keyJwtAccess(accessTokenID.String()))
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -82,7 +82,7 @@ func (c *Client) GetAccessToken(accessTokenId uuid.UUID) (uuid.UUID, error) {
 }
 
 // SetAccessToken adds an access token to redis.
-func (c *Client) SetAccessToken(accessTokenId, userId uuid.UUID, expire time.Duration) error {
+func (c *Client) SetAccessToken(accessTokenID, userID uuid.UUID, expire time.Duration) error {
 	// get connection
 	conn := c.db.Get()
 	if conn == nil {
@@ -93,7 +93,7 @@ func (c *Client) SetAccessToken(accessTokenId, userId uuid.UUID, expire time.Dur
 
 	// add key
 	var err error
-	_, err = conn.Do("SET", keyJwtAccess(accessTokenId.String()), userId.String(), "EX", int(expire.Seconds()))
+	_, err = conn.Do("SET", keyJwtAccess(accessTokenID.String()), userID.String(), "EX", int(expire.Seconds()))
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func (c *Client) SetAccessToken(accessTokenId, userId uuid.UUID, expire time.Dur
 }
 
 // SetRefreshToken adds a refresh token to redis.
-func (c *Client) SetRefreshToken(refreshTokenId string, userId uuid.UUID, expire time.Duration) error {
+func (c *Client) SetRefreshToken(refreshTokenID string, userID uuid.UUID, expire time.Duration) error {
 	// get connection
 	conn := c.db.Get()
 	if conn == nil {
@@ -113,7 +113,7 @@ func (c *Client) SetRefreshToken(refreshTokenId string, userId uuid.UUID, expire
 
 	// add key
 	var err error
-	_, err = conn.Do("SET", keyJwtRefresh(refreshTokenId), userId.String(), "EX", int(expire.Seconds()))
+	_, err = conn.Do("SET", keyJwtRefresh(refreshTokenID), userID.String(), "EX", int(expire.Seconds()))
 	if err != nil {
 		return err
 	}

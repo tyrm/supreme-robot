@@ -4,8 +4,10 @@ import "github.com/google/uuid"
 
 // GroupDnsAdmin is the uuid of the Dns Administrators group
 var GroupDnsAdmin = uuid.Must(uuid.Parse("0b1e0a88-37a4-48f0-8060-2814906fa9f7"))
+
 // GroupSuperAdmin is the uuid of the Super Administrators group
 var GroupSuperAdmin = uuid.Must(uuid.Parse("71df8f2b-f293-4fde-93b1-e40dbe5c97ea"))
+
 // GroupUserAdmin is the uuid of the User Administrators group
 var GroupUserAdmin = uuid.Must(uuid.Parse("fbc827a0-32db-4d71-b95e-632b414e7993"))
 

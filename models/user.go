@@ -179,7 +179,7 @@ func (c *Client) ReadUsersPage(index, count int, orderBy string, asc bool) (*[]U
 	case "username":
 		query = query + "username "
 	default:
-		return nil, ErrUnknownAttribute
+		return nil, errUnknownAttribute
 	}
 
 	if asc {

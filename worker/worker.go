@@ -7,6 +7,7 @@ import (
 	"github.com/tyrm/supreme-robot/scheduler"
 )
 
+// Worker is a
 type Worker struct {
 	db      *models.Client
 	manager *faktory.Manager

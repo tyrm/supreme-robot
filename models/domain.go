@@ -147,7 +147,7 @@ func (c *Client) ReadDomainsPageForUser(user *User, index, count int, orderBy st
 	case "domain":
 		query = query + "domain "
 	default:
-		return nil, ErrUnknownAttribute
+		return nil, errUnknownAttribute
 	}
 
 	if asc {

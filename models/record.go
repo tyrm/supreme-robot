@@ -95,7 +95,7 @@ func (c *Client) ReadRecordsForDomain(domain *Domain, orderBy string, asc bool) 
 	case "name":
 		query = query + "name "
 	default:
-		return nil, ErrUnknownAttribute
+		return nil, errUnknownAttribute
 	}
 
 	if asc {
@@ -129,7 +129,7 @@ func (c *Client) ReadRecordsPageForDomain(domain *Domain, index, count int, orde
 	case "name":
 		query = query + "name "
 	default:
-		return nil, ErrUnknownAttribute
+		return nil, errUnknownAttribute
 	}
 
 	if asc {

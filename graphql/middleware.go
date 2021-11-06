@@ -58,4 +58,3 @@ func (s *Server) Middleware(next http.Handler) http.Handler {
 		)
 	})
 }
-

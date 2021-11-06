@@ -27,15 +27,15 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 	newDomain.Domain, _ = params.Args["domain"].(string)
 
 	newSoaRecord := models.Record{
-		Name: "@",
-		Type: "SOA",
+		Name:  "@",
+		Type:  "SOA",
 		Value: s.primaryNS,
 	}
 	soaObj, _ := params.Args["soa"].(map[string]interface{})
 	mbox, _ := soaObj["mbox"].(string)
 	newSoaRecord.MBox = sql.NullString{
 		String: mbox,
-		Valid: true,
+		Valid:  true,
 	}
 	ttl, _ := soaObj["ttl"].(int)
 	newSoaRecord.TTL = sql.NullInt32{

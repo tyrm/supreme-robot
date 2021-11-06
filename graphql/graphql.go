@@ -450,13 +450,13 @@ func (s *Server) rootQuery() *graphql.Object {
 			"me": &graphql.Field{
 				Type:        userType,
 				Description: "Get logged in user",
-				Resolve: s.meQuery,
+				Resolve:     s.meQuery,
 			},
 
 			"myDomains": &graphql.Field{
 				Type:        graphql.NewList(domainType),
 				Description: "Get my domains",
-				Resolve: s.myDomainsQuery,
+				Resolve:     s.myDomainsQuery,
 			},
 
 			"user": &graphql.Field{
@@ -512,4 +512,3 @@ func (s *Server) graphqlHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("could not write result to response: %s", err)
 	}
 }
-

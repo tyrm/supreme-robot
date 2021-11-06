@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	ErrBadLogin       = errors.New("username/password combo invalid")
-	ErrRefreshExpired = errors.New("refresh expired")
-	ErrUnauthorized   = errors.New("unauthorized")
+	ErrBadLogin            = errors.New("username/password combo invalid")
+	ErrRefreshExpired      = errors.New("refresh expired")
+	ErrUnauthorized        = errors.New("unauthorized")
 	ErrUnprocessableEntity = errors.New("unprocessable entity")
 )
 

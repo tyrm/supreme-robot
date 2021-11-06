@@ -14,10 +14,10 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 	logger.Debugf("trying to add domain")
 
 	// did user authenticate
-	if params.Context.Value(MetadataKey) == nil {
+	if params.Context.Value(metadataKey) == nil {
 		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*accessDetails)
+	metadata := params.Context.Value(metadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	// collect vars
@@ -90,10 +90,10 @@ func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) 
 	}
 
 	// did user authenticate
-	if params.Context.Value(MetadataKey) == nil {
+	if params.Context.Value(metadataKey) == nil {
 		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*accessDetails)
+	metadata := params.Context.Value(metadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	// do query
@@ -129,10 +129,10 @@ func (s *Server) myDomainsQuery(params graphql.ResolveParams) (interface{}, erro
 	logger.Debugf("trying to get my domains")
 
 	// did user authenticate
-	if params.Context.Value(MetadataKey) == nil {
+	if params.Context.Value(metadataKey) == nil {
 		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*accessDetails)
+	metadata := params.Context.Value(metadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	// do query

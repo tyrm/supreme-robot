@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/juju/loggo"
 	"github.com/juju/loggo/loggocolor"
@@ -79,7 +78,7 @@ var workerCmd = &cobra.Command{
 		go func() {
 			err := wkr.Run()
 			if err != nil {
-				errChan <- errors.New(fmt.Sprintf("worker: %s", err.Error()))
+				errChan <- fmt.Errorf("worker: %s", err.Error())
 			}
 		}()
 

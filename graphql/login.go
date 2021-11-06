@@ -49,10 +49,10 @@ func (s *Server) loginMutator(params graphql.ResolveParams) (interface{}, error)
 func (s *Server) logoutMutator(params graphql.ResolveParams) (interface{}, error) {
 	logger.Debugf("trying to logout")
 
-	if params.Context.Value(MetadataKey) == nil {
+	if params.Context.Value(metadataKey) == nil {
 		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*accessDetails)
+	metadata := params.Context.Value(metadataKey).(*accessDetails)
 
 	err := s.deleteTokens(metadata)
 	if err != nil {

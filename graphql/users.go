@@ -12,10 +12,10 @@ func (s *Server) addUserMutation(params graphql.ResolveParams) (interface{}, err
 	logger.Debugf("trying to add user")
 
 	// acl
-	if params.Context.Value(MetadataKey) == nil { // did user authenticate
+	if params.Context.Value(metadataKey) == nil { // did user authenticate
 		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*accessDetails)
+	metadata := params.Context.Value(metadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	if !util.ContainsOneOfUUIDs(&models.GroupsUserAdmin, &metadata.Groups) {
@@ -82,10 +82,10 @@ func (s *Server) meQuery(params graphql.ResolveParams) (interface{}, error) {
 	logger.Debugf("trying to get me")
 
 	// acl
-	if params.Context.Value(MetadataKey) == nil { // did user authenticate
+	if params.Context.Value(metadataKey) == nil { // did user authenticate
 		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*accessDetails)
+	metadata := params.Context.Value(metadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	return s.db.ReadUser(metadata.UserId)
@@ -107,10 +107,10 @@ func (s *Server) userQuery(params graphql.ResolveParams) (interface{}, error) {
 	logger.Tracef("%v(%s) %v(%s)", idOk, id)
 
 	// acl
-	if params.Context.Value(MetadataKey) == nil { // did user authenticate
+	if params.Context.Value(metadataKey) == nil { // did user authenticate
 		return nil, errUnauthorized
 	}
-	metadata := params.Context.Value(MetadataKey).(*accessDetails)
+	metadata := params.Context.Value(metadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
 	if !util.ContainsOneOfUUIDs(&models.GroupsUserAdmin, &metadata.Groups) {

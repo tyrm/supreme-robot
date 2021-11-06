@@ -480,7 +480,7 @@ func (s *Server) graphqlHandler(w http.ResponseWriter, r *http.Request) {
 	metadata, err := s.extractTokenMetadata(r)
 	if err == nil {
 		// if success add metadata to context
-		ctx = context.WithValue(ctx, MetadataKey, metadata)
+		ctx = context.WithValue(ctx, metadataKey, metadata)
 	}
 
 	result := graphql.Do(graphql.Params{

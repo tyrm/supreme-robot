@@ -2,4 +2,4 @@ package graphql
 
 type contextKey int
 
-const MetadataKey contextKey = 0
+const metadataKey contextKey = 0

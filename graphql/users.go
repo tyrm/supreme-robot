@@ -11,11 +11,6 @@ import (
 func (s *Server) addUserMutation(params graphql.ResolveParams) (interface{}, error) {
 	logger.Tracef("trying to add user")
 
-	// marshall and cast the argument values
-	username, _ := params.Args["username"].(string)
-	password, _ := params.Args["password"].(string)
-	groups, groupsOk := params.Args["groups"].([]interface{})
-
 	// acl
 	if params.Context.Value(MetadataKey) == nil { // did user authenticate
 		return nil, ErrUnauthorized
@@ -28,6 +23,11 @@ func (s *Server) addUserMutation(params graphql.ResolveParams) (interface{}, err
 		logger.Tracef("user is not user admin")
 		return nil, ErrUnauthorized
 	}
+
+	// marshall and cast the argument values
+	username, _ := params.Args["username"].(string)
+	password, _ := params.Args["password"].(string)
+	groups, groupsOk := params.Args["groups"].([]interface{})
 
 	// validate inputs
 	groupUUIDs := make([]uuid.UUID, len(groups))
@@ -104,8 +104,7 @@ func (s *Server) userQuery(params graphql.ResolveParams) (interface{}, error) {
 			return nil, err
 		}
 	}
-	username, usernameOk := params.Args["username"].(string)
-	logger.Tracef("%v(%s) %v(%s)", idOk, id, usernameOk, username)
+	logger.Tracef("%v(%s) %v(%s)", idOk, id)
 
 	// acl
 	if params.Context.Value(MetadataKey) == nil { // did user authenticate
@@ -120,5 +119,11 @@ func (s *Server) userQuery(params graphql.ResolveParams) (interface{}, error) {
 		return nil, ErrUnauthorized
 	}
 
-	return nil, nil
+	// find user
+	user, err := s.db.ReadUser(id)
+	if err != nil {
+		logger.Errorf("db: %s", err.Error())
+		return nil, err
+	}
+	return user, nil
 }

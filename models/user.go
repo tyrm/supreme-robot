@@ -21,6 +21,7 @@ type User struct {
 }
 
 // Model Functions
+
 func (u *User) AddGroup(c *Client, groups ...uuid.UUID) error {
 	// start transaction
 	tx, err := c.db.Begin()
@@ -110,6 +111,7 @@ func (u *User) SetPassword(password string) error {
 }
 
 // Client Functions
+
 func (c *Client) ReadUser(id uuid.UUID) (*User, error) {
 	var user User
 	err := c.db.
@@ -137,7 +139,7 @@ func (c *Client) ReadUserByUsername(username string) (*User, error) {
 	var user User
 	err := c.db.
 		Get(&user, `SELECT id ,username, password, created_at, updated_at 
-		FROM public.users WHERE username = $1 AND deleted_at IS NULL;`, username)
+		FROM public.users WHERE lower(username) = lower($1) AND deleted_at IS NULL;`, username)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	} else if err != nil {

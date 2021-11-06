@@ -70,23 +70,11 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 	}
 
 	// add domain to database
-	err = newDomain.Create(s.db)
+	err = s.db.CreateDomainWRecords(&newDomain, &newSoaRecord)
 	if err != nil {
 		logger.Errorf("db: %s", err.Error())
 		return nil, err
 	}
-
-	// add soa record
-	newSoaRecord.DomainID = newDomain.ID
-	err = newSoaRecord.Create(s.db)
-	if err != nil {
-		logger.Errorf("db: %s", err.Error())
-		return nil, err
-	}
-
-	domainList := make([]models.Record, 1)
-	domainList[0] = newSoaRecord
-	newDomain.Records = &domainList
 
 	return newDomain, nil
 }

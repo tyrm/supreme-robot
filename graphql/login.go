@@ -60,9 +60,7 @@ func (s *Server) logoutMutator(params graphql.ResolveParams) (interface{}, error
 		return nil, err
 	}
 
-	result := map[string]bool{"success": true}
-
-	return &result, nil
+	return success{Success: true}, nil
 }
 
 func (s *Server) refreshAccessTokenMutator(params graphql.ResolveParams) (interface{}, error) {

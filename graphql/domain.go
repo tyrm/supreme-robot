@@ -78,8 +78,15 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 	return newDomain, nil
 }
 
-func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) {
-	logger.Debugf("trying to get domain")
+func (s *Server) deleteDomainMutator(params graphql.ResolveParams) (interface{}, error) {
+	logger.Debugf("trying to delete domain")
+
+	// did user authenticate
+	if params.Context.Value(metadataKey) == nil {
+		return nil, errUnauthorized
+	}
+	metadata := params.Context.Value(metadataKey).(*accessDetails)
+	logger.Tracef("metadata: %v", metadata)
 
 	// get id
 	idStr, _ := params.Args["id"].(string)
@@ -88,12 +95,53 @@ func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) 
 		return nil, err
 	}
 
+	// do query
+	domain, err := s.db.ReadDomain(id)
+	if err != nil {
+		logger.Errorf("db error: %s", err.Error())
+		return nil, err
+	}
+	if domain == nil {
+		return nil, nil
+	}
+
+	// does user own domain
+	if domain.OwnerID == metadata.UserID {
+		err = s.db.Delete(domain)
+		if err != nil {
+			return nil, err
+		}
+		return success{Success: true}, nil
+	}
+
+	// is user a dns admin
+	if util.ContainsOneOfUUIDs(&metadata.Groups, &models.GroupsDNSAdmin) {
+		err = s.db.Delete(domain)
+		if err != nil {
+			return nil, err
+		}
+		return success{Success: true}, nil
+	}
+
+	return nil, errUnauthorized
+}
+
+func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) {
+	logger.Debugf("trying to get domain")
+
 	// did user authenticate
 	if params.Context.Value(metadataKey) == nil {
 		return nil, errUnauthorized
 	}
 	metadata := params.Context.Value(metadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
+
+	// get id
+	idStr, _ := params.Args["id"].(string)
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return nil, err
+	}
 
 	// do query
 	domain, err := s.db.ReadDomain(id)

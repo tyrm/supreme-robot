@@ -25,10 +25,8 @@ type Domain struct {
 // Model Functions
 
 func (d *Domain) create(c *Client) error {
-	var err error
-
 	// add to database
-	err = c.db.
+	err := c.db.
 		QueryRowx(`INSERT INTO "public"."domains"("domain", "owner_id")
 			VALUES ($1, $2) RETURNING id, created_at, updated_at;`, d.Domain, d.OwnerID).
 		Scan(&d.ID, &d.CreatedAt, &d.UpdatedAt)

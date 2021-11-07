@@ -88,7 +88,6 @@ func (u *User) create(c *Client) error {
 			VALUES ($1, $2) RETURNING id, created_at, updated_at;`, u.Username, passwordHash).
 		Scan(&u.ID, &u.CreatedAt, &u.UpdatedAt)
 
-
 	return err
 }
 

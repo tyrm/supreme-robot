@@ -24,9 +24,9 @@ type accessDetails struct {
 type tokenDetails struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
-	AccessUUID  uuid.UUID
-	RefreshUUID string
-	AtExpires   int64
+	AccessUUID   uuid.UUID
+	RefreshUUID  string
+	AtExpires    int64
 	RtExpires    int64
 }
 

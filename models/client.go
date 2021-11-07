@@ -3,7 +3,7 @@ package models
 import (
 	"github.com/jmoiron/sqlx"
 	"github.com/juju/loggo"
-	// use pq
+	// pq used by sqlx
 	_ "github.com/lib/pq"
 	"github.com/markbates/pkger"
 	"github.com/rubenv/sql-migrate"

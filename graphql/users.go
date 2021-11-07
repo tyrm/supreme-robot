@@ -61,7 +61,7 @@ func (s *Server) addUserMutation(params graphql.ResolveParams) (interface{}, err
 	}
 
 	// add user to database
-	err = s.db.Create(newUser)
+	err = s.db.Create(&newUser)
 	if err != nil {
 		logger.Errorf("db: %s", err.Error())
 		return nil, err

@@ -75,6 +75,26 @@ func (s *Server) rootMutation() *graphql.Object {
 				Resolve: s.addDomainMutator,
 			},
 
+			"addRecordA": &graphql.Field{
+				Type:        recordType,
+				Description: "Add A record",
+				Args: graphql.FieldConfigArgument{
+					"domainId": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"name": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"ip": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"ttl": &graphql.ArgumentConfig{
+						Type: graphql.Int,
+					},
+				},
+				Resolve: s.addRecordAMutator,
+			},
+
 			"addUser": &graphql.Field{
 				Type:        userType,
 				Description: "Add new user",

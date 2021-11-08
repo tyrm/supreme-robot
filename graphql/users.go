@@ -88,11 +88,24 @@ func (s *Server) meQuery(params graphql.ResolveParams) (interface{}, error) {
 	metadata := params.Context.Value(metadataKey).(*accessDetails)
 	logger.Tracef("metadata: %v", metadata)
 
-	return s.db.ReadUser(metadata.UserID)
+	me, err := s.db.ReadUser(metadata.UserID)
+	if err != nil {
+		logger.Errorf("db: %s", err.Error())
+		return nil, err
+	}
+
+	return me, nil
 }
 
 func (s *Server) userQuery(params graphql.ResolveParams) (interface{}, error) {
 	logger.Debugf("trying to get user")
+
+	// acl
+	if params.Context.Value(metadataKey) == nil { // did user authenticate
+		return nil, errUnauthorized
+	}
+	metadata := params.Context.Value(metadataKey).(*accessDetails)
+	logger.Tracef("metadata: %v", metadata)
 
 	// marshall and cast the argument values
 	idStr, idOk := params.Args["id"].(string)
@@ -105,13 +118,6 @@ func (s *Server) userQuery(params graphql.ResolveParams) (interface{}, error) {
 		}
 	}
 	logger.Tracef("%v(%s) %v(%s)", idOk, id)
-
-	// acl
-	if params.Context.Value(metadataKey) == nil { // did user authenticate
-		return nil, errUnauthorized
-	}
-	metadata := params.Context.Value(metadataKey).(*accessDetails)
-	logger.Tracef("metadata: %v", metadata)
 
 	if !util.ContainsOneOfUUIDs(&models.GroupsUserAdmin, &metadata.Groups) {
 		// user is not user admin

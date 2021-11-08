@@ -9,6 +9,7 @@ import (
 
 var (
 	errBadLogin            = errors.New("username/password combo invalid")
+	errNotFound            = errors.New("not found")
 	errRefreshExpired      = errors.New("refresh expired")
 	errUnauthorized        = errors.New("unauthorized")
 	errUnprocessableEntity = errors.New("unprocessable entity")

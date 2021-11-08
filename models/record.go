@@ -2,9 +2,17 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/google/uuid"
 	"strings"
 	"time"
+)
+
+const (
+	// RecordTypeA is the type for an A type record
+	RecordTypeA = "A"
+	// RecordTypeAAAA is the type for an A type record
+	RecordTypeAAAA = "AAAA"
 )
 
 // Record is a dns record.
@@ -49,6 +57,20 @@ func (r *Record) create(c *Client) error {
 // Domain will retrieve the domain associated with the Record
 func (r *Record) Domain(c *Client) (*Domain, error) {
 	return c.ReadDomain(r.DomainID)
+}
+
+// Validate validates the data provided
+func (r *Record) Validate() error {
+	switch r.Type {
+	case RecordTypeA:
+		return nil
+	case RecordTypeAAAA:
+		return nil
+	case "":
+		return fmt.Errorf("type must be defined")
+	default:
+		return fmt.Errorf("unknown type %s", r.Type)
+	}
 }
 
 // Client Functions

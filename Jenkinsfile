@@ -22,7 +22,9 @@ pipeline {
           sh "go test -race -coverprofile=coverage.txt -covermode=atomic ./..."
 
           withCredentials([string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN')]) {
-            sh "bash <(curl -s https://codecov.io/bash)"
+            sh """#!/bin/bash
+            bash <(curl -s https://codecov.io/bash)
+            """
           }
         }
       }

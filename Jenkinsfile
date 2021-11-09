@@ -18,7 +18,12 @@ pipeline {
       }
       steps {
         script {
-          sh "go test ./..."
+          sh "go get -t -v ./..."
+          sh "go test -race -coverprofile=coverage.txt -covermode=atomic ./..."
+
+          withCredentials([string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN')]) {
+            sh "bash <(curl -s https://codecov.io/bash)"
+          }
         }
       }
     }

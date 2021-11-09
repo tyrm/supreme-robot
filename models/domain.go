@@ -3,12 +3,9 @@ package models
 import (
 	"database/sql"
 	"github.com/google/uuid"
-	"regexp"
 	"strings"
 	"time"
 )
-
-var reValidDomain = regexp.MustCompile("^[a-zA-Z0-9][a-zA-Z0-9-.]*\\.$")
 
 // Domain represents a domain name to be served
 type Domain struct {
@@ -58,7 +55,7 @@ func (d *Domain) GetRecords(c *Client) (*[]Record, error) {
 
 // ValidateDomain checks that the domain name doesn't contain any invalid values
 func (d *Domain) ValidateDomain() bool {
-	return reValidDomain.MatchString(d.Domain)
+	return reTopDomain.MatchString(d.Domain)
 }
 
 // Client Functions

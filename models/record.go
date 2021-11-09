@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/google/uuid"
 	"strings"
 	"time"
@@ -63,13 +62,45 @@ func (r *Record) Domain(c *Client) (*Domain, error) {
 func (r *Record) Validate() error {
 	switch r.Type {
 	case RecordTypeA:
+		// check for required attributes
+		if r.Name == "" {
+			return errMissingName
+		}
+		if r.Value == "" {
+			return errMissingIP
+		}
+
+		// check values
+		if !reSubDomain.MatchString(r.Name) {
+			return errInvalidName
+		}
+		if !reIPv4Address.MatchString(r.Value) {
+			return errInvalidIP
+		}
+
 		return nil
 	case RecordTypeAAAA:
+		// check for required attributes
+		if r.Name == "" {
+			return errMissingName
+		}
+		if r.Value == "" {
+			return errMissingIP
+		}
+
+		// check values
+		if !reSubDomain.MatchString(r.Name) {
+			return errInvalidName
+		}
+		if !reIPv6Address.MatchString(r.Value) {
+			return errInvalidIP
+		}
+
 		return nil
 	case "":
-		return fmt.Errorf("type must be defined")
+		return errMissingType
 	default:
-		return fmt.Errorf("unknown type %s", r.Type)
+		return errUnknownType
 	}
 }
 

@@ -4,7 +4,7 @@ import (
 	faktory "github.com/contribsys/faktory_worker_go"
 	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/kv"
-	"github.com/tyrm/supreme-robot/scheduler"
+	faktory2 "github.com/tyrm/supreme-robot/scheduler"
 )
 
 // Worker is a
@@ -28,7 +28,7 @@ func NewWorker(k kv.DNS, d db.DB) (*Worker, error) {
 		kv:      k,
 	}
 
-	worker.manager.ProcessStrictPriorityQueues("default", scheduler.QueueDNS)
+	worker.manager.ProcessStrictPriorityQueues("default", faktory2.QueueDNS)
 
 	worker.manager.Register("AddDomain", worker.addDomainHandler)
 	worker.manager.Register("RemoveDomain", worker.removeDomainHandler)

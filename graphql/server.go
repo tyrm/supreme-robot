@@ -15,7 +15,7 @@ type Server struct {
 	// data stuff
 	db        db.DB
 	kv        kv.Webapp
-	scheduler *scheduler.Client
+	scheduler scheduler.Scheduler
 
 	// dns stuff
 	primaryNS string
@@ -30,7 +30,7 @@ type Server struct {
 }
 
 // NewServer will create a new GraphQL server
-func NewServer(cfg *config.Config, s *scheduler.Client, d db.DB, k kv.Webapp) (*Server, error) {
+func NewServer(cfg *config.Config, s scheduler.Scheduler, d db.DB, k kv.Webapp) (*Server, error) {
 	server := Server{
 		accessExpiration:  cfg.AccessExpiration,
 		accessSecret:      []byte(cfg.AccessSecret),

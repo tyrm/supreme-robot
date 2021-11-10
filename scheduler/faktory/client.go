@@ -1,4 +1,4 @@
-package scheduler
+package faktory
 
 import (
 	faktory "github.com/contribsys/faktory/client"

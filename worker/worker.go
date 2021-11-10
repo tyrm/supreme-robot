@@ -2,14 +2,14 @@ package worker
 
 import (
 	faktory "github.com/contribsys/faktory_worker_go"
-	"github.com/tyrm/supreme-robot/models"
+	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/redis"
 	"github.com/tyrm/supreme-robot/scheduler"
 )
 
 // Worker is a
 type Worker struct {
-	db      *models.Client
+	db      db.DB
 	manager *faktory.Manager
 	redis   *redis.Client
 }
@@ -21,7 +21,7 @@ func (w *Worker) Run() error {
 }
 
 // NewWorker creates a new faktory worker
-func NewWorker(r *redis.Client, d *models.Client) (*Worker, error) {
+func NewWorker(r *redis.Client, d db.DB) (*Worker, error) {
 	worker := Worker{
 		db:      d,
 		manager: faktory.NewManager(),

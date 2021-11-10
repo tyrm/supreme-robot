@@ -105,6 +105,39 @@ func TestRecordValidateTypeCNAME(t *testing.T) {
 	}
 }
 
+func TestRecordValidateTypeTXT(t *testing.T) {
+	tables := []struct {
+		x Record
+		n error
+	}{
+		{Record{Type: RecordTypeTXT}, errMissingName},
+		{Record{Type: RecordTypeTXT, Value: "example.com.", TTL: 300}, errMissingName},
+		{Record{Type: RecordTypeTXT, Name: "example", TTL: 300}, errMissingText},
+		{Record{Type: RecordTypeTXT, Name: "@", Value: "example.com."}, errMissingTTL},
+		{Record{Type: RecordTypeTXT, Name: "@", Value: "example.com.", TTL: 300}, nil},
+		{Record{Type: RecordTypeTXT, Name: "@", Value: "example.com", TTL: 300}, nil},
+		{Record{Type: RecordTypeTXT, Name: "@", Value: "10.2.1.400", TTL: 300}, nil},
+		{Record{Type: RecordTypeTXT, Name: "test1", Value: "asdf2.", TTL: 300}, nil},
+		{Record{Type: RecordTypeTXT, Name: "test1", Value: "test1.dev", TTL: 300}, nil},
+		{Record{Type: RecordTypeTXT, Name: "test1", Value: "si4guthe7Baish4eeke1uax1ewooci8faip3bie0tio6ooPhafohP3ooshish2ahbah2Yi3su6choh5ja4einekelohngie5oosu2Am4phahyuyia2Cuz1eiPh8sheit0einguaT4Vuhohviengoox4Faiviose2od2chua0Cee8yahpiaCh9rahghiewee4as6phaecheipoofaiChihai2mait6aichiomohghohfayohyei6chaishech8oox", TTL: 300}, errLengthExceededText},
+		{Record{Type: RecordTypeTXT, Name: "test1.", Value: "example.com.", TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeTXT, Name: ".test1", Value: "example.com.", TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeTXT, Name: ".test1", Value: "example.com.", TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeTXT, Name: "-test1", Value: "example.com.", TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeTXT, Name: "test1-", Value: "example.com.", TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeTXT, Name: "sub.test1", Value: "x.google.com.", TTL: 300}, nil},
+		{Record{Type: RecordTypeTXT, Name: "sub.test1", Value: "x.google.com.", TTL: -300}, errInvalidTTL},
+	}
+
+	for _, table := range tables {
+		err := table.x.Validate()
+
+		if err != table.n {
+			t.Errorf("validation failed, got: %v, want: %v,", err, table.n)
+		}
+	}
+}
+
 func TestRecordValidateInvalidType(t *testing.T) {
 	tables := []struct {
 		x Record

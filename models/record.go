@@ -11,8 +11,10 @@ const (
 	RecordTypeA = "A"
 	// RecordTypeAAAA is the type for an AAAA type record
 	RecordTypeAAAA = "AAAA"
-	// RecordTypeCNAME is the type for an CNAME type record
+	// RecordTypeCNAME is the type for a CNAME type record
 	RecordTypeCNAME = "CNAME"
+	// RecordTypeTXT is the type for a TXT type record
+	RecordTypeTXT = "TXT"
 )
 
 // Record is a dns record.
@@ -106,6 +108,30 @@ func (r *Record) Validate() error {
 		}
 		if !reTopDomain.MatchString(r.Value) {
 			return errInvalidHost
+		}
+		if r.TTL < 1 {
+			return errInvalidTTL
+		}
+
+		return nil
+	case RecordTypeTXT:
+		// check for required attributes
+		if r.Name == "" {
+			return errMissingName
+		}
+		if r.Value == "" {
+			return errMissingText
+		}
+		if r.TTL == 0 {
+			return errMissingTTL
+		}
+
+		// check values
+		if !reSubDomain.MatchString(r.Name) {
+			return errInvalidName
+		}
+		if len(r.Value) > 255 {
+			return errLengthExceededText
 		}
 		if r.TTL < 1 {
 			return errInvalidTTL

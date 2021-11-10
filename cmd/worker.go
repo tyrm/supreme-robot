@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	faktory "github.com/contribsys/faktory_worker_go"
 	"github.com/juju/loggo"
 	"github.com/juju/loggo/loggocolor"
 	"github.com/spf13/cobra"
@@ -64,8 +65,11 @@ var workerCmd = &cobra.Command{
 			return
 		}
 
+		// create faktory manager
+		manager := faktory.NewManager()
+
 		// create worker
-		wkr, err := worker.NewWorker(rc, dc)
+		wkr, err := worker.NewWorker(rc, manager, dc)
 		if err != nil {
 			logger.Errorf("new worker: %s", err.Error())
 			return

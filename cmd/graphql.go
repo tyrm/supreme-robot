@@ -9,7 +9,7 @@ import (
 	"github.com/tyrm/supreme-robot/db/postgres"
 	"github.com/tyrm/supreme-robot/graphql"
 	"github.com/tyrm/supreme-robot/kv/redis"
-	"github.com/tyrm/supreme-robot/scheduler/faktory"
+	"github.com/tyrm/supreme-robot/queue/faktory"
 	"log"
 	"os"
 	"os/signal"
@@ -54,10 +54,10 @@ var graphqlCmd = &cobra.Command{
 		logger := loggo.GetLogger("main")
 		logger.Infof("starting main process")
 
-		// create scheduler client
+		// create queue client
 		sc, err := faktory.NewClient()
 		if err != nil {
-			logger.Errorf("new scheduler client: %s", err.Error())
+			logger.Errorf("new queue client: %s", err.Error())
 			return
 		}
 

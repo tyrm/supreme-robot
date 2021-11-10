@@ -5,7 +5,7 @@ import (
 	"github.com/tyrm/supreme-robot/config"
 	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/kv"
-	"github.com/tyrm/supreme-robot/scheduler"
+	"github.com/tyrm/supreme-robot/queue"
 	"net/http"
 	"time"
 )
@@ -15,7 +15,7 @@ type Server struct {
 	// data stuff
 	db        db.DB
 	kv        kv.Webapp
-	scheduler scheduler.Scheduler
+	scheduler queue.Scheduler
 
 	// dns stuff
 	primaryNS string
@@ -30,7 +30,7 @@ type Server struct {
 }
 
 // NewServer will create a new GraphQL server
-func NewServer(cfg *config.Config, s scheduler.Scheduler, d db.DB, k kv.Webapp) (*Server, error) {
+func NewServer(cfg *config.Config, s queue.Scheduler, d db.DB, k kv.Webapp) (*Server, error) {
 	server := Server{
 		accessExpiration:  cfg.AccessExpiration,
 		accessSecret:      []byte(cfg.AccessSecret),

@@ -3,44 +3,13 @@ package graphql
 import (
 	"context"
 	"github.com/graphql-go/graphql"
-	"github.com/tyrm/supreme-robot/config"
-	dbMem "github.com/tyrm/supreme-robot/db/memory"
-	kvMem "github.com/tyrm/supreme-robot/kv/memory"
-	queueMem "github.com/tyrm/supreme-robot/queue/memory"
 	"net/http"
 	"testing"
-	"time"
 )
 
 func TestLoginMutator_BadPassword(t *testing.T) {
-	cnf := config.Config{
-		AccessExpiration:  time.Hour * 24,
-		AccessSecret:      "test",
-		PrimaryNS:         "ns1.example.com.",
-		RefreshExpiration: time.Hour * 24,
-		RefreshSecret:     "test1234",
-	}
-
-	db, err := dbMem.NewClient()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	kv, err := kvMem.NewClient()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	qc, err := queueMem.NewScheduler()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	// create web server
-	server, err := NewServer(&cnf, qc, db, kv)
+	// create server
+	server, _, _, _, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -92,34 +61,8 @@ func TestLoginMutator_BadPassword(t *testing.T) {
 }
 
 func TestLoginMutator_BadUsername(t *testing.T) {
-	cnf := config.Config{
-		AccessExpiration:  time.Hour * 24,
-		AccessSecret:      "test",
-		PrimaryNS:         "ns1.example.com.",
-		RefreshExpiration: time.Hour * 24,
-		RefreshSecret:     "test1234",
-	}
-
-	db, err := dbMem.NewClient()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	kv, err := kvMem.NewClient()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	qc, err := queueMem.NewScheduler()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
 	// create web server
-	server, err := NewServer(&cnf, qc, db, kv)
+	server, _, _, _, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -166,39 +109,12 @@ func TestLoginMutator_BadUsername(t *testing.T) {
 	err = result.Errors[0]
 	if err.Error() != errBadLogin.Error() {
 		t.Errorf("unexpected error, got: '%s', want: '%s'.", err.Error(), errBadLogin.Error())
-
 	}
 }
 
 func TestLoginMutator_ValidLogin(t *testing.T) {
-	cnf := config.Config{
-		AccessExpiration:  time.Hour * 24,
-		AccessSecret:      "test",
-		PrimaryNS:         "ns1.example.com.",
-		RefreshExpiration: time.Hour * 24,
-		RefreshSecret:     "test1234",
-	}
-
-	db, err := dbMem.NewClient()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	kv, err := kvMem.NewClient()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	qc, err := queueMem.NewScheduler()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
 	// create web server
-	server, err := NewServer(&cnf, qc, db, kv)
+	server, _, _, _, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -268,35 +184,49 @@ func TestLoginMutator_ValidLogin(t *testing.T) {
 	}
 }
 
-func TestLogoutMutator_Valid(t *testing.T) {
-	cnf := config.Config{
-		AccessExpiration:  time.Hour * 24,
-		AccessSecret:      "test",
-		PrimaryNS:         "ns1.example.com.",
-		RefreshExpiration: time.Hour * 24,
-		RefreshSecret:     "test1234",
-	}
-
-	db, err := dbMem.NewClient()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	kv, err := kvMem.NewClient()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	qc, err := queueMem.NewScheduler()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
+func TestLogoutMutator_NoMetadata(t *testing.T) {
 	// create web server
-	server, err := NewServer(&cnf, qc, db, kv)
+	server, _, _, _, err := newTestServer()
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
+	}
+	if server == nil {
+		t.Errorf("expected server, got: nil, want: *Server.")
+	}
+
+	// prepare query
+	ctx := context.Background()
+	pLogout := postData{
+		Query: `mutation {
+			logout{
+				success
+			}
+		}`,
+	}
+
+	// do query
+	logoutResult := graphql.Do(graphql.Params{
+		Context:        ctx,
+		Schema:         server.schema(),
+		RequestString:  pLogout.Query,
+		VariableValues: pLogout.Variables,
+		OperationName:  pLogout.Operation,
+	})
+	if !logoutResult.HasErrors() {
+		t.Errorf("expected error, got: nil, want: error.")
+		return
+	}
+
+	// validate error
+	err = logoutResult.Errors[0]
+	if err.Error() != errUnauthorized.Error() {
+		t.Errorf("unexpected error, got: '%s', want: '%s'.", err.Error(), errUnauthorized.Error())
+	}
+}
+
+func TestLogoutMutator_Valid(t *testing.T) {
+	// create web server
+	server, _, _, _, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -387,7 +317,7 @@ func TestLogoutMutator_Valid(t *testing.T) {
 		OperationName:  pLogout.Operation,
 	})
 	if logoutResult.HasErrors() {
-		for _, e := range result.Errors {
+		for _, e := range logoutResult.Errors {
 			t.Errorf("unexpected error, got: %#v, want: nil.", e.Error())
 		}
 		return
@@ -417,34 +347,8 @@ func TestLogoutMutator_Valid(t *testing.T) {
 }
 
 func TestRefreshAccessTokenMutator_Valid(t *testing.T) {
-	cnf := config.Config{
-		AccessExpiration:  time.Hour * 24,
-		AccessSecret:      "test",
-		PrimaryNS:         "ns1.example.com.",
-		RefreshExpiration: time.Hour * 24,
-		RefreshSecret:     "test1234",
-	}
-
-	db, err := dbMem.NewClient()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	kv, err := kvMem.NewClient()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	qc, err := queueMem.NewScheduler()
-	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
 	// create web server
-	server, err := NewServer(&cnf, qc, db, kv)
+	server, _, _, _, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}

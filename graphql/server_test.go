@@ -10,6 +10,17 @@ import (
 )
 
 func TestNewServer(t *testing.T) {
+	ws, _, _, _, err := newTestServer()
+
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
+	}
+	if ws == nil {
+		t.Errorf("expected server, got: nil, want: *Server.")
+	}
+}
+
+func newTestServer() (*Server, *queueMem.Scheduler, *dbMem.Client, *kvMem.Client, error) {
 	cnf := config.Config{
 		AccessExpiration:  time.Hour * 24,
 		AccessSecret:      "test",
@@ -20,28 +31,20 @@ func TestNewServer(t *testing.T) {
 
 	db, err := dbMem.NewClient()
 	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
+		return nil, nil, nil, nil, err
 	}
 
 	kv, err := kvMem.NewClient()
 	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
+		return nil, nil, nil, nil, err
 	}
 
 	qc, err := queueMem.NewScheduler()
 	if err != nil {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
+		return nil, nil, nil, nil, err
 	}
 
-	// create web server
 	ws, err := NewServer(&cnf, qc, db, kv)
-	if err != nil {
-		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
-	}
-	if ws == nil {
-		t.Errorf("expected server, got: nil, want: *Server.")
-	}
+
+	return ws, qc, db, kv, nil
 }

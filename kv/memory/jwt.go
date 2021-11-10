@@ -8,13 +8,13 @@ import (
 // DeleteAccessToken deletes an access token from redis.
 func (c *Client) DeleteAccessToken(accessTokenID uuid.UUID) (int, error) {
 
-	return 0, nil
+	return 1, nil
 }
 
 // DeleteRefreshToken deletes a refresh token from redis.
 func (c *Client) DeleteRefreshToken(refreshTokenID string) (int, error) {
 
-	return 0, nil
+	return 1, nil
 }
 
 // GetAccessToken retrieves an access token from redis.

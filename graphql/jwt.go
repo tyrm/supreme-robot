@@ -130,22 +130,26 @@ func (s *Server) extractTokenMetadata(r *http.Request) (*accessDetails, error) {
 		if err != nil {
 			return nil, err
 		}
-		groups := claims[claimGroups].([]interface{})
-		groupIds := make([]uuid.UUID, len(groups))
-		for i, g := range groups {
-			gu, err := uuid.Parse(g.(string))
-			if err != nil {
-				logger.Tracef("%s is not a uuid: %s", g, err.Error())
-				return nil, err
+
+		metadata := accessDetails{
+			AccessID: accessID,
+			UserID:   userID,
+		}
+		if claims[claimGroups] != nil {
+			groups := claims[claimGroups].([]interface{})
+			groupIds := make([]uuid.UUID, len(groups))
+			for i, g := range groups {
+				gu, err := uuid.Parse(g.(string))
+				if err != nil {
+					logger.Tracef("%s is not a uuid: %s", g, err.Error())
+					return nil, err
+				}
+				groupIds[i] = gu
 			}
-			groupIds[i] = gu
+			metadata.Groups = groupIds
 		}
 
-		return &accessDetails{
-			AccessID: accessID,
-			Groups:   groupIds,
-			UserID:   userID,
-		}, nil
+		return &metadata, nil
 	}
 	return nil, err
 }

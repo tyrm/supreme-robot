@@ -4,7 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/tyrm/supreme-robot/config"
 	"github.com/tyrm/supreme-robot/db"
-	"github.com/tyrm/supreme-robot/redis"
+	"github.com/tyrm/supreme-robot/kv"
 	"github.com/tyrm/supreme-robot/scheduler"
 	"net/http"
 	"time"
@@ -14,7 +14,7 @@ import (
 type Server struct {
 	// data stuff
 	db        db.DB
-	redis     *redis.Client
+	kv        kv.Webapp
 	scheduler *scheduler.Client
 
 	// dns stuff
@@ -30,13 +30,13 @@ type Server struct {
 }
 
 // NewServer will create a new GraphQL server
-func NewServer(cfg *config.Config, s *scheduler.Client, d db.DB, r *redis.Client) (*Server, error) {
+func NewServer(cfg *config.Config, s *scheduler.Client, d db.DB, k kv.Webapp) (*Server, error) {
 	server := Server{
 		accessExpiration:  cfg.AccessExpiration,
 		accessSecret:      []byte(cfg.AccessSecret),
 		db:                d,
 		primaryNS:         cfg.PrimaryNS,
-		redis:             r,
+		kv:                k,
 		refreshExpiration: cfg.RefreshExpiration,
 		refreshSecret:     []byte(cfg.RefreshSecret),
 		scheduler:         s,

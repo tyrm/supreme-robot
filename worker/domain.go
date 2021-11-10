@@ -33,7 +33,7 @@ func (w *Worker) addDomainHandler(ctx context.Context, args ...interface{}) erro
 	}
 
 	logger.Tracef("%s adding domain %s to domain list", help.Jid(), domain.Domain)
-	err = w.redis.AddDomain(domain.Domain)
+	err = w.kv.AddDomain(domain.Domain)
 	if err != nil {
 		msg := fmt.Sprintf("%s error adding domain to redis: %s", help.Jid(), err.Error())
 		logger.Warningf(msg)

@@ -8,7 +8,7 @@ import (
 	"github.com/tyrm/supreme-robot/config"
 	"github.com/tyrm/supreme-robot/db/postgres"
 	"github.com/tyrm/supreme-robot/graphql"
-	"github.com/tyrm/supreme-robot/redis"
+	"github.com/tyrm/supreme-robot/kv/redis"
 	"github.com/tyrm/supreme-robot/scheduler"
 	"log"
 	"os"

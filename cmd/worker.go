@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tyrm/supreme-robot/config"
 	"github.com/tyrm/supreme-robot/db/postgres"
-	"github.com/tyrm/supreme-robot/redis"
+	"github.com/tyrm/supreme-robot/kv/redis"
 	"github.com/tyrm/supreme-robot/worker"
 	"log"
 	"os"

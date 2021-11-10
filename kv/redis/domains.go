@@ -3,6 +3,7 @@ package redis
 import (
 	"fmt"
 	redisCon "github.com/gomodule/redigo/redis"
+	"github.com/tyrm/supreme-robot/kv"
 )
 
 // AddDomain will add a domain name to the list of domains.
@@ -17,7 +18,7 @@ func (c *Client) AddDomain(d string) error {
 
 	// add key
 	var err error
-	_, err = conn.Do("SADD", keyDomains, d)
+	_, err = conn.Do("SADD", kv.KeyDomains, d)
 	if err != nil {
 		return err
 	}
@@ -37,7 +38,7 @@ func (c *Client) RemoveDomain(d string) error {
 
 	// remove key
 	var err error
-	_, err = conn.Do("SREM", keyDomains, d)
+	_, err = conn.Do("SREM", kv.KeyDomains, d)
 	if err != nil {
 		return err
 	}
@@ -61,7 +62,7 @@ func (c *Client) GetDomains() (*[]string, error) {
 		vals  []string
 	)
 
-	reply, err = conn.Do("SMEMBERS", keyDomains)
+	reply, err = conn.Do("SMEMBERS", kv.KeyDomains)
 	if err != nil {
 		return nil, err
 	}

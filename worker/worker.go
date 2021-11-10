@@ -3,7 +3,7 @@ package worker
 import (
 	faktory "github.com/contribsys/faktory_worker_go"
 	"github.com/tyrm/supreme-robot/db"
-	"github.com/tyrm/supreme-robot/redis"
+	"github.com/tyrm/supreme-robot/kv"
 	"github.com/tyrm/supreme-robot/scheduler"
 )
 
@@ -11,7 +11,7 @@ import (
 type Worker struct {
 	db      db.DB
 	manager *faktory.Manager
-	redis   *redis.Client
+	kv      kv.DNS
 }
 
 // Run runs the worker
@@ -21,11 +21,11 @@ func (w *Worker) Run() error {
 }
 
 // NewWorker creates a new faktory worker
-func NewWorker(r *redis.Client, d db.DB) (*Worker, error) {
+func NewWorker(k kv.DNS, d db.DB) (*Worker, error) {
 	worker := Worker{
 		db:      d,
 		manager: faktory.NewManager(),
-		redis:   r,
+		kv:      k,
 	}
 
 	worker.manager.ProcessStrictPriorityQueues("default", scheduler.QueueDNS)

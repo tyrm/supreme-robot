@@ -3,6 +3,7 @@ package redis
 import (
 	redisCon "github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
+	"github.com/tyrm/supreme-robot/kv"
 	"time"
 )
 
@@ -21,7 +22,7 @@ func (c *Client) DeleteAccessToken(accessTokenID uuid.UUID) (int, error) {
 		err   error
 		reply interface{}
 	)
-	reply, err = conn.Do("DEL", keyJwtAccess(accessTokenID.String()))
+	reply, err = conn.Do("DEL", kv.KeyJwtAccess(accessTokenID.String()))
 	if err != nil {
 		return 0, err
 	}
@@ -44,7 +45,7 @@ func (c *Client) DeleteRefreshToken(refreshTokenID string) (int, error) {
 		err   error
 		reply interface{}
 	)
-	reply, err = conn.Do("DEL", keyJwtRefresh(refreshTokenID))
+	reply, err = conn.Do("DEL", kv.KeyJwtRefresh(refreshTokenID))
 	if err != nil {
 		return 0, err
 	}
@@ -68,7 +69,7 @@ func (c *Client) GetAccessToken(accessTokenID uuid.UUID) (uuid.UUID, error) {
 		val   string
 	)
 
-	reply, err = conn.Do("GET", keyJwtAccess(accessTokenID.String()))
+	reply, err = conn.Do("GET", kv.KeyJwtAccess(accessTokenID.String()))
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -93,7 +94,7 @@ func (c *Client) SetAccessToken(accessTokenID, userID uuid.UUID, expire time.Dur
 
 	// add key
 	var err error
-	_, err = conn.Do("SET", keyJwtAccess(accessTokenID.String()), userID.String(), "EX", int(expire.Seconds()))
+	_, err = conn.Do("SET", kv.KeyJwtAccess(accessTokenID.String()), userID.String(), "EX", int(expire.Seconds()))
 	if err != nil {
 		return err
 	}
@@ -113,7 +114,7 @@ func (c *Client) SetRefreshToken(refreshTokenID string, userID uuid.UUID, expire
 
 	// add key
 	var err error
-	_, err = conn.Do("SET", keyJwtRefresh(refreshTokenID), userID.String(), "EX", int(expire.Seconds()))
+	_, err = conn.Do("SET", kv.KeyJwtRefresh(refreshTokenID), userID.String(), "EX", int(expire.Seconds()))
 	if err != nil {
 		return err
 	}

@@ -35,12 +35,12 @@ func (s *Server) createAuth(userid uuid.UUID, td *tokenDetails) error {
 	rt := time.Unix(td.RtExpires, 0)
 	now := time.Now()
 
-	errAccess := s.redis.SetAccessToken(td.AccessUUID, userid, at.Sub(now))
+	errAccess := s.kv.SetAccessToken(td.AccessUUID, userid, at.Sub(now))
 	if errAccess != nil {
 		logger.Debugf("can't save access token: %s", errAccess.Error())
 		return errAccess
 	}
-	errRefresh := s.redis.SetRefreshToken(td.RefreshUUID, userid, rt.Sub(now))
+	errRefresh := s.kv.SetRefreshToken(td.RefreshUUID, userid, rt.Sub(now))
 	if errRefresh != nil {
 		logger.Debugf("can't save refresh token: %s", errRefresh.Error())
 		return errRefresh
@@ -88,12 +88,12 @@ func (s *Server) deleteTokens(authD *accessDetails) error {
 	//get the refresh uuid
 	refreshUUID := fmt.Sprintf("%s++%s", authD.AccessID, authD.UserID)
 	//delete access token
-	deletedAt, err := s.redis.DeleteAccessToken(authD.AccessID)
+	deletedAt, err := s.kv.DeleteAccessToken(authD.AccessID)
 	if err != nil {
 		return err
 	}
 	//delete refresh token
-	deletedRt, err := s.redis.DeleteRefreshToken(refreshUUID)
+	deletedRt, err := s.kv.DeleteRefreshToken(refreshUUID)
 	if err != nil {
 		return err
 	}
@@ -151,7 +151,7 @@ func (s *Server) extractTokenMetadata(r *http.Request) (*accessDetails, error) {
 }
 
 func (s *Server) fetchAuth(authD *accessDetails) (uuid.UUID, error) {
-	userid, err := s.redis.GetAccessToken(authD.AccessID)
+	userid, err := s.kv.GetAccessToken(authD.AccessID)
 	if err != nil {
 		return uuid.Nil, err
 	}

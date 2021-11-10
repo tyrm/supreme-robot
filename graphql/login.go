@@ -114,9 +114,9 @@ func (s *Server) refreshAccessTokenMutator(params graphql.ResolveParams) (interf
 		}
 
 		// Delete the previous Refresh Token
-		deleted, err := s.redis.DeleteRefreshToken(refreshString)
+		deleted, err := s.kv.DeleteRefreshToken(refreshString)
 		if err != nil {
-			logger.Errorf("redis error: %s", err.Error())
+			logger.Errorf("kv error: %s", err.Error())
 			return nil, err
 		}
 		if deleted == 0 {
@@ -132,7 +132,7 @@ func (s *Server) refreshAccessTokenMutator(params graphql.ResolveParams) (interf
 			return nil, createErr
 		}
 
-		// save the tokens metadata to redis
+		// save the tokens metadata to kv
 		saveErr := s.createAuth(userID, ts)
 		if saveErr != nil {
 			logger.Tracef("error saving token: %s", createErr)

@@ -69,10 +69,12 @@ func (s *Server) addUserMutation(params graphql.ResolveParams) (interface{}, err
 
 	// add groups
 	if groupsOk {
-		err = newUser.AddGroup(s.db, groupUUIDs...)
+		err = s.db.CreateGroupsForUser(newUser.ID, groupUUIDs...)
 		if err != nil {
+			logger.Errorf("db: %s", err.Error())
 			return nil, err
 		}
+		newUser.Groups = groupUUIDs
 	}
 
 	return newUser, nil

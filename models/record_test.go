@@ -176,6 +176,42 @@ func TestRecordValidateTypeNS(t *testing.T) {
 	}
 }
 
+func TestRecordValidateTypeSRV(t *testing.T) {
+	tables := []struct {
+		x Record
+		n error
+	}{
+		{Record{Type: RecordTypeSRV}, errMissingName},
+		{Record{Type: RecordTypeSRV, Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errMissingName},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-client._tcp", Port: sql.NullInt32{Int32: 5000, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errMissingHost},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-client._tcp", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}}, errMissingTTL},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-client._tcp", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errMissingPriority},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-client._tcp", Value: "example.com", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidHost},
+		{Record{Type: RecordTypeSRV, Name: "_ssh._udp.xn--c1yn36f", Value: "test1.dev.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, nil},
+		{Record{Type: RecordTypeSRV, Name: "test1.", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeSRV, Name: ".test1", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeSRV, Name: "www.-test1", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeSRV, Name: "-test1", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeSRV, Name: "test1-", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, nil},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: -3, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidPriority},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: -1, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidPort},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 100000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidPort},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: -100, Valid: true}, TTL: 300}, errInvalidWeight},
+	}
+
+	for _, table := range tables {
+		err := table.x.Validate()
+
+		if err != table.n {
+			t.Errorf("validation failed for Record(Name: %s, Host: %s, Port %d(%v), Priority %d(%v), Weight %d(%v), TTL: %d) , got: %v, want: %v,",
+				table.x.Name, table.x.Value, table.x.Port.Int32, table.x.Port.Valid, table.x.Priority.Int32, table.x.Priority.Valid, table.x.Weight.Int32, table.x.Weight.Valid, table.x.TTL, err, table.n)
+		}
+	}
+}
+
 func TestRecordValidateTypeTXT(t *testing.T) {
 	tables := []struct {
 		x Record

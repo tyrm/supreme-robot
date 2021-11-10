@@ -88,6 +88,16 @@ func TestRegexMXDomain(t *testing.T) {
 		{"what?.", false},
 		{"google", true},
 		{"@", false},
+		{"_ssh.tcp.host1", false},
+		{"_ssh.tcp", false},
+		{"_ssh.udp.xn--c1yn36f", false},
+		{"_ssh._tcp.host1", false},
+		{"_ssh._tcp", false},
+		{"_ssh._udp.xn--c1yn36f", false},
+		{"_xmpp-client._tcp", false},
+		{"_xmpp-server._tcp", false},
+		{"_xmpp-client._tcp.chat", false},
+		{"_xmpp-server._tcp.a.long.sub.domain", false},
 	}
 
 	for _, table := range tables {
@@ -116,10 +126,58 @@ func TestRegexNSDomain(t *testing.T) {
 		{".xn--c1yn36f", false},
 		{"what?", false},
 		{"google", true},
+		{"_ssh.tcp.host1", false},
+		{"_ssh.tcp", false},
+		{"_ssh.udp.xn--c1yn36f", false},
+		{"_ssh._tcp.host1", false},
+		{"_ssh._tcp", false},
+		{"_ssh._udp.xn--c1yn36f", false},
+		{"_xmpp-client._tcp", false},
+		{"_xmpp-server._tcp", false},
+		{"_xmpp-client._tcp.chat", false},
+		{"_xmpp-server._tcp.a.long.sub.domain", false},
 	}
 
 	for _, table := range tables {
 		match := reNSDomain.MatchString(table.x)
+
+		if match != table.n {
+			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, match, table.n)
+		}
+	}
+}
+
+func TestRegexSRVDomain(t *testing.T) {
+	tables := []struct {
+		x string
+		n bool
+	}{
+		{"@", false},
+		{"google.com", false},
+		{"asdf2", false},
+		{"foo.bar.baz", false},
+		{"foo-bar-baz", false},
+		{"xn--c1yn36f", false},
+		{"xn--", false},
+		{"--c1yn36f", false},
+		{"c1yn36f-", false},
+		{".xn--c1yn36f", false},
+		{"what?", false},
+		{"google", false},
+		{"_ssh.tcp.host1", false},
+		{"_ssh.tcp", false},
+		{"_ssh.udp.xn--c1yn36f", false},
+		{"_ssh._tcp.host1", true},
+		{"_ssh._tcp", true},
+		{"_ssh._udp.xn--c1yn36f", true},
+		{"_xmpp-client._tcp", true},
+		{"_xmpp-server._tcp", true},
+		{"_xmpp-client._tcp.chat", true},
+		{"_xmpp-server._tcp.a.long.sub.domain", true},
+	}
+
+	for _, table := range tables {
+		match := reSRVDomain.MatchString(table.x)
 
 		if match != table.n {
 			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, match, table.n)
@@ -144,6 +202,16 @@ func TestRegexSubDomain(t *testing.T) {
 		{".xn--c1yn36f", false},
 		{"what?", false},
 		{"google", true},
+		{"_ssh.tcp.host1", false},
+		{"_ssh.tcp", false},
+		{"_ssh.udp.xn--c1yn36f", false},
+		{"_ssh._tcp.host1", false},
+		{"_ssh._tcp", false},
+		{"_ssh._udp.xn--c1yn36f", false},
+		{"_xmpp-client._tcp", false},
+		{"_xmpp-server._tcp", false},
+		{"_xmpp-client._tcp.chat", false},
+		{"_xmpp-server._tcp.a.long.sub.domain", false},
 	}
 
 	for _, table := range tables {
@@ -169,6 +237,16 @@ func TestRegexTopDomain(t *testing.T) {
 		{"what?.", false},
 		{"google", false},
 		{"@", false},
+		{"_ssh.tcp.host1", false},
+		{"_ssh.tcp", false},
+		{"_ssh.udp.xn--c1yn36f", false},
+		{"_ssh._tcp.host1", false},
+		{"_ssh._tcp", false},
+		{"_ssh._udp.xn--c1yn36f", false},
+		{"_xmpp-client._tcp", false},
+		{"_xmpp-server._tcp", false},
+		{"_xmpp-client._tcp.chat", false},
+		{"_xmpp-server._tcp.a.long.sub.domain", false},
 	}
 
 	for _, table := range tables {

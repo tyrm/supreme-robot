@@ -17,6 +17,8 @@ const (
 	RecordTypeMX = "MX"
 	// RecordTypeNS is the type for a NS type record
 	RecordTypeNS = "NS"
+	// RecordTypeSRV is the type for a TXT type record
+	RecordTypeSRV = "SRV"
 	// RecordTypeTXT is the type for a TXT type record
 	RecordTypeTXT = "TXT"
 )
@@ -172,6 +174,51 @@ func (r *Record) Validate() error {
 		}
 		if r.TTL < 1 {
 			return errInvalidTTL
+		}
+
+		return nil
+	case RecordTypeSRV:
+		// check for required attributes
+		if r.Name == "" {
+			return errMissingName
+		}
+		if r.Value == "" {
+			return errMissingHost
+		}
+		if r.TTL == 0 {
+			return errMissingTTL
+		}
+		if r.Port.Valid == false {
+			return errMissingPort
+		}
+		if r.Priority.Valid == false {
+			return errMissingPriority
+		}
+		if r.Weight.Valid == false {
+			return errMissingWeight
+		}
+
+		// check values
+		if !reSRVDomain.MatchString(r.Name) {
+			return errInvalidName
+		}
+		if !reTopDomain.MatchString(r.Value) {
+			return errInvalidHost
+		}
+		if r.TTL < 1 {
+			return errInvalidTTL
+		}
+		if r.Port.Int32 < 1 {
+			return errInvalidPort
+		}
+		if r.Port.Int32 > 65535 {
+			return errInvalidPort
+		}
+		if r.Priority.Int32 < 1 {
+			return errInvalidPriority
+		}
+		if r.Weight.Int32 < 1 {
+			return errInvalidWeight
 		}
 
 		return nil

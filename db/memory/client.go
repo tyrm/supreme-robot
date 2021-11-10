@@ -31,10 +31,7 @@ func NewClient() (*Client, error) {
 	adminUser := models.User{
 		ID:       uuid.Must(uuid.Parse("44892097-2c97-4c16-b4d1-e8522586df48")),
 		Username: "admin",
-	}
-	err := adminUser.SetPassword("password")
-	if err != nil {
-		return nil, err
+		Password: "$2a$14$mmOFu7eOyQUFC0S/gopbDeJKcADiUx7QleU85WW7FnnCiXNgENb1G", // password
 	}
 	c.users[adminUser.ID] = adminUser
 

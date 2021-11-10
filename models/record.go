@@ -13,6 +13,8 @@ const (
 	RecordTypeAAAA = "AAAA"
 	// RecordTypeCNAME is the type for a CNAME type record
 	RecordTypeCNAME = "CNAME"
+	// RecordTypeMX is the type for an MX type record
+	RecordTypeMX = "MX"
 	// RecordTypeNS is the type for a NS type record
 	RecordTypeNS = "NS"
 	// RecordTypeTXT is the type for a TXT type record
@@ -113,6 +115,39 @@ func (r *Record) Validate() error {
 		}
 		if r.TTL < 1 {
 			return errInvalidTTL
+		}
+
+		return nil
+	case RecordTypeMX:
+		// check for required attributes
+		if r.Name == "" {
+			return errMissingName
+		}
+		if r.Value == "" {
+			return errMissingHost
+		}
+		if r.TTL == 0 {
+			return errMissingTTL
+		}
+		if r.Priority.Valid == false {
+			return errMissingPriority
+		}
+
+		// check values
+		if !reSubDomain.MatchString(r.Name) {
+			return errInvalidName
+		}
+		if !reMXDomain.MatchString(r.Value) {
+			return errInvalidHost
+		}
+		if reIPv4Address.MatchString(r.Value) {
+			return errInvalidHost
+		}
+		if r.TTL < 1 {
+			return errInvalidTTL
+		}
+		if r.Priority.Int32 < 1 {
+			return errInvalidPriority
 		}
 
 		return nil

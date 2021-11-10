@@ -1,6 +1,9 @@
 package models
 
-import "testing"
+import (
+	"database/sql"
+	"testing"
+)
 
 func TestRecordValidateTypeA(t *testing.T) {
 	tables := []struct {
@@ -101,6 +104,42 @@ func TestRecordValidateTypeCNAME(t *testing.T) {
 
 		if err != table.n {
 			t.Errorf("validation failed, got: %v, want: %v,", err, table.n)
+		}
+	}
+}
+
+func TestRecordValidateTypeMX(t *testing.T) {
+	tables := []struct {
+		x Record
+		n error
+	}{
+		{Record{Type: RecordTypeMX}, errMissingName},
+		{Record{Type: RecordTypeMX, Value: "example.com.", TTL: 300}, errMissingName},
+		{Record{Type: RecordTypeMX, Name: "example", TTL: 300}, errMissingHost},
+		{Record{Type: RecordTypeMX, Name: "@", Value: "example.com."}, errMissingTTL},
+		{Record{Type: RecordTypeMX, Name: "@", Value: "example.com.", TTL: 300}, errMissingPriority},
+		{Record{Type: RecordTypeMX, Name: "@", Value: "example.com.", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errInvalidHost},
+		{Record{Type: RecordTypeMX, Name: "@", Value: "example.com", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, nil},
+		{Record{Type: RecordTypeMX, Name: "@", Value: "10.2.1.252", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errInvalidHost},
+		{Record{Type: RecordTypeMX, Name: "test1", Value: "asdf2.", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errInvalidHost},
+		{Record{Type: RecordTypeMX, Name: "test1", Value: "test1.dev", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, nil},
+		{Record{Type: RecordTypeMX, Name: "test1.", Value: "example.com.", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeMX, Name: ".test1", Value: "example.com.", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeMX, Name: ".test1", Value: "example.com.", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeMX, Name: "-test1", Value: "example.com.", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeMX, Name: "test1-", Value: "example.com.", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "x.google.com", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, nil},
+		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "x.google.com", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "x.google.com", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "x.google.com", Priority: sql.NullInt32{Int32: -3, Valid: true}, TTL: 300}, errInvalidPriority},
+	}
+
+	for _, table := range tables {
+		err := table.x.Validate()
+
+		if err != table.n {
+			t.Errorf("validation failed for Record(Name: %s, Host: %s, Priority %d(%v), TTL: %d) , got: %v, want: %v,",
+				table.x.Name, table.x.Value, table.x.Priority.Int32, table.x.Priority.Valid, table.x.TTL, err, table.n)
 		}
 	}
 }

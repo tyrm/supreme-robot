@@ -85,7 +85,7 @@ func (c *Client) CreateGroupsForUser(userID uuid.UUID, groupIDs ...uuid.UUID) er
 	}
 
 	for _, group := range groupIDs {
-		logger.Tracef("adding group %s to %s", models.GroupTitle[group], userID)
+		logger.Tracef("adding group %s to %s", models.GroupTitle(group), userID)
 
 		// add
 		_, err = tx.

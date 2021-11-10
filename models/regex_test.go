@@ -99,6 +99,34 @@ func TestRegexMXDomain(t *testing.T) {
 	}
 }
 
+func TestRegexNSDomain(t *testing.T) {
+	tables := []struct {
+		x string
+		n bool
+	}{
+		{"@", false},
+		{"google.com", true},
+		{"asdf2", true},
+		{"foo.bar.baz", true},
+		{"foo-bar-baz", true},
+		{"xn--c1yn36f", true},
+		{"xn--", false},
+		{"--c1yn36f", false},
+		{"c1yn36f-", false},
+		{".xn--c1yn36f", false},
+		{"what?", false},
+		{"google", true},
+	}
+
+	for _, table := range tables {
+		match := reNSDomain.MatchString(table.x)
+
+		if match != table.n {
+			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, match, table.n)
+		}
+	}
+}
+
 func TestRegexSubDomain(t *testing.T) {
 	tables := []struct {
 		x string

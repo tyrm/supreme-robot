@@ -1,7 +1,6 @@
-package postgres
+package memory
 
 import (
-	"database/sql"
 	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/models"
 )
@@ -17,14 +16,5 @@ func (c *Client) Delete(obj interface{}) error {
 }
 
 func (c *Client) deleteDomain(d *models.Domain) error {
-	err := c.db.
-		QueryRowx(`UPDATE "public"."domains"
-		SET deleted_at=CURRENT_TIMESTAMP
-		WHERE id=$1;`, d.ID).
-		Scan()
-	if err == sql.ErrNoRows {
-		return nil
-	}
-
-	return err
+	return nil
 }

@@ -3,6 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"github.com/google/uuid"
+	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/models"
 	"strings"
 )
@@ -22,7 +23,7 @@ func (c *Client) ReadRecordsForDomain(domainID uuid.UUID, orderBy string, asc bo
 	case "name":
 		query = query + "name "
 	default:
-		return nil, errUnknownAttribute
+		return nil, db.ErrUnknownAttribute
 	}
 
 	if asc {

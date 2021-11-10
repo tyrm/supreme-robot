@@ -1,6 +1,9 @@
 package postgres
 
-import "github.com/tyrm/supreme-robot/models"
+import (
+	"github.com/tyrm/supreme-robot/db"
+	"github.com/tyrm/supreme-robot/models"
+)
 
 // Create a struct
 func (c *Client) Create(obj interface{}) error {
@@ -12,7 +15,7 @@ func (c *Client) Create(obj interface{}) error {
 	case *models.User:
 		return c.createUser(obj)
 	default:
-		return errUnknownType
+		return db.ErrUnknownType
 	}
 }
 

@@ -166,11 +166,12 @@ func TestCollectConfig_InvalidRefreshExpiration(t *testing.T) {
 	}
 
 	cfg, err := CollectConfig([]string{})
+
 	if err == nil {
 		t.Errorf("expected error, got: nil, want: error.")
 	}
 	if cfg != nil {
-		t.Errorf("expected config, got: %v, want: nil.", cfg)
+		t.Errorf("unexpected config, got: %v, want: nil.", cfg)
 	}
 }
 

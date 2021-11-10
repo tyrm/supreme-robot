@@ -10,7 +10,7 @@ import (
 	"github.com/tyrm/supreme-robot/config"
 )
 
-var logger = loggo.GetLogger("postgres")
+var logger = loggo.GetLogger("db.pq")
 
 // Client is a database client.
 type Client struct {

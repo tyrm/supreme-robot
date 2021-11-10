@@ -1,7 +1,12 @@
-package models
+package postgres
+
+import (
+	"github.com/google/uuid"
+	"github.com/tyrm/supreme-robot/models"
+)
 
 // CreateDomainWRecords will create a domain and it's records in a single database transaction.
-func (c *Client) CreateDomainWRecords(domain *Domain, records ...*Record) error {
+func (c *Client) CreateDomainWRecords(domain *models.Domain, records ...*models.Record) error {
 	// start transaction
 	logger.Tracef("starting transaction")
 	tx, err := c.db.Begin()
@@ -30,7 +35,7 @@ func (c *Client) CreateDomainWRecords(domain *Domain, records ...*Record) error 
 	}
 
 	logger.Tracef("tx: add domain %s", domain.Domain)
-	recordList := make([]Record, len(records))
+	recordList := make([]models.Record, len(records))
 	for i, r := range records {
 		logger.Tracef("tx: add %s record %s", r.Type, r.Name)
 		// add
@@ -66,6 +71,45 @@ func (c *Client) CreateDomainWRecords(domain *Domain, records ...*Record) error 
 	err = tx.Commit()
 	if err != nil {
 		logger.Errorf("can't commit transaction: %s", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) CreateGroupsForUser(userID uuid.UUID, groupIDs ...uuid.UUID) error {
+	// start transaction
+	tx, err := c.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	for _, group := range groupIDs {
+		logger.Tracef("adding group %s to %s", models.GroupTitle(group), userID)
+
+		// add
+		_, err = tx.
+			Exec(`INSERT INTO "public"."group_membership"("user_id", "group_id")
+			VALUES ($1, $2)`, userID, group)
+
+		// rollback on error
+		if err != nil {
+			logger.Errorf("tx error: %s", err.Error())
+			rberr := tx.Rollback()
+			if rberr != nil {
+				logger.Errorf("rollback error: %s", rberr.Error())
+				// something went REALLY wrong
+				return rberr
+			}
+			return err
+		}
+	}
+
+	// commit transaction
+	logger.Tracef("committing group memberships")
+	err = tx.Commit()
+	if err != nil {
+		logger.Errorf("commit transaction: %s", err.Error())
 		return err
 	}
 

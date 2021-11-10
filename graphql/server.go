@@ -3,7 +3,7 @@ package graphql
 import (
 	"github.com/gorilla/mux"
 	"github.com/tyrm/supreme-robot/config"
-	"github.com/tyrm/supreme-robot/models"
+	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/redis"
 	"github.com/tyrm/supreme-robot/scheduler"
 	"net/http"
@@ -13,7 +13,7 @@ import (
 // Server is a GraphQL api server
 type Server struct {
 	// data stuff
-	db        *models.Client
+	db        db.DB
 	redis     *redis.Client
 	scheduler *scheduler.Client
 
@@ -30,7 +30,7 @@ type Server struct {
 }
 
 // NewServer will create a new GraphQL server
-func NewServer(cfg *config.Config, s *scheduler.Client, d *models.Client, r *redis.Client) (*Server, error) {
+func NewServer(cfg *config.Config, s *scheduler.Client, d db.DB, r *redis.Client) (*Server, error) {
 	server := Server{
 		accessExpiration:  cfg.AccessExpiration,
 		accessSecret:      []byte(cfg.AccessSecret),

@@ -12,7 +12,7 @@ var GroupSuperAdmin = uuid.Must(uuid.Parse("71df8f2b-f293-4fde-93b1-e40dbe5c97ea
 var GroupUserAdmin = uuid.Must(uuid.Parse("fbc827a0-32db-4d71-b95e-632b414e7993"))
 
 // GroupTitle contains the titles of the groups.
-var GroupTitle = map[uuid.UUID]string{
+var groupTitle = map[uuid.UUID]string{
 	GroupDNSAdmin:   "DNS Admin",
 	GroupSuperAdmin: "Super Admin",
 	GroupUserAdmin:  "User Admin",
@@ -44,4 +44,11 @@ var GroupsDNSAdmin = []uuid.UUID{
 var GroupsUserAdmin = []uuid.UUID{
 	GroupSuperAdmin,
 	GroupUserAdmin,
+}
+
+func GroupTitle(g uuid.UUID) string {
+	if s, ok := groupTitle[g]; ok {
+		return s
+	}
+	return ""
 }

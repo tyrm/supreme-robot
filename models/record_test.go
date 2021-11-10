@@ -176,6 +176,48 @@ func TestRecordValidateTypeNS(t *testing.T) {
 	}
 }
 
+func TestRecordValidateTypeSOA(t *testing.T) {
+	tables := []struct {
+		x Record
+		n error
+	}{
+		{Record{Type: RecordTypeSOA}, errMissingName},
+		{Record{Type: RecordTypeSOA, Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errMissingName},
+		{Record{Type: RecordTypeSOA, Name: "example", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errMissingNS},
+		{Record{Type: RecordTypeSOA, Name: "something.something", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}}, errMissingTTL},
+		{Record{Type: RecordTypeSOA, Name: "@", Value: "example.com.", Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errMissingMBox},
+		{Record{Type: RecordTypeSOA, Name: "@", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errMissingExpire},
+		{Record{Type: RecordTypeSOA, Name: "@", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errMissingRefresh},
+		{Record{Type: RecordTypeSOA, Name: "@", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errMissingRetry},
+		{Record{Type: RecordTypeSOA, Name: "@", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, nil},
+		{Record{Type: RecordTypeSOA, Name: "@", Value: "example.com", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidNS},
+		{Record{Type: RecordTypeSOA, Name: "@", Value: "10.2.1.400", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidNS},
+		{Record{Type: RecordTypeSOA, Name: "test1", Value: "asdf2.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, nil},
+		{Record{Type: RecordTypeSOA, Name: "test1", Value: "test1.dev", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidNS},
+		{Record{Type: RecordTypeSOA, Name: "test1.", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeSOA, Name: ".test1", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeSOA, Name: ".test1", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeSOA, Name: "-test1", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeSOA, Name: "test1-", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, nil},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster@example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidMBox},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "testy@mctest.com", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidMBox},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: -66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidExpire},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: -44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidRefresh},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: -44, Valid: true}, TTL: 300}, errInvalidRetry},
+	}
+
+	for _, table := range tables {
+		err := table.x.Validate()
+
+		if err != table.n {
+			t.Errorf("validation failed for Record(Name: %s, NS: %s, MBox: %s(%v), Expire %d(%v), Refresh %d(%v), Retry %d(%v), TTL: %d) , got: %v, want: %v,",
+				table.x.Name, table.x.Value, table.x.MBox.String, table.x.MBox.Valid, table.x.Expire.Int32, table.x.Expire.Valid, table.x.Refresh.Int32, table.x.Refresh.Valid, table.x.Retry.Int32, table.x.Retry.Valid, table.x.TTL, err, table.n)
+		}
+	}
+}
+
 func TestRecordValidateTypeSRV(t *testing.T) {
 	tables := []struct {
 		x Record
@@ -185,7 +227,9 @@ func TestRecordValidateTypeSRV(t *testing.T) {
 		{Record{Type: RecordTypeSRV, Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errMissingName},
 		{Record{Type: RecordTypeSRV, Name: "_xmpp-client._tcp", Port: sql.NullInt32{Int32: 5000, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errMissingHost},
 		{Record{Type: RecordTypeSRV, Name: "_xmpp-client._tcp", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}}, errMissingTTL},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-client._tcp", Value: "example.com.", Priority: sql.NullInt32{Int32: 5000, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errMissingPort},
 		{Record{Type: RecordTypeSRV, Name: "_xmpp-client._tcp", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errMissingPriority},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-client._tcp", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errMissingWeight},
 		{Record{Type: RecordTypeSRV, Name: "_xmpp-client._tcp", Value: "example.com", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidHost},
 		{Record{Type: RecordTypeSRV, Name: "_ssh._udp.xn--c1yn36f", Value: "test1.dev.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, nil},
 		{Record{Type: RecordTypeSRV, Name: "test1.", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidName},

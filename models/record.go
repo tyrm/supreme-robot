@@ -17,6 +17,8 @@ const (
 	RecordTypeMX = "MX"
 	// RecordTypeNS is the type for a NS type record
 	RecordTypeNS = "NS"
+	// RecordTypeSOA is the type for a TXT type record
+	RecordTypeSOA = "SOA"
 	// RecordTypeSRV is the type for a TXT type record
 	RecordTypeSRV = "SRV"
 	// RecordTypeTXT is the type for a TXT type record
@@ -219,6 +221,54 @@ func (r *Record) Validate() error {
 		}
 		if r.Weight.Int32 < 1 {
 			return errInvalidWeight
+		}
+
+		return nil
+	case RecordTypeSOA:
+		// check for required attributes
+		if r.Name == "" {
+			return errMissingName
+		}
+		if r.Value == "" {
+			return errMissingNS
+		}
+		if r.TTL == 0 {
+			return errMissingTTL
+		}
+		if r.MBox.Valid == false {
+			return errMissingMBox
+		}
+		if r.Expire.Valid == false {
+			return errMissingExpire
+		}
+		if r.Refresh.Valid == false {
+			return errMissingRefresh
+		}
+		if r.Retry.Valid == false {
+			return errMissingRetry
+		}
+
+		// check values
+		if !reSubDomain.MatchString(r.Name) {
+			return errInvalidName
+		}
+		if !reTopDomain.MatchString(r.Value) {
+			return errInvalidNS
+		}
+		if r.TTL < 1 {
+			return errInvalidTTL
+		}
+		if !reTopDomain.MatchString(r.MBox.String) {
+			return errInvalidMBox
+		}
+		if r.Expire.Int32 < 1 {
+			return errInvalidExpire
+		}
+		if r.Refresh.Int32 < 1 {
+			return errInvalidRefresh
+		}
+		if r.Retry.Int32 < 1 {
+			return errInvalidRetry
 		}
 
 		return nil

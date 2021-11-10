@@ -9,8 +9,10 @@ import (
 const (
 	// RecordTypeA is the type for an A type record
 	RecordTypeA = "A"
-	// RecordTypeAAAA is the type for an A type record
+	// RecordTypeAAAA is the type for an AAAA type record
 	RecordTypeAAAA = "AAAA"
+	// RecordTypeCNAME is the type for an CNAME type record
+	RecordTypeCNAME = "CNAME"
 )
 
 // Record is a dns record.
@@ -80,6 +82,30 @@ func (r *Record) Validate() error {
 		}
 		if !reIPv6Address.MatchString(r.Value) {
 			return errInvalidIP
+		}
+		if r.TTL < 1 {
+			return errInvalidTTL
+		}
+
+		return nil
+	case RecordTypeCNAME:
+		// check for required attributes
+		if r.Name == "" {
+			return errMissingName
+		}
+		if r.Value == "" {
+			return errMissingHost
+		}
+		if r.TTL == 0 {
+			return errMissingTTL
+		}
+
+		// check values
+		if !reSubDomain.MatchString(r.Name) {
+			return errInvalidName
+		}
+		if !reTopDomain.MatchString(r.Value) {
+			return errInvalidHost
 		}
 		if r.TTL < 1 {
 			return errInvalidTTL

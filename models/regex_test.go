@@ -69,6 +69,36 @@ func TestRegexIPv6Address(t *testing.T) {
 	}
 }
 
+func TestRegexMXDomain(t *testing.T) {
+	tables := []struct {
+		x string
+		n bool
+	}{
+		{"google.com.", false},
+		{"asdf2.", false},
+		{"xn--c1yn36f.", false},
+		{"blog.xn--c1yn36f.", false},
+		{"x.example.com.", false},
+		{"google.com", true},
+		{"asdf2", true},
+		{"xn--c1yn36f", true},
+		{"blog.xn--c1yn36f", true},
+		{"x.example.com", true},
+		{".xn--c1yn36f.", false},
+		{"what?.", false},
+		{"google", true},
+		{"@", false},
+	}
+
+	for _, table := range tables {
+		match := reMXDomain.MatchString(table.x)
+
+		if match != table.n {
+			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, match, table.n)
+		}
+	}
+}
+
 func TestRegexSubDomain(t *testing.T) {
 	tables := []struct {
 		x string
@@ -106,6 +136,7 @@ func TestRegexTopDomain(t *testing.T) {
 		{"asdf2.", true},
 		{"xn--c1yn36f.", true},
 		{"blog.xn--c1yn36f.", true},
+		{"x.example.com.", true},
 		{".xn--c1yn36f.", false},
 		{"what?.", false},
 		{"google", false},

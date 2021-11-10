@@ -73,6 +73,38 @@ func TestRecordValidateTypeAAAA(t *testing.T) {
 	}
 }
 
+func TestRecordValidateTypeCNAME(t *testing.T) {
+	tables := []struct {
+		x Record
+		n error
+	}{
+		{Record{Type: RecordTypeCNAME}, errMissingName},
+		{Record{Type: RecordTypeCNAME, Value: "example.com.", TTL: 300}, errMissingName},
+		{Record{Type: RecordTypeCNAME, Name: "example", TTL: 300}, errMissingHost},
+		{Record{Type: RecordTypeCNAME, Name: "@", Value: "example.com."}, errMissingTTL},
+		{Record{Type: RecordTypeCNAME, Name: "@", Value: "example.com.", TTL: 300}, nil},
+		{Record{Type: RecordTypeCNAME, Name: "@", Value: "example.com", TTL: 300}, errInvalidHost},
+		{Record{Type: RecordTypeCNAME, Name: "@", Value: "10.2.1.400", TTL: 300}, errInvalidHost},
+		{Record{Type: RecordTypeCNAME, Name: "test1", Value: "asdf2.", TTL: 300}, nil},
+		{Record{Type: RecordTypeCNAME, Name: "test1", Value: "test1.dev", TTL: 300}, errInvalidHost},
+		{Record{Type: RecordTypeCNAME, Name: "test1.", Value: "example.com.", TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeCNAME, Name: ".test1", Value: "example.com.", TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeCNAME, Name: ".test1", Value: "example.com.", TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeCNAME, Name: "-test1", Value: "example.com.", TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeCNAME, Name: "test1-", Value: "example.com.", TTL: 300}, errInvalidName},
+		{Record{Type: RecordTypeCNAME, Name: "sub.test1", Value: "x.google.com.", TTL: 300}, nil},
+		{Record{Type: RecordTypeCNAME, Name: "sub.test1", Value: "x.google.com.", TTL: -300}, errInvalidTTL},
+	}
+
+	for _, table := range tables {
+		err := table.x.Validate()
+
+		if err != table.n {
+			t.Errorf("validation failed, got: %v, want: %v,", err, table.n)
+		}
+	}
+}
+
 func TestRecordValidateInvalidType(t *testing.T) {
 	tables := []struct {
 		x Record

@@ -153,7 +153,7 @@ func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) 
 		return nil, nil
 	}
 
-	domain.Records, err = domain.GetRecords(s.db)
+	domain.Records, err = s.db.ReadRecordsForDomain(domain.ID, "name", true)
 	if err != nil {
 		logger.Errorf("db error: %s", err.Error())
 		return nil, err

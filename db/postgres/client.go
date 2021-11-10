@@ -1,4 +1,4 @@
-package models
+package postgres
 
 import (
 	"github.com/jmoiron/sqlx"
@@ -10,7 +10,7 @@ import (
 	"github.com/tyrm/supreme-robot/config"
 )
 
-var logger = loggo.GetLogger("models")
+var logger = loggo.GetLogger("postgres")
 
 // Client is a database client.
 type Client struct {
@@ -26,7 +26,7 @@ func NewClient(cfg *config.Config) (*Client, error) {
 
 	logger.Debugf("Loading Migrations")
 	migrations := &migrate.HttpFileSystemMigrationSource{
-		FileSystem: pkger.Dir("/models/migrations"),
+		FileSystem: pkger.Dir("/db/postgres/migrations"),
 	}
 
 	logger.Debugf("Applying Migrations")

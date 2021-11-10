@@ -6,7 +6,7 @@ import (
 	"github.com/juju/loggo/loggocolor"
 	"github.com/spf13/cobra"
 	"github.com/tyrm/supreme-robot/config"
-	"github.com/tyrm/supreme-robot/models"
+	"github.com/tyrm/supreme-robot/db/postgres"
 	"github.com/tyrm/supreme-robot/redis"
 	"github.com/tyrm/supreme-robot/worker"
 	"log"
@@ -28,7 +28,6 @@ var workerCmd = &cobra.Command{
 			"EXT_HOSTNAME",
 			"POSTGRES_DSN",
 			"REDIS_DNS_ADDRESS",
-			"SECRET",
 		}
 		c, err := config.CollectConfig(requiredVars)
 		if err != nil {
@@ -58,8 +57,8 @@ var workerCmd = &cobra.Command{
 			return
 		}
 
-		// create models client
-		dc, err := models.NewClient(c)
+		// create db client
+		dc, err := postgres.NewClient(c)
 		if err != nil {
 			logger.Errorf("new models client: %s", err.Error())
 			return

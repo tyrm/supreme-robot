@@ -5,6 +5,7 @@ import (
 	"github.com/tyrm/supreme-robot/models"
 )
 
+// DB represents the required commands for a database.
 type DB interface {
 	Create(interface{}) error
 	CreateDomainWRecords(*models.Domain, ...*models.Record) error

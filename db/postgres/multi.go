@@ -77,6 +77,7 @@ func (c *Client) CreateDomainWRecords(domain *models.Domain, records ...*models.
 	return nil
 }
 
+// CreateGroupsForUser adds group_membership entries for the user to the database
 func (c *Client) CreateGroupsForUser(userID uuid.UUID, groupIDs ...uuid.UUID) error {
 	// start transaction
 	tx, err := c.db.Begin()

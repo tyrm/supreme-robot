@@ -7,7 +7,7 @@ CREATE TABLE "public"."domain_records" (
     domain_id uuid NOT NULL,
     type dns_record_types NOT NULL,
     value character varying NOT NULL,
-    ttl integer,
+    ttl integer NOT NULL,
     priority integer,
     port integer,
     weight integer,

@@ -19,8 +19,8 @@ type Record struct {
 	DomainID uuid.UUID `db:"domain_id"`
 	Type     string    `db:"type"`
 	Value    string    `db:"value"`
+	TTL      int       `db:"ttl"`
 
-	TTL      sql.NullInt32  `db:"ttl"`
 	Priority sql.NullInt32  `db:"priority"`
 	Port     sql.NullInt32  `db:"port"`
 	Weight   sql.NullInt32  `db:"weight"`
@@ -46,6 +46,9 @@ func (r *Record) Validate() error {
 		if r.Value == "" {
 			return errMissingIP
 		}
+		if r.TTL == 0 {
+			return errMissingTTL
+		}
 
 		// check values
 		if !reSubDomain.MatchString(r.Name) {
@@ -53,6 +56,9 @@ func (r *Record) Validate() error {
 		}
 		if !reIPv4Address.MatchString(r.Value) {
 			return errInvalidIP
+		}
+		if r.TTL < 1 {
+			return errInvalidTTL
 		}
 
 		return nil
@@ -64,6 +70,9 @@ func (r *Record) Validate() error {
 		if r.Value == "" {
 			return errMissingIP
 		}
+		if r.TTL == 0 {
+			return errMissingTTL
+		}
 
 		// check values
 		if !reSubDomain.MatchString(r.Name) {
@@ -71,6 +80,9 @@ func (r *Record) Validate() error {
 		}
 		if !reIPv6Address.MatchString(r.Value) {
 			return errInvalidIP
+		}
+		if r.TTL < 1 {
+			return errInvalidTTL
 		}
 
 		return nil

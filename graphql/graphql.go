@@ -89,7 +89,7 @@ func (s *Server) rootMutation() *graphql.Object {
 						Type: graphql.NewNonNull(graphql.String),
 					},
 					"ttl": &graphql.ArgumentConfig{
-						Type: graphql.Int,
+						Type: graphql.NewNonNull(graphql.Int),
 					},
 				},
 				Resolve: s.addRecordAMutator,

@@ -111,21 +111,6 @@ var recordType = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"ttl": &graphql.Field{
 			Type: graphql.Int,
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				if r, ok := p.Source.(models.Record); ok {
-					if r.TTL.Valid {
-						return r.TTL.Int32, nil
-					}
-					return nil, nil
-				}
-				if r, ok := p.Source.(*models.Record); ok {
-					if r.TTL.Valid {
-						return r.TTL.Int32, nil
-					}
-					return nil, nil
-				}
-				return nil, nil
-			},
 		},
 		"priority": &graphql.Field{
 			Type: graphql.Int,

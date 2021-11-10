@@ -36,11 +36,7 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 		String: mbox,
 		Valid:  true,
 	}
-	ttl, _ := soaObj["ttl"].(int)
-	newSoaRecord.TTL = sql.NullInt32{
-		Int32: int32(ttl),
-		Valid: true,
-	}
+	newSoaRecord.TTL, _ = soaObj["ttl"].(int)
 	refresh, _ := soaObj["refresh"].(int)
 	newSoaRecord.Refresh = sql.NullInt32{
 		Int32: int32(refresh),

@@ -1,7 +1,6 @@
 package graphql
 
 import (
-	"database/sql"
 	"errors"
 	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
@@ -48,13 +47,7 @@ func (s *Server) addRecordAMutator(params graphql.ResolveParams) (interface{}, e
 	}
 	newRecord.Name, _ = params.Args["name"].(string)
 	newRecord.Value, _ = params.Args["ip"].(string)
-	ttl, ttlOk := params.Args["ttl"].(int)
-	if ttlOk {
-		newRecord.TTL = sql.NullInt32{
-			Int32: int32(ttl),
-			Valid: true,
-		}
-	}
+	newRecord.TTL, _ = params.Args["ttl"].(int)
 
 	err = newRecord.Validate()
 	if err != nil {

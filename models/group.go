@@ -46,6 +46,7 @@ var GroupsUserAdmin = []uuid.UUID{
 	GroupUserAdmin,
 }
 
+// GroupTitle return a pretty text name for the group
 func GroupTitle(g uuid.UUID) string {
 	if s, ok := groupTitle[g]; ok {
 		return s

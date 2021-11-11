@@ -510,3 +510,98 @@ func TestAddRecordNSMutator_Valid(t *testing.T) {
 		return
 	}
 }
+
+func TestAddRecordSRVMutator_Valid(t *testing.T) {
+	// create server
+	server, _, _, _, err := newTestServer()
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
+	}
+	if server == nil {
+		t.Errorf("expected server, got: nil, want: *Server.")
+	}
+
+	// do login
+	accessToken, _, err := testDoLogin(server, "admin", "password")
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// extract metadata
+	req := http.Request{}
+	req.Header = http.Header{}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	metadata, err := server.extractTokenMetadata(&req)
+	if err != nil {
+		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
+	}
+
+	domain := "test."
+	soa := map[string]interface{}{
+		"ttl":     300,
+		"mbox":    "hostmaster.test.",
+		"refresh": 22,
+		"retry":   44,
+		"expire":  33,
+	}
+	domainID, _, _, err := testDoAddDomain(server, metadata, domain, soa)
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// prepare query
+	ctx := context.WithValue(context.Background(), metadataKey, metadata)
+	p := postData{
+		Query: `mutation (
+			$domainId: String!
+			$name: String!
+			$host: String!
+			$port: Int!
+			$priority: Int!
+			$ttl: Int!
+			$weight: Int!
+		){
+			addRecordSRV(
+				domainId: $domainId
+				name: $name
+				host: $host
+				port: $port
+				priority: $priority
+				ttl: $ttl
+				weight: $weight
+			){
+				id
+				name
+				value
+				port
+				priority
+				ttl
+				weight
+			}
+		}`,
+		Variables: map[string]interface{}{
+			"domainId": domainID,
+			"name":     "subdomain",
+			"host":     "ns1.example.com.",
+			"port":     5555,
+			"priority": 10,
+			"weight":   100,
+			"ttl":      300,
+		},
+	}
+
+	// do query
+	result := graphql.Do(graphql.Params{
+		Context:        ctx,
+		Schema:         server.schema(),
+		RequestString:  p.Query,
+		VariableValues: p.Variables,
+		OperationName:  p.Operation,
+	})
+	if result.HasErrors() {
+		for _, e := range result.Errors {
+			t.Errorf("unexpected error, got: %#v, want: nil.", e.Error())
+		}
+		return
+	}
+}

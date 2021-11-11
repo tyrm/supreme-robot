@@ -95,6 +95,118 @@ func (s *Server) rootMutation() *graphql.Object {
 				Resolve: s.addRecordAMutator,
 			},
 
+			"addRecordAAAA": &graphql.Field{
+				Type:        recordType,
+				Description: "Add AAAA record",
+				Args: graphql.FieldConfigArgument{
+					"domainId": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"name": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"ip": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"ttl": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
+				},
+				Resolve: s.addRecordAAAAMutator,
+			},
+
+			"addRecordCNAME": &graphql.Field{
+				Type:        recordType,
+				Description: "Add CNAME record",
+				Args: graphql.FieldConfigArgument{
+					"domainId": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"name": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"host": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"ttl": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
+				},
+				Resolve: s.addRecordCNAMEMutator,
+			},
+
+			"addRecordMX": &graphql.Field{
+				Type:        recordType,
+				Description: "Add MX record",
+				Args: graphql.FieldConfigArgument{
+					"domainId": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"name": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"host": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"priority": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
+					"ttl": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
+				},
+				Resolve: s.addRecordMXMutator,
+			},
+
+			"addRecordNS": &graphql.Field{
+				Type:        recordType,
+				Description: "Add NS record",
+				Args: graphql.FieldConfigArgument{
+					"domainId": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"name": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"host": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"ttl": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
+				},
+				Resolve: s.addRecordNSMutator,
+			},
+
+			"addRecordSRV": &graphql.Field{
+				Type:        recordType,
+				Description: "Add SRV record",
+				Args: graphql.FieldConfigArgument{
+					"domainId": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"name": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"host": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"port": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
+					"priority": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
+					"weight": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
+					"ttl": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
+				},
+				Resolve: s.addRecordSRVMutator,
+			},
+
 			"addUser": &graphql.Field{
 				Type:        userType,
 				Description: "Add new user",

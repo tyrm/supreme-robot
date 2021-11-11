@@ -48,7 +48,7 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 		Valid: true,
 	}
 	expire, _ := soaObj["expire"].(int)
-	newSoaRecord.Retry = sql.NullInt32{
+	newSoaRecord.Expire = sql.NullInt32{
 		Int32: int32(expire),
 		Valid: true,
 	}

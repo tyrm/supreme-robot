@@ -24,6 +24,9 @@ func TestCollectConfig_Empty(t *testing.T) {
 	if cfg.ExtHostname != "" {
 		t.Errorf("enexpected config value for ExtHostname, got: '%s', want: ''.", cfg.ExtHostname)
 	}
+	if cfg.HttpPort != ":5000" {
+		t.Errorf("enexpected config value for ExtHostname, got: '%s', want: ':5000'.", cfg.HttpPort)
+	}
 	if cfg.LoggerConfig != "<root>=INFO" {
 		t.Errorf("enexpected config value for LoggerConfig, got: '%s', want: '<root>=INFO'.", cfg.LoggerConfig)
 	}
@@ -87,6 +90,29 @@ func TestCollectConfig_InvalidAccessExpiration(t *testing.T) {
 
 	setEnvVars := map[string]string{
 		"ACCESS_EXP": "astring",
+	}
+
+	for k, v := range setEnvVars {
+		err := os.Setenv(k, v)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	cfg, err := CollectConfig([]string{})
+	if err == nil {
+		t.Errorf("expected error, got: nil, want: error.")
+	}
+	if cfg != nil {
+		t.Errorf("expected config, got: %v, want: nil.", cfg)
+	}
+}
+
+func TestCollectConfig_InvalidHttPort(t *testing.T) {
+	unsetEnv()
+
+	setEnvVars := map[string]string{
+		"HTTP_PORT": "astring",
 	}
 
 	for k, v := range setEnvVars {
@@ -182,6 +208,7 @@ func TestCollectConfig_Loaded(t *testing.T) {
 		"ACCESS_SECRET":         "secret1",
 		"ACCESS_EXP":            "300",
 		"EXT_HOSTNAME":          "www.bubbles.com",
+		"HTTP_PORT":             "9876",
 		"LOG_LEVEL":             "trace",
 		"POSTGRES_DSN":          "postgresql://test:test@127.0.0.1:5432/test",
 		"PRIMARY_NS":            "ns1.ptzo.gdn.",
@@ -215,6 +242,9 @@ func TestCollectConfig_Loaded(t *testing.T) {
 	}
 	if cfg.ExtHostname != "www.bubbles.com" {
 		t.Errorf("enexpected config value for ExtHostname, got: '%s', want: 'www.bubbles.com'.", cfg.ExtHostname)
+	}
+	if cfg.HttpPort != ":9876" {
+		t.Errorf("enexpected config value for ExtHostname, got: '%s', want: ':9876'.", cfg.ExtHostname)
 	}
 	if cfg.LoggerConfig != "<root>=TRACE" {
 		t.Errorf("enexpected config value for LoggerConfig, got: '%s', want: '<root>=TRACE'.", cfg.LoggerConfig)
@@ -256,6 +286,7 @@ func unsetEnv() {
 		"ACCESS_SECRET",
 		"ACCESS_EXP",
 		"EXT_HOSTNAME",
+		"HTTP_PORT",
 		"LOG_LEVEL",
 		"POSTGRES_DSN",
 		"PRIMARY_NS",

@@ -16,6 +16,8 @@ type Config struct {
 
 	ExtHostname string
 
+	HttpPort string
+
 	LoggerConfig string
 
 	PostgresDsn string
@@ -52,6 +54,17 @@ func CollectConfig(requiredVars []string) (*Config, error) {
 			return nil, err
 		}
 		config.AccessExpiration = time.Second * time.Duration(exp)
+	}
+
+	// HTTP_PORT
+	if os.Getenv("HTTP_PORT") == "" {
+		config.HttpPort = ":5000"
+	} else {
+		port, err := strconv.Atoi(os.Getenv("HTTP_PORT"))
+		if err != nil {
+			return nil, err
+		}
+		config.HttpPort = fmt.Sprintf(":%d", port)
 	}
 
 	// EXT_HOSTNAME

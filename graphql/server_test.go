@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	"fmt"
 	"github.com/tyrm/supreme-robot/config"
 	dbMem "github.com/tyrm/supreme-robot/db/memory"
 	kvMem "github.com/tyrm/supreme-robot/kv/memory"
@@ -31,13 +32,38 @@ func (w *mockResponseWriter) WriteHeader(status int) {
 }
 
 func TestNewServer(t *testing.T) {
-	ws, _, _, _, err := newTestServer()
+	server, _, _, _, err := newTestServer()
 
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
-	if ws == nil {
+	if server == nil {
 		t.Errorf("expected server, got: nil, want: *Server.")
+	}
+
+	// ** start application **
+	errChan := make(chan error)
+
+	// start web server
+	logger.Infof("starting web app")
+	go func(errChan chan error) {
+		err := server.ListenAndServe()
+		if err != nil {
+			errChan <- fmt.Errorf("webapp: %s", err.Error())
+		}
+	}(errChan)
+
+	time.Sleep(time.Second * 1)
+
+	server.Close()
+
+	select {
+	case err := <-errChan:
+		if err.Error() != "webapp: http: Server closed" {
+			t.Errorf("unexpected error, got: %s, want: 'webapp: http: Server closed'.", err.Error())
+		}
+	case <-time.After(time.Second * 10):
+		t.Errorf("expected error, got: nil, want: 'webapp: http: Server closed'.")
 	}
 }
 
@@ -45,6 +71,7 @@ func newTestServer() (*Server, *queueMem.Scheduler, *dbMem.Client, *kvMem.Client
 	cnf := config.Config{
 		AccessExpiration:  time.Hour * 24,
 		AccessSecret:      "test",
+		HttpPort:          ":27413",
 		PrimaryNS:         "ns1.example.com.",
 		RefreshExpiration: time.Hour * 24,
 		RefreshSecret:     "test1234",

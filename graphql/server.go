@@ -23,6 +23,7 @@ type Server struct {
 	// web stuff
 	accessExpiration  time.Duration
 	accessSecret      []byte
+	port              string
 	refreshExpiration time.Duration
 	refreshSecret     []byte
 	router            *mux.Router
@@ -35,8 +36,9 @@ func NewServer(cfg *config.Config, s queue.Scheduler, d db.DB, k kv.Webapp) (*Se
 		accessExpiration:  cfg.AccessExpiration,
 		accessSecret:      []byte(cfg.AccessSecret),
 		db:                d,
-		primaryNS:         cfg.PrimaryNS,
 		kv:                k,
+		port:              cfg.HttpPort,
+		primaryNS:         cfg.PrimaryNS,
 		refreshExpiration: cfg.RefreshExpiration,
 		refreshSecret:     []byte(cfg.RefreshSecret),
 		scheduler:         s,
@@ -67,7 +69,7 @@ func (s *Server) Close() {
 func (s *Server) ListenAndServe() error {
 	s.server = &http.Server{
 		Handler:      s.router,
-		Addr:         ":5000",
+		Addr:         s.port,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}

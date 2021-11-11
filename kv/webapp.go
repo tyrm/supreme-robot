@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Webapp is for dealing with kv values for use in the app
 type Webapp interface {
 	DeleteAccessToken(uuid.UUID) (int, error)
 	DeleteRefreshToken(string) (int, error)

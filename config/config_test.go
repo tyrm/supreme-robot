@@ -24,8 +24,8 @@ func TestCollectConfig_Empty(t *testing.T) {
 	if cfg.ExtHostname != "" {
 		t.Errorf("enexpected config value for ExtHostname, got: '%s', want: ''.", cfg.ExtHostname)
 	}
-	if cfg.HttpPort != ":5000" {
-		t.Errorf("enexpected config value for ExtHostname, got: '%s', want: ':5000'.", cfg.HttpPort)
+	if cfg.HTTPPort != ":5000" {
+		t.Errorf("enexpected config value for ExtHostname, got: '%s', want: ':5000'.", cfg.HTTPPort)
 	}
 	if cfg.LoggerConfig != "<root>=INFO" {
 		t.Errorf("enexpected config value for LoggerConfig, got: '%s', want: '<root>=INFO'.", cfg.LoggerConfig)
@@ -243,7 +243,7 @@ func TestCollectConfig_Loaded(t *testing.T) {
 	if cfg.ExtHostname != "www.bubbles.com" {
 		t.Errorf("enexpected config value for ExtHostname, got: '%s', want: 'www.bubbles.com'.", cfg.ExtHostname)
 	}
-	if cfg.HttpPort != ":9876" {
+	if cfg.HTTPPort != ":9876" {
 		t.Errorf("enexpected config value for ExtHostname, got: '%s', want: ':9876'.", cfg.ExtHostname)
 	}
 	if cfg.LoggerConfig != "<root>=TRACE" {

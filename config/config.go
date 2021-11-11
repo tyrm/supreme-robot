@@ -16,7 +16,7 @@ type Config struct {
 
 	ExtHostname string
 
-	HttpPort string
+	HTTPPort string
 
 	LoggerConfig string
 
@@ -58,13 +58,13 @@ func CollectConfig(requiredVars []string) (*Config, error) {
 
 	// HTTP_PORT
 	if os.Getenv("HTTP_PORT") == "" {
-		config.HttpPort = ":5000"
+		config.HTTPPort = ":5000"
 	} else {
 		port, err := strconv.Atoi(os.Getenv("HTTP_PORT"))
 		if err != nil {
 			return nil, err
 		}
-		config.HttpPort = fmt.Sprintf(":%d", port)
+		config.HTTPPort = fmt.Sprintf(":%d", port)
 	}
 
 	// EXT_HOSTNAME

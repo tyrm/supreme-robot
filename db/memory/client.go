@@ -5,6 +5,7 @@ import (
 	"github.com/juju/loggo"
 	"github.com/tyrm/supreme-robot/models"
 	"sync"
+	"time"
 )
 
 var logger = loggo.GetLogger("db.mem")
@@ -29,7 +30,7 @@ func NewClient() (*Client, error) {
 		records:  make(map[uuid.UUID]models.Record),
 		users:    make(map[uuid.UUID]models.User),
 	}
-
+	now := time.Now()
 	adminUser := models.User{
 		ID:       uuid.Must(uuid.Parse("44892097-2c97-4c16-b4d1-e8522586df48")),
 		Username: "admin",
@@ -37,6 +38,8 @@ func NewClient() (*Client, error) {
 		Groups: []uuid.UUID{
 			models.GroupSuperAdmin,
 		},
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 	c.users[adminUser.ID] = adminUser
 

@@ -37,7 +37,7 @@ func NewServer(cfg *config.Config, s queue.Scheduler, d db.DB, k kv.Webapp) (*Se
 		accessSecret:      []byte(cfg.AccessSecret),
 		db:                d,
 		kv:                k,
-		port:              cfg.HttpPort,
+		port:              cfg.HTTPPort,
 		primaryNS:         cfg.PrimaryNS,
 		refreshExpiration: cfg.RefreshExpiration,
 		refreshSecret:     []byte(cfg.RefreshSecret),

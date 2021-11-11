@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/models"
+	"time"
 )
 
 // Create a struct
@@ -21,7 +22,11 @@ func (c *Client) Create(obj interface{}) error {
 }
 
 func (c *Client) createDomain(d *models.Domain) error {
+	now := time.Now()
+
 	d.ID = uuid.New()
+	d.CreatedAt = now
+	d.UpdatedAt = now
 
 	// Lock DB
 	c.Lock()
@@ -34,11 +39,11 @@ func (c *Client) createDomain(d *models.Domain) error {
 }
 
 func (c *Client) createRecord(r *models.Record) error {
-	id, err := uuid.NewUUID()
-	if err != nil {
-		return err
-	}
-	r.ID = id
+	now := time.Now()
+
+	r.ID = uuid.New()
+	r.CreatedAt = now
+	r.UpdatedAt = now
 
 	// Lock DB
 	c.Lock()
@@ -49,11 +54,11 @@ func (c *Client) createRecord(r *models.Record) error {
 }
 
 func (c *Client) createUser(u *models.User) error {
-	id, err := uuid.NewUUID()
-	if err != nil {
-		return err
-	}
-	u.ID = id
+	now := time.Now()
+
+	u.ID = uuid.New()
+	u.CreatedAt = now
+	u.UpdatedAt = now
 
 	// Lock DB
 	c.Lock()

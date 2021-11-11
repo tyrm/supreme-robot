@@ -63,6 +63,8 @@ func TestAddRecordAMutator_NoMetadata(t *testing.T) {
 				name
 				value
 				ttl
+				createdAt
+				updatedAt
 			}
 		}`,
 		Variables: map[string]interface{}{
@@ -147,6 +149,8 @@ func TestAddRecordAMutator_Valid(t *testing.T) {
 				name
 				value
 				ttl
+				createdAt
+				updatedAt
 			}
 		}`,
 		Variables: map[string]interface{}{
@@ -232,6 +236,8 @@ func TestAddRecordAAAAMutator_Valid(t *testing.T) {
 				name
 				value
 				ttl
+				createdAt
+				updatedAt
 			}
 		}`,
 		Variables: map[string]interface{}{
@@ -315,6 +321,8 @@ func TestAddRecordCNAMEMutator_Valid(t *testing.T) {
 				name
 				value
 				ttl
+				createdAt
+				updatedAt
 			}
 		}`,
 		Variables: map[string]interface{}{
@@ -401,6 +409,8 @@ func TestAddRecordMXMutator_Valid(t *testing.T) {
 				value
 				priority
 				ttl
+				createdAt
+				updatedAt
 			}
 		}`,
 		Variables: map[string]interface{}{
@@ -485,6 +495,8 @@ func TestAddRecordNSMutator_Valid(t *testing.T) {
 				name
 				value
 				ttl
+				createdAt
+				updatedAt
 			}
 		}`,
 		Variables: map[string]interface{}{
@@ -577,6 +589,8 @@ func TestAddRecordSRVMutator_Valid(t *testing.T) {
 				priority
 				ttl
 				weight
+				createdAt
+				updatedAt
 			}
 		}`,
 		Variables: map[string]interface{}{

@@ -128,6 +128,8 @@ func testDoAddDomain(server *Server, metadata *accessDetails, d string, soa map[
 			){
 				id
 				domain
+				createdAt
+				updatedAt
 				records{
 					id
 					name
@@ -138,6 +140,8 @@ func testDoAddDomain(server *Server, metadata *accessDetails, d string, soa map[
 					refresh
 					retry
 					expire
+					createdAt
+					updatedAt
 				}
 			}
 		}`,

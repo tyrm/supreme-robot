@@ -16,5 +16,10 @@ func (c *Client) Delete(obj interface{}) error {
 }
 
 func (c *Client) deleteDomain(d *models.Domain) error {
+	// Lock DB
+	c.RLock()
+	defer c.RUnlock()
+
+	delete(c.domains, d.ID)
 	return nil
 }

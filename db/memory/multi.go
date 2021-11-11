@@ -16,10 +16,14 @@ func (c *Client) CreateDomainWRecords(domain *models.Domain, records ...*models.
 	for i, r := range records {
 		r.DomainID = domain.ID
 		r.ID = uuid.New()
+
+		c.records[r.ID] = *r
 		recordList[i] = *r
 	}
 	domain.Records = &recordList
 
+	c.domains[domain.ID] = *domain
+	c.domainsZ[domain.ID] = *domain
 	return nil
 }
 

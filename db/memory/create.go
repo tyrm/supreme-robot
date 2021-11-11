@@ -21,19 +21,44 @@ func (c *Client) Create(obj interface{}) error {
 }
 
 func (c *Client) createDomain(d *models.Domain) error {
-	id, err := uuid.NewUUID()
-	if err != nil {
-		return err
-	}
-	d.ID = id
+	d.ID = uuid.New()
+
+	// Lock DB
+	c.Lock()
+	defer c.Unlock()
+
+	c.domains[d.ID] = *d
+	c.domainsZ[d.ID] = *d
 
 	return nil
 }
 
 func (c *Client) createRecord(r *models.Record) error {
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return err
+	}
+	r.ID = id
+
+	// Lock DB
+	c.Lock()
+	defer c.Unlock()
+
+	c.records[r.ID] = *r
 	return nil
 }
 
 func (c *Client) createUser(u *models.User) error {
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return err
+	}
+	u.ID = id
+
+	// Lock DB
+	c.Lock()
+	defer c.Unlock()
+
+	c.users[u.ID] = *u
 	return nil
 }

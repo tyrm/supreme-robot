@@ -2,6 +2,7 @@ package graphql
 
 import (
 	"context"
+	"fmt"
 	"github.com/graphql-go/graphql"
 	"net/http"
 	"testing"
@@ -17,46 +18,16 @@ func TestLoginMutator_BadPassword(t *testing.T) {
 		t.Errorf("expected server, got: nil, want: *Server.")
 	}
 
-	// prepare query
-	ctx := context.Background()
-	p := postData{
-		Query: `mutation (
-			$username: String!
-			$password: String!
-		){
-			login(
-				username: $username
-				password: $password
-			){
-				accessToken
-				refreshToken
-			}
-		}`,
-		Variables: map[string]interface{}{
-			"username": "admin",
-			"password": "badpassword",
-		},
-	}
-
-	// do query
-	result := graphql.Do(graphql.Params{
-		Context:        ctx,
-		Schema:         server.schema(),
-		RequestString:  p.Query,
-		VariableValues: p.Variables,
-		OperationName:  p.Operation,
-	})
-
-	if !result.HasErrors() {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	// validate error
-	err = result.Errors[0]
+	// do login
+	accessToken, refreshToken, err := testDoLogin(server, "admin", "badpassword")
 	if err.Error() != errBadLogin.Error() {
-		t.Errorf("unexpected error, got: '%s', want: '%s'.", err.Error(), errBadLogin.Error())
-
+		t.Errorf("unexpected error, got: %s, want: %s.", err.Error(), errBadLogin.Error())
+	}
+	if accessToken != "" {
+		t.Errorf("returned access token bit shouldn't")
+	}
+	if refreshToken != "" {
+		t.Errorf("returned refresh token bit shouldn't")
 	}
 }
 
@@ -70,50 +41,21 @@ func TestLoginMutator_BadUsername(t *testing.T) {
 		t.Errorf("expected server, got: nil, want: *Server.")
 	}
 
-	// prepare query
-	ctx := context.Background()
-	p := postData{
-		Query: `mutation (
-			$username: String!
-			$password: String!
-		){
-			login(
-				username: $username
-				password: $password
-			){
-				accessToken
-				refreshToken
-			}
-		}`,
-		Variables: map[string]interface{}{
-			"username": "notauser",
-			"password": "password",
-		},
-	}
-
-	// do query
-	result := graphql.Do(graphql.Params{
-		Context:        ctx,
-		Schema:         server.schema(),
-		RequestString:  p.Query,
-		VariableValues: p.Variables,
-		OperationName:  p.Operation,
-	})
-
-	if !result.HasErrors() {
-		t.Errorf("expected error, got: nil, want: error.")
-		return
-	}
-
-	// validate error
-	err = result.Errors[0]
+	// do login
+	accessToken, refreshToken, err := testDoLogin(server, "notauser", "password")
 	if err.Error() != errBadLogin.Error() {
-		t.Errorf("unexpected error, got: '%s', want: '%s'.", err.Error(), errBadLogin.Error())
+		t.Errorf("unexpected error, got: %s, want: %s.", err.Error(), errBadLogin.Error())
+	}
+	if accessToken != "" {
+		t.Errorf("returned access token bit shouldn't")
+	}
+	if refreshToken != "" {
+		t.Errorf("returned refresh token bit shouldn't")
 	}
 }
 
 func TestLoginMutator_ValidLogin(t *testing.T) {
-	// create web server
+	// create server
 	server, _, _, _, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
@@ -122,65 +64,16 @@ func TestLoginMutator_ValidLogin(t *testing.T) {
 		t.Errorf("expected server, got: nil, want: *Server.")
 	}
 
-	// prepare query
-	ctx := context.Background()
-	p := postData{
-		Query: `mutation (
-			$username: String!
-			$password: String!
-		){
-			login(
-				username: $username
-				password: $password
-			){
-				accessToken
-				refreshToken
-			}
-		}`,
-		Variables: map[string]interface{}{
-			"username": "admin",
-			"password": "password",
-		},
+	// do login
+	accessToken, refreshToken, err := testDoLogin(server, "admin", "password")
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
-
-	// do query
-	result := graphql.Do(graphql.Params{
-		Context:        ctx,
-		Schema:         server.schema(),
-		RequestString:  p.Query,
-		VariableValues: p.Variables,
-		OperationName:  p.Operation,
-	})
-	if result.HasErrors() {
-		for _, e := range result.Errors {
-			t.Errorf("unexpected error, got: %#v, want: nil.", e.Error())
-		}
-		return
+	if accessToken == "" {
+		t.Errorf("no access token returned")
 	}
-
-	// validate data
-	data, dataOk := result.Data.(map[string]interface{})
-	if !dataOk {
-		t.Errorf("no data returned.")
-		return
-	}
-
-	login, loginOK := data["login"].(map[string]interface{})
-	if !loginOK {
-		t.Errorf("no login data returned.")
-		return
-	}
-
-	_, accessTokenOK := login["accessToken"].(string)
-	if !accessTokenOK {
-		t.Errorf("no accessToken returned.")
-		return
-	}
-
-	_, refreshTokenOK := login["refreshToken"].(string)
-	if !refreshTokenOK {
-		t.Errorf("no refreshToken returned.")
-		return
+	if refreshToken == "" {
+		t.Errorf("no refresh token returned")
 	}
 }
 
@@ -234,59 +127,10 @@ func TestLogoutMutator_Valid(t *testing.T) {
 		t.Errorf("expected server, got: nil, want: *Server.")
 	}
 
-	// prepare query
-	ctx := context.Background()
-	pLogin := postData{
-		Query: `mutation (
-			$username: String!
-			$password: String!
-		){
-			login(
-				username: $username
-				password: $password
-			){
-				accessToken
-				refreshToken
-			}
-		}`,
-		Variables: map[string]interface{}{
-			"username": "admin",
-			"password": "password",
-		},
-	}
-
-	// do query
-	result := graphql.Do(graphql.Params{
-		Context:        ctx,
-		Schema:         server.schema(),
-		RequestString:  pLogin.Query,
-		VariableValues: pLogin.Variables,
-		OperationName:  pLogin.Operation,
-	})
-	if result.HasErrors() {
-		for _, e := range result.Errors {
-			t.Errorf("unexpected error, got: %#v, want: nil.", e.Error())
-		}
-		return
-	}
-
-	// validate data
-	data, dataOk := result.Data.(map[string]interface{})
-	if !dataOk {
-		t.Errorf("no data returned.")
-		return
-	}
-
-	login, loginOK := data["login"].(map[string]interface{})
-	if !loginOK {
-		t.Errorf("no login data returned.")
-		return
-	}
-
-	accessToken, accessTokenOK := login["accessToken"].(string)
-	if !accessTokenOK {
-		t.Errorf("no accessToken returned.")
-		return
+	// do login
+	accessToken, _, err := testDoLogin(server, "admin", "password")
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
 
 	// extract metadata
@@ -299,7 +143,7 @@ func TestLogoutMutator_Valid(t *testing.T) {
 	}
 
 	// add metadata to context
-	ctx = context.WithValue(ctx, metadataKey, metadata)
+	ctx := context.WithValue(context.Background(), metadataKey, metadata)
 	pLogout := postData{
 		Query: `mutation {
 			logout{
@@ -356,65 +200,10 @@ func TestRefreshAccessTokenMutator_Valid(t *testing.T) {
 		t.Errorf("expected server, got: nil, want: *Server.")
 	}
 
-	// prepare query
-	ctx := context.Background()
-	pLogin := postData{
-		Query: `mutation (
-			$username: String!
-			$password: String!
-		){
-			login(
-				username: $username
-				password: $password
-			){
-				accessToken
-				refreshToken
-			}
-		}`,
-		Variables: map[string]interface{}{
-			"username": "admin",
-			"password": "password",
-		},
-	}
-
-	// do query
-	result := graphql.Do(graphql.Params{
-		Context:        ctx,
-		Schema:         server.schema(),
-		RequestString:  pLogin.Query,
-		VariableValues: pLogin.Variables,
-		OperationName:  pLogin.Operation,
-	})
-	if result.HasErrors() {
-		for _, e := range result.Errors {
-			t.Errorf("unexpected error, got: %#v, want: nil.", e.Error())
-		}
-		return
-	}
-
-	// validate data
-	data, dataOk := result.Data.(map[string]interface{})
-	if !dataOk {
-		t.Errorf("no data returned.")
-		return
-	}
-
-	login, loginOK := data["login"].(map[string]interface{})
-	if !loginOK {
-		t.Errorf("no login data returned.")
-		return
-	}
-
-	accessToken, accessTokenOK := login["accessToken"].(string)
-	if !accessTokenOK {
-		t.Errorf("no accessToken returned.")
-		return
-	}
-
-	refreshToken, refreshTokenOK := login["refreshToken"].(string)
-	if !refreshTokenOK {
-		t.Errorf("no refreshToken returned.")
-		return
+	// do login
+	accessToken, refreshToken, err := testDoLogin(server, "admin", "password")
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
 
 	// extract metadata
@@ -427,7 +216,7 @@ func TestRefreshAccessTokenMutator_Valid(t *testing.T) {
 	}
 
 	// add metadata to context
-	ctx = context.WithValue(ctx, metadataKey, metadata)
+	ctx := context.WithValue(context.Background(), metadataKey, metadata)
 	pRefreshAccessToken := postData{
 		Query: `mutation (
 			$refreshToken: String!
@@ -453,7 +242,7 @@ func TestRefreshAccessTokenMutator_Valid(t *testing.T) {
 		OperationName:  pRefreshAccessToken.Operation,
 	})
 	if refreshResult.HasErrors() {
-		for _, e := range result.Errors {
+		for _, e := range refreshResult.Errors {
 			t.Errorf("unexpected error, got: %#v, want: nil.", e.Error())
 		}
 		return
@@ -483,4 +272,62 @@ func TestRefreshAccessTokenMutator_Valid(t *testing.T) {
 		t.Errorf("no refreshToken returned.")
 		return
 	}
+}
+
+func testDoLogin(server *Server, username, password string) (string, string, error) {
+	// prepare query
+	ctx := context.Background()
+	pLogin := postData{
+		Query: `mutation (
+			$username: String!
+			$password: String!
+		){
+			login(
+				username: $username
+				password: $password
+			){
+				accessToken
+				refreshToken
+			}
+		}`,
+		Variables: map[string]interface{}{
+			"username": username,
+			"password": password,
+		},
+	}
+
+	// do query
+	result := graphql.Do(graphql.Params{
+		Context:        ctx,
+		Schema:         server.schema(),
+		RequestString:  pLogin.Query,
+		VariableValues: pLogin.Variables,
+		OperationName:  pLogin.Operation,
+	})
+	if result.HasErrors() {
+		return "", "", result.Errors[0]
+	}
+
+	// validate data
+	data, dataOk := result.Data.(map[string]interface{})
+	if !dataOk {
+		return "", "", fmt.Errorf("no data returned")
+	}
+
+	login, loginOK := data["login"].(map[string]interface{})
+	if !loginOK {
+		return "", "", fmt.Errorf("no login data returned")
+	}
+
+	accessToken, accessTokenOK := login["accessToken"].(string)
+	if !accessTokenOK {
+		return "", "", fmt.Errorf("no accessToken returned")
+	}
+
+	refreshToken, refreshTokenOK := login["refreshToken"].(string)
+	if !refreshTokenOK {
+		return "", "", fmt.Errorf("no refreshToken returned")
+	}
+
+	return accessToken, refreshToken, nil
 }

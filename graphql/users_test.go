@@ -2,6 +2,7 @@ package graphql
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
 	"net/http"
@@ -108,4 +109,73 @@ func TestMeQuery(t *testing.T) {
 	if updatedAt <= 0 {
 		t.Errorf("got invalid updatedAt, got: %d, want: >0.", updatedAt)
 	}
+}
+
+func testDoAddUser(server *Server, metadata *accessDetails, username, password string, groups []string) (string, string, []interface{}, error) {
+	// prepare query
+	ctx := context.WithValue(context.Background(), metadataKey, metadata)
+	p := postData{
+		Query: `mutation (
+			$username: String!
+			$password: String!
+			$groups: [String!]
+		){
+			addUser(
+				username: $username
+				password: $password
+				groups: $groups
+			){
+				id
+				username
+				groups
+				createdAt
+				updatedAt
+			}
+		}`,
+		Variables: map[string]interface{}{
+			"username": username,
+			"password": password,
+			"groups":   groups,
+		},
+	}
+
+	// do query
+	result := graphql.Do(graphql.Params{
+		Context:        ctx,
+		Schema:         server.schema(),
+		RequestString:  p.Query,
+		VariableValues: p.Variables,
+		OperationName:  p.Operation,
+	})
+	if result.HasErrors() {
+		return "", "", nil, result.Errors[0]
+	}
+
+	// validate data
+	data, dataOk := result.Data.(map[string]interface{})
+	if !dataOk {
+		return "", "", nil, fmt.Errorf("no data returned")
+	}
+
+	addDomain, addDomainOK := data["addDomain"].(map[string]interface{})
+	if !addDomainOK {
+		return "", "", nil, fmt.Errorf("no addDomain data returned")
+	}
+
+	id, idOK := addDomain["id"].(string)
+	if !idOK {
+		return "", "", nil, fmt.Errorf("no id returned")
+	}
+
+	domain, domainOK := addDomain["domain"].(string)
+	if !domainOK {
+		return "", "", nil, fmt.Errorf("no domain returned")
+	}
+
+	records, recordsOK := addDomain["records"].([]interface{})
+	if !recordsOK {
+		return "", "", nil, fmt.Errorf("no records returned")
+	}
+
+	return id, domain, records, nil
 }

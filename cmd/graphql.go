@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/juju/loggo"
 	"github.com/juju/loggo/loggocolor"
@@ -93,7 +94,7 @@ var graphqlCmd = &cobra.Command{
 				errChan <- fmt.Errorf("webapp: %s", err.Error())
 			}
 		}(errChan)
-		defer ws.Close()
+		defer ws.Shutdown(context.Background())
 
 		// Wait for SIGINT and SIGTERM (HIT CTRL-C)
 		nch := make(chan os.Signal)

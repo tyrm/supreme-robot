@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	"context"
 	"github.com/gorilla/mux"
 	"github.com/tyrm/supreme-robot/config"
 	"github.com/tyrm/supreme-robot/db"
@@ -57,9 +58,9 @@ func NewServer(cfg *config.Config, s queue.Scheduler, d db.DB, k kv.Webapp) (*Se
 	return &server, nil
 }
 
-// Close will cleanly stop the server.
-func (s *Server) Close() {
-	err := s.server.Close()
+// Shutdown will cleanly stop the server.
+func (s *Server) Shutdown(c context.Context) {
+	err := s.server.Shutdown(c)
 	if err != nil {
 		logger.Warningf("closing server: %s", err.Error())
 	}

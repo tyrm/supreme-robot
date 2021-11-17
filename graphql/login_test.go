@@ -299,7 +299,7 @@ func testDoLogin(server *Server, username, password string) (string, string, err
 	// do query
 	result := graphql.Do(graphql.Params{
 		Context:        ctx,
-		Schema:         server.schema(),
+		Schema:         server.schemaUnauthorized(),
 		RequestString:  pLogin.Query,
 		VariableValues: pLogin.Variables,
 		OperationName:  pLogin.Operation,

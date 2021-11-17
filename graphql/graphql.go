@@ -14,10 +14,19 @@ type postData struct {
 	Variables map[string]interface{} `json:"variables"`
 }
 
+// fields
+func (s *Server) statusField() *graphql.Field {
+	return &graphql.Field{
+		Type:        statusType,
+		Description: "get system status",
+		Resolve:     s.statusQuery,
+	}
+}
+
 // root queries
 func (s *Server) rootQuery() *graphql.Object {
 	return graphql.NewObject(graphql.ObjectConfig{
-		Name: "RootQuery",
+		Name: "Query",
 		Fields: graphql.Fields{
 			"domain": &graphql.Field{
 				Type:        domainType,
@@ -42,6 +51,8 @@ func (s *Server) rootQuery() *graphql.Object {
 				Resolve:     s.myDomainsQuery,
 			},
 
+			"status": s.statusField(),
+
 			"user": &graphql.Field{
 				Type:        userType,
 				Description: "Get single user",
@@ -56,10 +67,20 @@ func (s *Server) rootQuery() *graphql.Object {
 	})
 }
 
+// root queries
+func (s *Server) rootQueryUnauthorized() *graphql.Object {
+	return graphql.NewObject(graphql.ObjectConfig{
+		Name: "Query",
+		Fields: graphql.Fields{
+			"status": s.statusField(),
+		},
+	})
+}
+
 // root mutation
 func (s *Server) rootMutation() *graphql.Object {
 	return graphql.NewObject(graphql.ObjectConfig{
-		Name: "RootMutation",
+		Name: "Mutation",
 		Fields: graphql.Fields{
 			"addDomain": &graphql.Field{
 				Type:        domainType,
@@ -269,11 +290,46 @@ func (s *Server) rootMutation() *graphql.Object {
 	})
 }
 
+func (s *Server) rootMutationUnauthorized() *graphql.Object {
+	return graphql.NewObject(graphql.ObjectConfig{
+		Name: "Mutation",
+		Fields: graphql.Fields{
+			"login": &graphql.Field{
+				Type:        jwtTokensType,
+				Description: "Login to system",
+				Args: graphql.FieldConfigArgument{
+					"username": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"password": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+				},
+				Resolve: s.loginMutator,
+			},
+		},
+	})
+}
+
 func (s *Server) schema() graphql.Schema {
-	schema, _ := graphql.NewSchema(graphql.SchemaConfig{
+	schema, err := graphql.NewSchema(graphql.SchemaConfig{
 		Query:    s.rootQuery(),
 		Mutation: s.rootMutation(),
 	})
+	if err != nil {
+		logger.Errorf("can't create schema: %s", err.Error())
+	}
+	return schema
+}
+
+func (s *Server) schemaUnauthorized() graphql.Schema {
+	schema, err := graphql.NewSchema(graphql.SchemaConfig{
+		Query:    s.rootQueryUnauthorized(),
+		Mutation: s.rootMutationUnauthorized(),
+	})
+	if err != nil {
+		logger.Errorf("can't create schema: %s", err.Error())
+	}
 	return schema
 }
 
@@ -292,18 +348,30 @@ func (s *Server) graphqlHandler(w http.ResponseWriter, r *http.Request) {
 
 	// check auth
 	metadata, err := s.extractTokenMetadata(r)
+
+	// do
+	var result *graphql.Result
 	if err == nil {
-		// if success add metadata to context
+		// authorized
 		ctx = context.WithValue(ctx, metadataKey, metadata)
+		result = graphql.Do(graphql.Params{
+			Context:        ctx,
+			Schema:         s.schema(),
+			RequestString:  p.Query,
+			VariableValues: p.Variables,
+			OperationName:  p.Operation,
+		})
+	} else {
+		// unauthorized
+		result = graphql.Do(graphql.Params{
+			Context:        ctx,
+			Schema:         s.schemaUnauthorized(),
+			RequestString:  p.Query,
+			VariableValues: p.Variables,
+			OperationName:  p.Operation,
+		})
 	}
 
-	result := graphql.Do(graphql.Params{
-		Context:        ctx,
-		Schema:         s.schema(),
-		RequestString:  p.Query,
-		VariableValues: p.Variables,
-		OperationName:  p.Operation,
-	})
 	if err := json.NewEncoder(w).Encode(result); err != nil {
 		fmt.Printf("could not write result to response: %s", err)
 	}

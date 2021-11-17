@@ -85,6 +85,15 @@ var jwtTokensType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
+var statusType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Status",
+	Fields: graphql.Fields{
+		"version": &graphql.Field{
+			Type: graphql.String,
+		},
+	},
+})
+
 var successType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Success",
 	Fields: graphql.Fields{

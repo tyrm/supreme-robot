@@ -3,11 +3,26 @@ pipeline {
     registry = "tyrm/supreme-robot-be"
     registryCredential = 'docker-io-tyrm'
     dockerImage = ''
+    gitDescribe = ''
   }
 
   agent any;
 
   stages {
+
+    stage('Setup') {
+      steps {
+        script {
+          gitDescribe = sh(returnStdout: true, script: 'git describe --tag').trim()
+          writeFile file: "./version/version.go", text: """package version
+
+// Version of the application
+const Version = "${gitDescribe}"
+
+          """
+        }
+      }
+    }
 
     stage('Test') {
       agent {

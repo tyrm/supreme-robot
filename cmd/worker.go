@@ -26,7 +26,6 @@ var workerCmd = &cobra.Command{
 	//TODO Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		requiredVars := []string{
-			"EXT_HOSTNAME",
 			"POSTGRES_DSN",
 			"REDIS_DNS_ADDRESS",
 		}

@@ -80,6 +80,44 @@ func (s *Server) addUserMutation(params graphql.ResolveParams) (interface{}, err
 	return newUser, nil
 }
 
+func (s *Server) changePasswordMutation(params graphql.ResolveParams) (interface{}, error) {
+	logger.Debugf("trying to change password")
+
+	isSuccess := success{Success: false}
+
+	// acl
+	if params.Context.Value(metadataKey) == nil { // did user authenticate
+		return isSuccess, errUnauthorized
+	}
+	metadata := params.Context.Value(metadataKey).(*accessDetails)
+	logger.Tracef("metadata: %v", metadata)
+
+	// get logged in user
+	user, err := s.db.ReadUser(metadata.UserID)
+	if err != nil {
+		logger.Errorf("db: %s", err.Error())
+		return isSuccess, err
+	}
+
+	// marshall and cast the argument values
+	password, _ := params.Args["password"].(string)
+
+	// update password
+	err = user.SetPassword(password)
+	if err != nil {
+		logger.Debugf("can't set password: %s", err.Error())
+		return isSuccess, err
+	}
+	err = s.db.Update(user)
+	if err != nil {
+		logger.Errorf("db: %s", err.Error())
+		return isSuccess, err
+	}
+
+	isSuccess.Success = true
+	return isSuccess, nil
+}
+
 func (s *Server) meQuery(params graphql.ResolveParams) (interface{}, error) {
 	logger.Debugf("trying to get me")
 

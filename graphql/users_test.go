@@ -9,6 +9,89 @@ import (
 	"testing"
 )
 
+func TestChangePasswordMutator(t *testing.T) {
+	// create server
+	server, _, _, _, err := newTestServer()
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
+	}
+	if server == nil {
+		t.Errorf("expected server, got: nil, want: *Server.")
+	}
+
+	// do login
+	accessToken, _, err := testDoLogin(server, "admin", "password")
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// extract metadata
+	req := http.Request{}
+	req.Header = http.Header{}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	metadata, err := server.extractTokenMetadata(&req)
+	if err != nil {
+		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
+	}
+
+	// prepare query
+	ctx := context.WithValue(context.Background(), metadataKey, metadata)
+	p := postData{
+		Query: `mutation (
+			$password: String!
+		){
+			changePassword(
+				password: $password
+			){
+				success
+			}
+		}`,
+		Variables: map[string]interface{}{
+			"password": "aD1fferentPassword!",
+		},
+	}
+
+	// do query
+	result := graphql.Do(graphql.Params{
+		Context:        ctx,
+		Schema:         server.schema(),
+		RequestString:  p.Query,
+		VariableValues: p.Variables,
+		OperationName:  p.Operation,
+	})
+	if result.HasErrors() {
+		t.Errorf("unexpected error, got: %s, want: nil.", result.Errors[0].Error())
+		return
+	}
+
+	// validate data
+	data, dataOk := result.Data.(map[string]interface{})
+	if !dataOk {
+		t.Errorf("no data returned")
+		return
+	}
+
+	changePassword, changePasswordOk := data["changePassword"].(map[string]interface{})
+	if !changePasswordOk {
+		t.Errorf("no changePassword data returned")
+		return
+	}
+
+	isSuccess, successOk := changePassword["success"].(bool)
+	if !successOk {
+		t.Errorf("no success data returned")
+	}
+	if isSuccess != true {
+		t.Errorf("got invalid updatedAt, got: %v, want: true.", isSuccess)
+	}
+
+	// do login
+	_, _, err = testDoLogin(server, "admin", "aD1fferentPassword!")
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+}
+
 func TestMeQuery(t *testing.T) {
 	// create server
 	server, _, _, _, err := newTestServer()

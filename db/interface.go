@@ -18,4 +18,5 @@ type DB interface {
 	ReadRecordsForDomain(uuid.UUID, string, bool) (*[]models.Record, error)
 	ReadUser(uuid.UUID) (*models.User, error)
 	ReadUserByUsername(string) (*models.User, error)
+	Update(interface{}) error
 }

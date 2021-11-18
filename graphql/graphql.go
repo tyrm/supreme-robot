@@ -245,6 +245,17 @@ func (s *Server) rootMutation() *graphql.Object {
 				Resolve: s.addUserMutation,
 			},
 
+			"changePassword": &graphql.Field{
+				Type:        successType,
+				Description: "Change your password",
+				Args: graphql.FieldConfigArgument{
+					"password": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+				},
+				Resolve: s.changePasswordMutation,
+			},
+
 			"deleteDomain": &graphql.Field{
 				Type:        successType,
 				Description: "Delete domain",

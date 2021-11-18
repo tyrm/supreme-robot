@@ -45,7 +45,7 @@ const Version = "${gitDescribe}"
       }
     }
 
-    stage('Deploy image') {
+    stage('Upload image') {
       steps {
         script {
           if (env.TAG_NAME) {
@@ -55,6 +55,13 @@ const Version = "${gitDescribe}"
           }
         }
       }
+    }
+
+    stage('Deploy develop') {
+      when{
+        branch 'develop'
+      }
+      build job: 'deploy-supreme-robot_develop', wait: false
     }
 
   }

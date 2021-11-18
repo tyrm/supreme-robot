@@ -45,33 +45,15 @@ const Version = "${gitDescribe}"
       }
     }
 
-    stage('Building our image') {
-      steps {
-        script {
-          dockerImage = docker.build registry + ":$BUILD_NUMBER"
-        }
-      }
-    }
-
     stage('Deploy image') {
       steps {
         script {
           if (env.TAG_NAME) {
-            docker.withRegistry('', registryCredential) {
-              dockerImage.push(env.TAG_NAME)
-            }
+            sh "DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform linux/arm64,linux/amd64 -t ${registry}:${env.TAG_NAME} . --push"
           } else {
-            docker.withRegistry('', registryCredential) {
-              dockerImage.push(env.BRANCH_NAME)
-            }
+            sh "DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform linux/arm64,linux/amd64 -t ${registry}:${env.BRANCH_NAME} . --push"
           }
         }
-      }
-    }
-
-    stage('Cleaning up') {
-      steps {
-        sh "docker rmi $registry:$BUILD_NUMBER"
       }
     }
 

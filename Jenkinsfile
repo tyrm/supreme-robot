@@ -61,7 +61,11 @@ const Version = "${gitDescribe}"
       when{
         branch 'develop'
       }
-      build job: 'deploy-supreme-robot_develop', wait: false
+      steps {
+        script {
+          build job: 'deploy-supreme-robot_develop', wait: false
+        }
+      }
     }
 
   }

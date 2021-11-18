@@ -114,6 +114,56 @@ func TestAddDomainMutator(t *testing.T) {
 	}
 }
 
+func TestDeleteDomainMutator(t *testing.T) {
+	// create server
+	server, _, _, _, err := newTestServer()
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
+	}
+	if server == nil {
+		t.Errorf("expected server, got: nil, want: *Server.")
+	}
+
+	// do login
+	accessToken, _, err := testDoLogin(server, "admin", "password")
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// extract metadata
+	req := http.Request{}
+	req.Header = http.Header{}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	metadata, err := server.extractTokenMetadata(&req)
+	if err != nil {
+		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
+	}
+
+	// add domain
+	domain := "test."
+	soa := map[string]interface{}{
+		"ttl":     300,
+		"mbox":    "hostmaster.test.",
+		"refresh": 22,
+		"retry":   44,
+		"expire":  33,
+	}
+	newID, _, _, err := testDoAddDomain(server, metadata, domain, soa)
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// delete domain
+	newSuccess, err := testDoDeleteDomain(server, metadata, newID)
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	if newSuccess != true {
+		t.Errorf("delete unsuccessful, got: %v, want: true.", newSuccess)
+	}
+}
+
 func testDoAddDomain(server *Server, metadata *accessDetails, d string, soa map[string]interface{}) (string, string, []interface{}, error) {
 	// prepare query
 	ctx := context.WithValue(context.Background(), metadataKey, metadata)
@@ -190,4 +240,53 @@ func testDoAddDomain(server *Server, metadata *accessDetails, d string, soa map[
 	}
 
 	return id, domain, records, nil
+}
+
+func testDoDeleteDomain(server *Server, metadata *accessDetails, id string) (bool, error) {
+	// prepare query
+	ctx := context.WithValue(context.Background(), metadataKey, metadata)
+	p := postData{
+		Query: `mutation (
+			$id: String!
+		){
+			deleteDomain(
+				id: $id
+			){
+				success
+			}
+		}`,
+		Variables: map[string]interface{}{
+			"id": id,
+		},
+	}
+
+	// do query
+	result := graphql.Do(graphql.Params{
+		Context:        ctx,
+		Schema:         server.schema(),
+		RequestString:  p.Query,
+		VariableValues: p.Variables,
+		OperationName:  p.Operation,
+	})
+	if result.HasErrors() {
+		return false, result.Errors[0]
+	}
+
+	// validate data
+	data, dataOk := result.Data.(map[string]interface{})
+	if !dataOk {
+		return false, fmt.Errorf("no data returned")
+	}
+
+	deleteDomain, deleteDomainOK := data["deleteDomain"].(map[string]interface{})
+	if !deleteDomainOK {
+		return false, fmt.Errorf("no deleteDomain data returned")
+	}
+
+	newSuccess, newSuccessOK := deleteDomain["success"].(bool)
+	if !newSuccessOK {
+		return false, fmt.Errorf("no success data returned")
+	}
+
+	return newSuccess, nil
 }

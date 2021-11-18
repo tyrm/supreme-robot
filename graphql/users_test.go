@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestChangePasswordMutator(t *testing.T) {
+func TestAddUserMutator(t *testing.T) {
 	// create server
 	server, _, _, _, err := newTestServer()
 	if err != nil {
@@ -34,59 +34,13 @@ func TestChangePasswordMutator(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
-	// prepare query
-	ctx := context.WithValue(context.Background(), metadataKey, metadata)
-	p := postData{
-		Query: `mutation (
-			$password: String!
-		){
-			changePassword(
-				password: $password
-			){
-				success
-			}
-		}`,
-		Variables: map[string]interface{}{
-			"password": "aD1fferentPassword!",
-		},
-	}
-
-	// do query
-	result := graphql.Do(graphql.Params{
-		Context:        ctx,
-		Schema:         server.schema(),
-		RequestString:  p.Query,
-		VariableValues: p.Variables,
-		OperationName:  p.Operation,
-	})
-	if result.HasErrors() {
-		t.Errorf("unexpected error, got: %s, want: nil.", result.Errors[0].Error())
-		return
-	}
-
-	// validate data
-	data, dataOk := result.Data.(map[string]interface{})
-	if !dataOk {
-		t.Errorf("no data returned")
-		return
-	}
-
-	changePassword, changePasswordOk := data["changePassword"].(map[string]interface{})
-	if !changePasswordOk {
-		t.Errorf("no changePassword data returned")
-		return
-	}
-
-	isSuccess, successOk := changePassword["success"].(bool)
-	if !successOk {
-		t.Errorf("no success data returned")
-	}
-	if isSuccess != true {
-		t.Errorf("got invalid updatedAt, got: %v, want: true.", isSuccess)
+	_, _, _, _, _, err = testDoAddUser(server, metadata, "newuser", "newpassword", []string{})
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
 
 	// do login
-	_, _, err = testDoLogin(server, "admin", "aD1fferentPassword!")
+	_, _, err = testDoLogin(server, "newuser", "newpassword")
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -194,7 +148,7 @@ func TestMeQuery(t *testing.T) {
 	}
 }
 
-func testDoAddUser(server *Server, metadata *accessDetails, username, password string, groups []string) (string, string, []interface{}, error) {
+func testDoAddUser(server *Server, metadata *accessDetails, username, password string, groups []string) (string, string, []interface{}, int, int, error) {
 	// prepare query
 	ctx := context.WithValue(context.Background(), metadataKey, metadata)
 	p := postData{
@@ -231,34 +185,54 @@ func testDoAddUser(server *Server, metadata *accessDetails, username, password s
 		OperationName:  p.Operation,
 	})
 	if result.HasErrors() {
-		return "", "", nil, result.Errors[0]
+		return "", "", nil, 0, 0, result.Errors[0]
 	}
 
 	// validate data
 	data, dataOk := result.Data.(map[string]interface{})
 	if !dataOk {
-		return "", "", nil, fmt.Errorf("no data returned")
+		return "", "", nil, 0, 0, fmt.Errorf("no data returned")
 	}
 
-	addDomain, addDomainOK := data["addDomain"].(map[string]interface{})
-	if !addDomainOK {
-		return "", "", nil, fmt.Errorf("no addDomain data returned")
+	addUser, addUserOK := data["addUser"].(map[string]interface{})
+	if !addUserOK {
+		return "", "", nil, 0, 0, fmt.Errorf("no addUser data returned")
 	}
 
-	id, idOK := addDomain["id"].(string)
+	id, idOK := addUser["id"].(string)
 	if !idOK {
-		return "", "", nil, fmt.Errorf("no id returned")
+		return "", "", nil, 0, 0, fmt.Errorf("no id returned")
+	}
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return "", "", nil, 0, 0, fmt.Errorf("can't parse id %s: %s", id, err.Error())
 	}
 
-	domain, domainOK := addDomain["domain"].(string)
-	if !domainOK {
-		return "", "", nil, fmt.Errorf("no domain returned")
+	newUsername, usernameOK := addUser["username"].(string)
+	if !usernameOK {
+		return "", "", nil, 0, 0, fmt.Errorf("no username returned")
 	}
 
-	records, recordsOK := addDomain["records"].([]interface{})
-	if !recordsOK {
-		return "", "", nil, fmt.Errorf("no records returned")
+	newGroups, groupsOK := addUser["groups"].([]interface{})
+	if !groupsOK {
+		return "", "", nil, 0, 0, fmt.Errorf("no groups returned")
 	}
 
-	return id, domain, records, nil
+	createdAt, createdAtOk := addUser["createdAt"].(int)
+	if !createdAtOk {
+		return "", "", nil, 0, 0, fmt.Errorf("no me createdAt data returned")
+	}
+	if createdAt <= 0 {
+		return "", "", nil, 0, 0, fmt.Errorf("got invalid createdAt, got: %d, want: >0", createdAt)
+	}
+
+	updatedAt, updatedAtOk := addUser["updatedAt"].(int)
+	if !updatedAtOk {
+		return "", "", nil, 0, 0, fmt.Errorf("no me updatedAt data returned")
+	}
+	if updatedAt <= 0 {
+		return "", "", nil, 0, 0, fmt.Errorf("got invalid updatedAt, got: %d, want: >0", updatedAt)
+	}
+
+	return id, newUsername, newGroups, createdAt, updatedAt, nil
 }

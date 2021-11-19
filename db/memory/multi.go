@@ -36,6 +36,19 @@ func (c *Client) CreateDomainWRecords(domain *models.Domain, records ...*models.
 
 // CreateGroupsForUser adds group_membership entries for the user to the database
 func (c *Client) CreateGroupsForUser(userID uuid.UUID, groupIDs ...uuid.UUID) error {
+	u, err := c.ReadUser(userID)
+	if err != nil {
+		return err
+	}
+
+	c.Lock()
+	defer c.Unlock()
+
+	for _, group := range groupIDs {
+		u.Groups = append(u.Groups, group)
+	}
+
+	c.users[userID] = *u
 
 	return nil
 }

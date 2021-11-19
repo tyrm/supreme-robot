@@ -13,5 +13,4 @@ func TestNewClient(t *testing.T) {
 	if reflect.TypeOf(client) != reflect.TypeOf(&Client{}) {
 		t.Fatalf("unexpected client type, got: %s, want: %s", reflect.TypeOf(client), reflect.TypeOf(&Client{}))
 	}
-
 }

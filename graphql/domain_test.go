@@ -295,20 +295,6 @@ func TestMyDomainsQuery(t *testing.T) {
 		"test2.",
 		"test3.",
 	}
-	soa := map[string]interface{}{
-		"ttl":     300,
-		"mbox":    "hostmaster.test.",
-		"refresh": 22,
-		"retry":   44,
-		"expire":  33,
-	}
-
-	for _, d := range domains {
-		_, _, _, err = testDoAddDomain(server, metadata, d, soa)
-		if err != nil {
-			t.Errorf("unexpected error adding %s, got: %s, want: nil.", d, err.Error())
-		}
-	}
 
 	// prepare query
 	ctx := context.WithValue(context.Background(), metadataKey, metadata)
@@ -349,7 +335,7 @@ func TestMyDomainsQuery(t *testing.T) {
 
 	}
 	if len(myDomains) != 3 {
-		t.Errorf("invalid number of rows returned, got: %d, want: 3.", len(data))
+		t.Errorf("invalid number of rows returned, got: %d, want: 3.", len(myDomains))
 	}
 
 	searchDomains := make(map[string]bool)

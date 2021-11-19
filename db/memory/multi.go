@@ -2,6 +2,7 @@ package memory
 
 import (
 	"github.com/google/uuid"
+	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/models"
 	"time"
 )
@@ -39,6 +40,9 @@ func (c *Client) CreateGroupsForUser(userID uuid.UUID, groupIDs ...uuid.UUID) er
 	u, err := c.ReadUser(userID)
 	if err != nil {
 		return err
+	}
+	if u == nil {
+		return db.ErrUnknownUser
 	}
 
 	c.Lock()

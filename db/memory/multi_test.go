@@ -3,6 +3,7 @@ package memory
 import (
 	"database/sql"
 	"github.com/google/uuid"
+	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/models"
 	"testing"
 )
@@ -116,4 +117,18 @@ func TestClient_CreateGroupsForUser(t *testing.T) {
 			t.Errorf("didn't find group: %s", k)
 		}
 	}
+}
+
+func TestClient_CreateGroupsForUser_UnknownUser(t *testing.T) {
+	client, err := NewClient()
+	if err != nil {
+		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	id := uuid.MustParse("241a4327-a0ca-41df-855d-e0ecf552802c")
+	err = client.CreateGroupsForUser(id, models.GroupDNSAdmin, models.GroupUserAdmin)
+	if err.Error() != db.ErrUnknownUser.Error() {
+		t.Fatalf("unexpected error, got: %s, want: %s", err.Error(), db.ErrUnknownUser.Error())
+	}
+
 }

@@ -3,9 +3,13 @@ package memory
 import (
 	"database/sql"
 	"github.com/google/uuid"
+	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/models"
 	"testing"
 )
+
+type unknownType struct {
+}
 
 func TestClient_Create_Domain(t *testing.T) {
 	client, err := NewClient()
@@ -122,5 +126,21 @@ func TestClient_Create_User(t *testing.T) {
 
 	if newUser.UpdatedAt.Unix() <= 0 {
 		t.Errorf("domain UpdatedAt not set, got: %d, want not: >0", newUser.UpdatedAt.Unix())
+	}
+}
+
+func TestClient_Create_UnknownType(t *testing.T) {
+	client, err := NewClient()
+	if err != nil {
+		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	newUnknown := unknownType{}
+	if err != nil {
+		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+	err = client.Create(&newUnknown)
+	if err.Error() != db.ErrUnknownType.Error() {
+		t.Fatalf("unexpected error, got: %s, want: %s", err.Error(), db.ErrUnknownType.Error())
 	}
 }

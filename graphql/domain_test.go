@@ -165,6 +165,105 @@ func TestDeleteDomainMutator(t *testing.T) {
 	}
 }
 
+func TestDomainQuery(t *testing.T) {
+	// create server
+	server, _, _, _, err := newTestServer()
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
+	}
+	if server == nil {
+		t.Errorf("expected server, got: nil, want: *Server.")
+	}
+
+	// do login
+	accessToken, _, err := testDoLogin(server, "admin", "password")
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// extract metadata
+	req := http.Request{}
+	req.Header = http.Header{}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	metadata, err := server.extractTokenMetadata(&req)
+	if err != nil {
+		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
+	}
+
+	domain := "test."
+	soa := map[string]interface{}{
+		"ttl":     300,
+		"mbox":    "hostmaster.test.",
+		"refresh": 22,
+		"retry":   44,
+		"expire":  33,
+	}
+	newID, _, _, err := testDoAddDomain(server, metadata, domain, soa)
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// prepare query
+	ctx := context.WithValue(context.Background(), metadataKey, metadata)
+	p := postData{
+		Query: `query (
+			$id: String!
+		){
+			domain(
+				id: $id
+			){
+				id
+				domain
+				createdAt
+				updatedAt
+			}
+		}`,
+		Variables: map[string]interface{}{
+			"id": newID,
+		},
+	}
+
+	// do query
+	result := graphql.Do(graphql.Params{
+		Context:        ctx,
+		Schema:         server.schema(),
+		RequestString:  p.Query,
+		VariableValues: p.Variables,
+		OperationName:  p.Operation,
+	})
+	if result.HasErrors() {
+		t.Fatalf("unexpected error, got: %s, want: nil.", result.Errors[0].Error())
+	}
+
+	// validate data
+	data, dataOk := result.Data.(map[string]interface{})
+	if !dataOk {
+		t.Errorf("can't cast data, got: %d, want: map[string]interface{}", reflect.TypeOf(result.Data))
+	}
+
+	receivedDomain, receivedDomainOK := data["domain"].(map[string]interface{})
+	if !receivedDomainOK {
+		t.Errorf("can't cast domain, got: %d, want: map[string]interface{}", reflect.TypeOf(data["domain"]))
+	}
+
+	receivedID, receivedIDOK := receivedDomain["id"].(string)
+	if !receivedIDOK {
+		t.Errorf("can't cast domain id, got: %d, want: string", reflect.TypeOf(data["id"]))
+	}
+	if receivedID != newID {
+		t.Errorf("unexpected domain id, got: %s, want: %s", receivedID, newID)
+	}
+
+	receivedName, receivedNameOK := receivedDomain["domain"].(string)
+	if !receivedNameOK {
+		t.Errorf("can't cast domain id, got: %d, want: string", reflect.TypeOf(data["domain"]))
+	}
+	if receivedName != domain {
+		t.Errorf("unexpected domain id, got: %s, want: %s", receivedName, domain)
+	}
+
+}
+
 func TestMyDomainsQuery(t *testing.T) {
 	// create server
 	server, _, _, _, err := newTestServer()

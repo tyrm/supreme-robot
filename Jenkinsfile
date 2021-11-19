@@ -48,10 +48,14 @@ const Version = "${gitDescribe}"
     stage('Upload image') {
       steps {
         script {
-          if (env.TAG_NAME) {
-            sh "DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform linux/arm64,linux/amd64 -t ${registry}:${env.TAG_NAME} . --push"
-          } else {
-            sh "DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform linux/arm64,linux/amd64 -t ${registry}:${env.BRANCH_NAME} . --push"
+          retry(3) {
+            timeout(time: 15, unit: 'MINUTES') {
+              if (env.TAG_NAME) {
+                sh "DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform linux/arm64,linux/amd64 -t ${registry}:${env.TAG_NAME} . --push"
+              } else {
+                sh "DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform linux/arm64,linux/amd64 -t ${registry}:${env.BRANCH_NAME} . --push"
+              }
+            }
           }
         }
       }

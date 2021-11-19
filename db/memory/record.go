@@ -16,5 +16,17 @@ func (c *Client) ReadRecordsForDomain(domainID uuid.UUID, orderBy string, asc bo
 		return nil, db.ErrUnknownAttribute
 	}
 
-	return nil, nil
+	foundRecords := make([]models.Record, 0)
+
+	// Lock DB
+	c.RLock()
+	defer c.RUnlock()
+
+	for _, record := range c.records {
+		if record.DomainID == domainID {
+			foundRecords = append(foundRecords, record)
+		}
+	}
+
+	return &foundRecords, nil
 }

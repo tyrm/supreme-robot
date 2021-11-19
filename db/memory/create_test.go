@@ -14,7 +14,8 @@ type unknownType struct {
 func TestClient_Create_Domain(t *testing.T) {
 	client, err := NewClient()
 	if err != nil {
-		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+		return
 	}
 
 	newDomain := models.Domain{
@@ -22,7 +23,8 @@ func TestClient_Create_Domain(t *testing.T) {
 	}
 	err = client.Create(&newDomain)
 	if err != nil {
-		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+		return
 	}
 
 	if newDomain.ID == uuid.Nil {

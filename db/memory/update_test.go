@@ -1,8 +1,8 @@
 package memory
 
 import (
+	"github.com/google/uuid"
 	"github.com/tyrm/supreme-robot/db"
-	"github.com/tyrm/supreme-robot/models"
 	"testing"
 )
 
@@ -12,18 +12,29 @@ func TestClient_Update_User(t *testing.T) {
 		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
 	}
 
-	newUser := models.User{
-		Username: "newuser",
-	}
-	err = newUser.SetPassword("newpassword")
-	if err != nil {
-		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
-	}
-	err = client.Create(&newUser)
+	adminUser, err := client.ReadUser(uuid.MustParse("44892097-2c97-4c16-b4d1-e8522586df48"))
 	if err != nil {
 		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
 	}
 
+	err = adminUser.SetPassword("newpassword")
+	if err != nil {
+		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	err = client.Update(adminUser)
+	if err != nil {
+		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	adminUser, err = client.ReadUser(uuid.MustParse("44892097-2c97-4c16-b4d1-e8522586df48"))
+	if err != nil {
+		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	if !adminUser.CheckPasswordHash("newpassword") {
+		t.Fatalf("password not set properly, tried: 'newpassword'")
+	}
 }
 
 func TestClient_Update_UnknownType(t *testing.T) {
@@ -33,9 +44,6 @@ func TestClient_Update_UnknownType(t *testing.T) {
 	}
 
 	newUnknown := unknownType{}
-	if err != nil {
-		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
-	}
 	err = client.Update(&newUnknown)
 	if err.Error() != db.ErrUnknownType.Error() {
 		t.Fatalf("unexpected error, got: %s, want: %s", err.Error(), db.ErrUnknownType.Error())

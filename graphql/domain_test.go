@@ -6,6 +6,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/tyrm/supreme-robot/models"
 	"net/http"
+	"reflect"
 	"testing"
 )
 
@@ -161,6 +162,122 @@ func TestDeleteDomainMutator(t *testing.T) {
 
 	if newSuccess != true {
 		t.Errorf("delete unsuccessful, got: %v, want: true.", newSuccess)
+	}
+}
+
+func TestMyDomainsQuery(t *testing.T) {
+	// create server
+	server, _, _, _, err := newTestServer()
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
+	}
+	if server == nil {
+		t.Errorf("expected server, got: nil, want: *Server.")
+	}
+
+	// do login
+	accessToken, _, err := testDoLogin(server, "admin", "password")
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// extract metadata
+	req := http.Request{}
+	req.Header = http.Header{}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	metadata, err := server.extractTokenMetadata(&req)
+	if err != nil {
+		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
+	}
+
+	// add domain
+	domains := []string{
+		"test1.",
+		"test2.",
+		"test3.",
+	}
+	soa := map[string]interface{}{
+		"ttl":     300,
+		"mbox":    "hostmaster.test.",
+		"refresh": 22,
+		"retry":   44,
+		"expire":  33,
+	}
+
+	for _, d := range domains {
+		_, _, _, err = testDoAddDomain(server, metadata, d, soa)
+		if err != nil {
+			t.Errorf("unexpected error adding %s, got: %s, want: nil.", d, err.Error())
+		}
+	}
+
+	// prepare query
+	ctx := context.WithValue(context.Background(), metadataKey, metadata)
+	p := postData{
+		Query: `{
+			myDomains{
+				id
+				domain
+				createdAt
+				updatedAt
+			}
+		}`,
+	}
+
+	// do query
+	result := graphql.Do(graphql.Params{
+		Context:        ctx,
+		Schema:         server.schema(),
+		RequestString:  p.Query,
+		VariableValues: p.Variables,
+		OperationName:  p.Operation,
+	})
+	if result.HasErrors() {
+		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// validate data
+	data, dataOk := result.Data.(map[string]interface{})
+	if !dataOk {
+		t.Fatalf("no data returned")
+	}
+
+	t.Logf("myDomains data: %#v", data)
+
+	myDomains, myDomainsOk := data["myDomains"].([]interface{})
+	if !myDomainsOk {
+		t.Fatalf("can't cast result, got: %d, want: []interface{}", reflect.TypeOf(data["myDomains"]))
+
+	}
+	if len(myDomains) != 3 {
+		t.Errorf("invalid number of rows returned, got: %d, want: 3.", len(data))
+	}
+
+	searchDomains := make(map[string]bool)
+	for _, d := range domains {
+		searchDomains[d] = false
+	}
+	for _, myDomain := range myDomains {
+		d, dOK := myDomain.(map[string]interface{})
+		if !dOK {
+			t.Errorf("can't cast result, got: %d, want: map[string]interface{}", reflect.TypeOf(myDomain))
+		} else {
+			dName, dNameOK := d["domain"].(string)
+			if !dNameOK {
+				t.Errorf("can't cast result, got: %d, want: map[string]interface{}", reflect.TypeOf(myDomain))
+			}
+			for _, sd := range domains {
+				if dName == sd {
+					searchDomains[sd] = true
+				}
+			}
+		}
+	}
+
+	for k, v := range searchDomains {
+		if !v {
+			t.Errorf("didn't find expected domain: %s", k)
+		}
 	}
 }
 

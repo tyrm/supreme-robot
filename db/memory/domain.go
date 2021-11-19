@@ -55,5 +55,12 @@ func (c *Client) ReadDomainsForUser(userID uuid.UUID) (*[]models.Domain, error) 
 	c.RLock()
 	defer c.RUnlock()
 
-	return nil, nil
+	var usersDomains []models.Domain
+	for _, domain := range c.domains {
+		if domain.OwnerID == userID {
+			usersDomains = append(usersDomains, domain)
+		}
+	}
+
+	return &usersDomains, nil
 }

@@ -2,11 +2,12 @@ package memory
 
 import (
 	"github.com/google/uuid"
+	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/models"
 	"testing"
 )
 
-func TestClient_ReadRecordsForDomain(t *testing.T) {
+func TestClient_ReadRecordsForDomain_OrderBy_Name(t *testing.T) {
 	client, err := NewClient()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil", err.Error())
@@ -55,5 +56,21 @@ func TestClient_ReadRecordsForDomain(t *testing.T) {
 		if !v {
 			t.Errorf("didn't find expected record: %s", k)
 		}
+	}
+}
+
+func TestClient_ReadRecordsForDomain_OrderBy_Unknown(t *testing.T) {
+	client, err := NewClient()
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil", err.Error())
+		return
+	}
+
+	receivedRecords, err := client.ReadRecordsForDomain(domainExample.ID, "unknown", true)
+	if err != db.ErrUnknownAttribute {
+		t.Errorf("unexpected error, got: %s, want: %s", err.Error(), db.ErrUnknownAttribute)
+	}
+	if receivedRecords != nil {
+		t.Errorf("unexpected records, got: %#v, want: nil", receivedRecords)
 	}
 }

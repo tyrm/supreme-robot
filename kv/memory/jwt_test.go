@@ -76,6 +76,21 @@ func TestClient_GetAccessToken(t *testing.T) {
 	}
 }
 
+func TestClient_GetAccessToken_NotFound(t *testing.T) {
+	client, err := NewClient()
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+		return
+	}
+
+	accessToken := uuid.MustParse("27efbdd8-0ecc-4922-a206-ea9d5a71a1a6")
+
+	receivedUserID, err := client.GetAccessToken(accessToken)
+	if receivedUserID != uuid.Nil {
+		t.Errorf("unexpected user id, got: %v, want: nil", receivedUserID)
+	}
+}
+
 func TestClient_SetAccessToken(t *testing.T) {
 	client, err := NewClient()
 	if err != nil {
@@ -104,6 +119,13 @@ func TestClient_SetAccessToken(t *testing.T) {
 	}
 	if receivedUserUUID.String() != userID.String() {
 		t.Errorf("unexpected user id, got: %v, want: %v", receivedUserUUID, userID)
+	}
+
+	time.Sleep(20 * time.Second)
+	result2, resultFound2 := client.KV.Get(kv.KeyJwtAccess(accessToken.String()))
+	if resultFound2 {
+		t.Errorf("expiration failed, got: %s, want: nil.", result2)
+		return
 	}
 }
 
@@ -137,5 +159,11 @@ func TestClient_SetRefreshToken(t *testing.T) {
 	}
 	if receivedUserUUID.String() != userID.String() {
 		t.Errorf("unexpected user id, got: %v, want: %v", receivedUserUUID, userID)
+	}
+
+	time.Sleep(20 * time.Second)
+	result2, resultFound2 := client.KV.Get(kv.KeyJwtRefresh(refreshToken))
+	if resultFound2 {
+		t.Errorf("expiration failed, got: %s, want: nil.", result2)
 	}
 }

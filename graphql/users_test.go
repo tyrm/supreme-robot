@@ -231,6 +231,119 @@ func TestMeQuery(t *testing.T) {
 	}
 }
 
+func TestUserQuery(t *testing.T) {
+	// create server
+	server, _, _, _, err := newTestServer()
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
+	}
+	if server == nil {
+		t.Errorf("expected server, got: nil, want: *Server.")
+	}
+
+	// do login
+	accessToken, _, err := testDoLogin(server, "admin", "password")
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// extract metadata
+	req := http.Request{}
+	req.Header = http.Header{}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	metadata, err := server.extractTokenMetadata(&req)
+	if err != nil {
+		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
+	}
+
+	// prepare query
+	ctx := context.WithValue(context.Background(), metadataKey, metadata)
+	p := postData{
+		Query: `query (
+			$id: String!
+		){
+			user(
+				id: $id
+			){
+				id
+				username
+				groups
+				createdAt
+				updatedAt
+			}
+		}`,
+		Variables: map[string]interface{}{
+			"id": "69706e10-fe5a-4bd3-a494-75d5c4230f5f",
+		},
+	}
+
+	// do query
+	result := graphql.Do(graphql.Params{
+		Context:        ctx,
+		Schema:         server.schema(),
+		RequestString:  p.Query,
+		VariableValues: p.Variables,
+		OperationName:  p.Operation,
+	})
+	if result.HasErrors() {
+		t.Errorf("unexpected error, got: %s, want: nil.", result.Errors[0].Error())
+		return
+	}
+
+	// validate data
+	data, dataOk := result.Data.(map[string]interface{})
+	if !dataOk {
+		t.Errorf("no data returned")
+		return
+	}
+
+	user, userOk := data["user"].(map[string]interface{})
+	if !userOk {
+		t.Errorf("no changePassword user returned")
+		return
+	}
+
+	userID, userIDOk := user["id"].(string)
+	if !userIDOk {
+		t.Errorf("no id data returned")
+	}
+	if userID != "69706e10-fe5a-4bd3-a494-75d5c4230f5f" {
+		t.Errorf("got invalid updatedAt, got: %s, want: '69706e10-fe5a-4bd3-a494-75d5c4230f5f'", userID)
+	}
+
+	userUsername, userUsernameOk := user["username"].(string)
+	if !userUsernameOk {
+		t.Errorf("no username data returned")
+	}
+	if userUsername != "user" {
+		t.Errorf("got invalid updatedAt, got: %s, want: 'user'", userID)
+	}
+
+	userGroups, userGroupsOk := user["groups"].([]interface{})
+	if !userGroupsOk {
+		t.Errorf("no groups data returned")
+	}
+	if len(userGroups) != 0 {
+		t.Errorf("got invalid updatedAt, got: %d, want: 0'", len(userGroups))
+	}
+
+	createdAt, createdAtOk := user["createdAt"].(int)
+	if !createdAtOk {
+		t.Errorf("no me createdAt data returned")
+	}
+	if createdAt <= 0 {
+		t.Errorf("got invalid createdAt, got: %d, want: >0.", createdAt)
+	}
+
+	updatedAt, updatedAtOk := user["updatedAt"].(int)
+	if !updatedAtOk {
+		t.Errorf("no me updatedAt data returned")
+	}
+	if updatedAt <= 0 {
+		t.Errorf("got invalid updatedAt, got: %d, want: >0.", updatedAt)
+	}
+}
+
 func testDoAddUser(server *Server, metadata *accessDetails, username, password string, groups []string) (string, string, []interface{}, int, int, error) {
 	// prepare query
 	ctx := context.WithValue(context.Background(), metadataKey, metadata)

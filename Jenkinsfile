@@ -30,7 +30,7 @@ const Version = "${gitDescribe}"
       agent {
         docker {
           image 'golang:1.17'
-          args '-e GOCACHE=/gocache -v HOME=${WORKSPACE}'
+          args '-e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache '
         }
       }
       steps {

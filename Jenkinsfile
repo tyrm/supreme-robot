@@ -25,7 +25,8 @@ const Version = "${gitDescribe}"
         }
       }
     }
-    lock('port_21542') {
+
+    lock(resource: 'port_21542') {
 
       stage('Setup Test'){
         steps{

@@ -21,6 +21,7 @@ const Version = "${gitDescribe}"
 
           """
           sh "mkdir -p ${WORKSPACE}/embedded-postgres-go"
+          sh "chmod 777 ${WORKSPACE}/embedded-postgres-go"
         }
       }
     }

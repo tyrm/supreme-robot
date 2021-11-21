@@ -20,7 +20,6 @@ pipeline {
 const Version = "${gitDescribe}"
 
           """
-          sh "mkdir ${WORKSPACE}/embedded-postgres-go"
         }
       }
     }

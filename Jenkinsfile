@@ -25,26 +25,48 @@ const Version = "${gitDescribe}"
         }
       }
     }
+    lock('myResource') {
 
-    stage('Test') {
-      agent {
-        docker {
-          image 'golang:1.17'
-          args '-e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache '
-        }
-      }
-      steps {
-        script {
-          sh "go get -t -v ./..."
-          sh "go test -race -coverprofile=coverage.txt -covermode=atomic ./..."
-
-          withCredentials([string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN')]) {
-            sh """#!/bin/bash
-            bash <(curl -s https://codecov.io/bash)
-            """
+      stage('Setup Test'){
+        steps{
+          script{
+            sh """docker run -d \
+                    --name postgres-${BUILD_TAG} \
+                    -e POSTGRES_PASSWORD=mysecretpassword \
+                    postgres"""
           }
         }
       }
+
+      stage('Test') {
+        agent {
+          docker {
+            image 'golang:1.17'
+            args '-e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache '
+          }
+        }
+        steps {
+          script {
+            sh "go get -t -v ./..."
+            sh "go test -race -coverprofile=coverage.txt -covermode=atomic ./..."
+
+            withCredentials([string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN')]) {
+              sh """#!/bin/bash
+              bash <(curl -s https://codecov.io/bash)
+              """
+            }
+          }
+        }
+      }
+
+      stage('Teardown Test'){
+        steps{
+          script{
+            sh docker rm --force postgres-${BUILD_TAG}"
+          }
+        }
+      }
+
     }
 
     stage('Upload image') {

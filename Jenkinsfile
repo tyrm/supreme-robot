@@ -28,7 +28,7 @@ const Version = "${gitDescribe}"
       agent {
         docker {
           image 'golang:1.17'
-          args '-e GOCACHE=${WORKSPACE}'
+          args '-e GOCACHE=${WORKSPACE} -v ${WORKSPACE}/.embedded-postgres-go:/.embedded-postgres-go'
         }
       }
       steps {

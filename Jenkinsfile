@@ -62,7 +62,7 @@ const Version = "${gitDescribe}"
       stage('Teardown Test'){
         steps{
           script{
-            sh docker rm --force postgres-${BUILD_TAG}"
+            sh "docker rm --force postgres-${BUILD_TAG}"
           }
         }
       }

@@ -1,7 +1,6 @@
 pipeline {
   environment {
     networkName = "network-${env.BUILD_TAG}"
-    pgContainerName = "postgres-${env.BUILD_TAG}"
     registry = 'tyrm/supreme-robot-be'
     registryCredential = 'docker-io-tyrm'
     dockerImage = ''
@@ -34,14 +33,8 @@ const Version = "${gitDescribe}"
           retry(4) {
             echo 'trying to start postgres'
             withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
-              sh """docker run -d \
-                      --name ${pgContainerName} \
-                      --network ${networkName} \
-                      --env POSTGRES_DB=supremerobot \
-                      --env POSTGRES_USER=${POSTGRES_USER} \
-                      --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
-                      --pull always \
-                      postgres:14"""
+              sh """docker-compose -f docker-compose-integration.yaml pull
+              NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml up -d"""
             }
           }
         }
@@ -61,7 +54,7 @@ const Version = "${gitDescribe}"
             string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN'),
             usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')
           ]) {
-            pgConnectionDSN = "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${pgContainerName}:5432/supremerobot?sslmode=disable"
+            pgConnectionDSN = "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/supremerobot?sslmode=disable"
 
             sh """#!/bin/bash
             go get -t -v ./...
@@ -104,8 +97,9 @@ const Version = "${gitDescribe}"
 
   post {
     always {
-      sh "docker rm --force ${pgContainerName}"
-      sh "docker network rm ${env.networkName}"
+      withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
+        sh """NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml down"""
+      }
     }
   }
 

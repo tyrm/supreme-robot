@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package postgres
 
@@ -16,9 +15,9 @@ func TestNewClient(t *testing.T) {
 	}
 	client, err := NewClient(&cfg)
 	if err != nil {
-		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
 	if reflect.TypeOf(client) != reflect.TypeOf(&Client{}) {
-		t.Fatalf("unexpected client type, got: %s, want: %s", reflect.TypeOf(client), reflect.TypeOf(&Client{}))
+		t.Errorf("unexpected client type, got: %s, want: %s", reflect.TypeOf(client), reflect.TypeOf(&Client{}))
 	}
 }

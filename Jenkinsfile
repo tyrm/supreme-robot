@@ -39,7 +39,7 @@ const Version = "${gitDescribe}"
                       --env POSTGRES_DB=supremerobot \
                       --env POSTGRES_USER=${POSTGRES_USER} \
                       --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
-                      --pull \
+                      --pull always\
                       postgres:14"""
             }
           }

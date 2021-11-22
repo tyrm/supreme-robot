@@ -33,9 +33,8 @@ const Version = "${gitDescribe}"
           retry(4) {
             echo 'trying to start postgres'
             withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
-              sh """NETWORK_NAME="${networkName}"
-              docker-compose -f docker-compose-integration.yaml pull
-              docker-compose -f docker-compose-integration.yaml up -d"""
+              sh """NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml pull
+              NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml up -d"""
             }
           }
         }

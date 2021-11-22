@@ -1,5 +1,3 @@
-Random rnd = new Random()
-
 pipeline {
   environment {
     networkName = "network-${env.BUILD_TAG}"
@@ -34,8 +32,7 @@ const Version = "${gitDescribe}"
       steps{
         script{
           retry(4) {
-            newPort = rnd.nextInt(9999) + 30000
-            echo 'Trying to start postgres on port ${newPort}'
+            echo 'trying to start postgres'
             withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
               sh """docker run -d \
                       --name ${env.pgContainerName} \
@@ -55,7 +52,7 @@ const Version = "${gitDescribe}"
       agent {
         docker {
           image 'golang:1.17'
-          args '-e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache '
+          args '--network ${env.networkName} -e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache'
         }
       }
       steps {
@@ -70,7 +67,6 @@ const Version = "${gitDescribe}"
         }
       }
     }
-
 
     stage('Upload image') {
       steps {
@@ -103,8 +99,8 @@ const Version = "${gitDescribe}"
 
   post {
     always {
-      sh "docker rm --force postgres-${BUILD_TAG}"
-      sh "docker network ${env.networkName}"
+      sh "docker rm --force ${pgContainerName}"
+      sh "docker network rm ${env.networkName}"
     }
   }
 

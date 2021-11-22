@@ -24,7 +24,7 @@ pipeline {
 const Version = "${gitDescribe}"
 
           """
-          sh "docker network create ${networkName}"
+          sh "docker network create ${env.networkName}"
         }
       }
     }
@@ -37,8 +37,8 @@ const Version = "${gitDescribe}"
             echo 'Trying to start postgres on port ${newPort}'
             withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
               sh """docker run -d \
-                      --name ${pgContainerName} \
-                      --network ${networkName} \
+                      --name ${env.pgContainerName} \
+                      --network ${env.networkName} \
                       --env POSTGRES_DB=supremerobot \
                       --env POSTGRES_USER=${POSTGRES_USER} \
                       --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
@@ -103,7 +103,7 @@ const Version = "${gitDescribe}"
   post {
     always {
       sh "docker rm --force postgres-${BUILD_TAG}"
-      sh "docker network ${networkName}"
+      sh "docker network ${env.networkName}"
     }
   }
 

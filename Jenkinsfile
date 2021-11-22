@@ -1,7 +1,7 @@
+Random rnd = new Random()
+
 pipeline {
   environment {
-    rnd = new Random()
-
     registry = "tyrm/supreme-robot-be"
     registryCredential = 'docker-io-tyrm'
     dockerImage = ''

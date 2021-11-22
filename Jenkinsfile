@@ -35,8 +35,8 @@ const Version = "${gitDescribe}"
             echo 'trying to start postgres'
             withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
               sh """docker run -d \
-                      --name ${env.pgContainerName} \
-                      --network ${env.networkName} \
+                      --name ${pgContainerName} \
+                      --network ${networkName} \
                       --env POSTGRES_DB=supremerobot \
                       --env POSTGRES_USER=${POSTGRES_USER} \
                       --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \

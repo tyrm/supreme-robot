@@ -2,8 +2,8 @@ Random rnd = new Random()
 
 pipeline {
   environment {
-    networkName = 'network-${env.BUILD_TAG}'
-    pgContainerName = 'postgres-${env.BUILD_TAG}'
+    networkName = 'network-' + env.BUILD_TAG
+    pgContainerName = 'postgres-' + env.BUILD_TAG
     registry = 'tyrm/supreme-robot-be'
     registryCredential = 'docker-io-tyrm'
     dockerImage = ''
@@ -17,7 +17,7 @@ pipeline {
     stage('Setup') {
       steps {
         script {
-          echo 'creating network ${networkName}'
+          echo "creating network ${networkName}"
           sh "docker network create ${networkName}"
           gitDescribe = sh(returnStdout: true, script: 'git describe --tag').trim()
           writeFile file: "./version/version.go", text: """package version

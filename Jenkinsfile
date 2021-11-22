@@ -57,10 +57,15 @@ const Version = "${gitDescribe}"
       }
       steps {
         script {
-          withCredentials([string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN')]) {
+          withCredentials(
+            [string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN')],
+            [usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]
+          ) {
+            pgConnectionDSN = "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${pgContainerName}:5432/supremerobot?sslmode=disable"
+
             sh """#!/bin/bash
             go get -t -v ./...
-            go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+            TEST_DSN="${pgContainerName}" go test --tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
             bash <(curl -s https://codecov.io/bash)
             """
           }

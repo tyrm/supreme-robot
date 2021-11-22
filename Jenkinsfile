@@ -2,7 +2,9 @@ Random rnd = new Random()
 
 pipeline {
   environment {
-    registry = "tyrm/supreme-robot-be"
+    networkName = 'network-${env.BUILD_TAG}'
+    pgContainerName = 'postgres-${env.BUILD_TAG}'
+    registry = 'tyrm/supreme-robot-be'
     registryCredential = 'docker-io-tyrm'
     dockerImage = ''
     gitDescribe = ''
@@ -22,6 +24,7 @@ pipeline {
 const Version = "${gitDescribe}"
 
           """
+          sh "docker network create ${networkName}"
         }
       }
     }
@@ -34,12 +37,12 @@ const Version = "${gitDescribe}"
             echo 'Trying to start postgres on port ${newPort}'
             withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
               sh """docker run -d \
-                      --name postgres-${BUILD_TAG} \
-                      --publish ${newPort}:5432 \
+                      --name ${pgContainerName} \
+                      --network ${networkName} \
                       --env POSTGRES_DB=supremerobot \
                       --env POSTGRES_USER=${POSTGRES_USER} \
                       --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
-                      --pull always\
+                      --pull always \
                       postgres:14"""
             }
           }
@@ -100,6 +103,7 @@ const Version = "${gitDescribe}"
   post {
     always {
       sh "docker rm --force postgres-${BUILD_TAG}"
+      sh "docker network ${networkName}"
     }
   }
 

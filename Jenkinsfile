@@ -32,15 +32,16 @@ const Version = "${gitDescribe}"
           retry(4) {
             newPort = rnd.nextInt(9999) + 30000
             echo 'Trying to start postgres on port ${newPort}'
-            withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {}
-            sh """docker run -d \
-                    --name postgres-${BUILD_TAG} \
-                    --port ${newPort}:5432 \
-                    --env POSTGRES_DB=supremerobot \
-                    --env POSTGRES_USER=&{POSTGRES_USER} \
-                    --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
-                    --pull \
-                    postgres:14"""
+            withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
+              sh """docker run -d \
+                      --name postgres-${BUILD_TAG} \
+                      --port ${newPort}:5432 \
+                      --env POSTGRES_DB=supremerobot \
+                      --env POSTGRES_USER=&{POSTGRES_USER} \
+                      --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+                      --pull \
+                      postgres:14"""
+            }
           }
         }
       }

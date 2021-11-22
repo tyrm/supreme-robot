@@ -17,6 +17,7 @@ pipeline {
     stage('Setup') {
       steps {
         script {
+          sh "docker network create ${env.networkName}"
           gitDescribe = sh(returnStdout: true, script: 'git describe --tag').trim()
           writeFile file: "./version/version.go", text: """package version
 
@@ -24,7 +25,6 @@ pipeline {
 const Version = "${gitDescribe}"
 
           """
-          sh "docker network create ${env.networkName}"
         }
       }
     }

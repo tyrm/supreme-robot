@@ -1,12 +1,14 @@
 pipeline {
   environment {
+    rnd = new Random()
+
     registry = "tyrm/supreme-robot-be"
     registryCredential = 'docker-io-tyrm'
     dockerImage = ''
     gitDescribe = ''
   }
 
-  agent any;
+  agent any
 
   stages {
 
@@ -20,55 +22,50 @@ pipeline {
 const Version = "${gitDescribe}"
 
           """
-          sh "mkdir -p ${WORKSPACE}/embedded-postgres-go"
-          sh "chmod 777 ${WORKSPACE}/embedded-postgres-go"
         }
       }
     }
 
-    lock(resource: 'port_21542') {
-
-      stage('Setup Test'){
-        steps{
-          script{
+    stage('Start Postgres'){
+      steps{
+        script{
+          retry(4) {
+            newPort = rnd.nextInt(9999) + 30000
+            echo 'Trying to start postgres on port ${newPort}'
+            withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {}
             sh """docker run -d \
                     --name postgres-${BUILD_TAG} \
-                    -e POSTGRES_PASSWORD=mysecretpassword \
-                    postgres"""
+                    --port ${newPort}:5432 \
+                    --env POSTGRES_DB=supremerobot \
+                    --env POSTGRES_USER=&{POSTGRES_USER} \
+                    --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+                    --pull \
+                    postgres:14"""
           }
         }
       }
-
-      stage('Test') {
-        agent {
-          docker {
-            image 'golang:1.17'
-            args '-e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache '
-          }
-        }
-        steps {
-          script {
-            sh "go get -t -v ./..."
-            sh "go test -race -coverprofile=coverage.txt -covermode=atomic ./..."
-
-            withCredentials([string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN')]) {
-              sh """#!/bin/bash
-              bash <(curl -s https://codecov.io/bash)
-              """
-            }
-          }
-        }
-      }
-
-      stage('Teardown Test'){
-        steps{
-          script{
-            sh "docker rm --force postgres-${BUILD_TAG}"
-          }
-        }
-      }
-
     }
+
+    stage('Test') {
+      agent {
+        docker {
+          image 'golang:1.17'
+          args '-e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache '
+        }
+      }
+      steps {
+        script {
+          withCredentials([string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN')]) {
+            sh """#!/bin/bash
+            go get -t -v ./...
+            go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+            bash <(curl -s https://codecov.io/bash)
+            """
+          }
+        }
+      }
+    }
+
 
     stage('Upload image') {
       steps {
@@ -98,4 +95,11 @@ const Version = "${gitDescribe}"
     }
 
   }
+
+  post {
+    always {
+      sh "docker rm --force postgres-${BUILD_TAG}"
+    }
+  }
+
 }

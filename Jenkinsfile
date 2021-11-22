@@ -52,7 +52,7 @@ const Version = "${gitDescribe}"
       agent {
         docker {
           image 'golang:1.17'
-          args '--network ${env.networkName} -e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache'
+          args '--network ${networkName} -e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache'
         }
       }
       steps {

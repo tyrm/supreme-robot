@@ -37,7 +37,7 @@ const Version = "${gitDescribe}"
                       --name postgres-${BUILD_TAG} \
                       --publish ${newPort}:5432 \
                       --env POSTGRES_DB=supremerobot \
-                      --env POSTGRES_USER=&{POSTGRES_USER} \
+                      --env POSTGRES_USER=${POSTGRES_USER} \
                       --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
                       --pull \
                       postgres:14"""

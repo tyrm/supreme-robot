@@ -35,7 +35,7 @@ const Version = "${gitDescribe}"
             withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
               sh """docker run -d \
                       --name postgres-${BUILD_TAG} \
-                      --port ${newPort}:5432 \
+                      --publish ${newPort}:5432 \
                       --env POSTGRES_DB=supremerobot \
                       --env POSTGRES_USER=&{POSTGRES_USER} \
                       --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \

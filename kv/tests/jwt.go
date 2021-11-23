@@ -2,7 +2,6 @@ package tests
 
 import (
 	"github.com/google/uuid"
-	"github.com/patrickmn/go-cache"
 	"github.com/tyrm/supreme-robot/kv"
 	"testing"
 	"time"
@@ -14,7 +13,7 @@ func DoDeleteAccessToken(t *testing.T, client kv.Webapp) {
 	accessToken := uuid.MustParse("b2758ab9-e795-4b93-b688-fdf899cc53a5")
 	userID := uuid.MustParse("5f1f9747-3a3f-4c29-ad37-2fddc06cb319")
 
-	err := client.SetAccessToken(accessToken, userID, cache.NoExpiration)
+	err := client.SetAccessToken(accessToken, userID, 24*time.Hour)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 		return
@@ -43,7 +42,7 @@ func DoDeleteRefreshToken(t *testing.T, client kv.Webapp) {
 
 	refreshToken := accessToken.String() + "++" + userID.String()
 
-	err := client.SetRefreshToken(refreshToken, userID, cache.NoExpiration)
+	err := client.SetRefreshToken(refreshToken, userID, 24*time.Hour)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 		return

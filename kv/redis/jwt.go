@@ -70,6 +70,10 @@ func (c *Client) GetAccessToken(accessTokenID uuid.UUID) (uuid.UUID, error) {
 	)
 
 	reply, err = conn.Do("GET", kv.KeyJwtAccess(accessTokenID.String()))
+	if err == redisCon.ErrNil {
+		return uuid.Nil, nil
+
+	}
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -99,6 +103,10 @@ func (c *Client) GetRefreshToken(refreshTokenID string) (uuid.UUID, error) {
 	)
 
 	reply, err = conn.Do("GET", kv.KeyJwtRefresh(refreshTokenID))
+	if err == redisCon.ErrNil {
+		return uuid.Nil, nil
+
+	}
 	if err != nil {
 		return uuid.Nil, err
 	}

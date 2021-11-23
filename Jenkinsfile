@@ -59,7 +59,7 @@ const Version = "${gitDescribe}"
             sh """#!/bin/bash
             go get -t -v ./...
             TEST_DSN="${pgConnectionDSN}" go test --tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
-            RESULT=$?
+            RESULT=\$?
             bash <(curl -s https://codecov.io/bash)
             exit $RESULT
             """

@@ -82,6 +82,35 @@ func (c *Client) GetAccessToken(accessTokenID uuid.UUID) (uuid.UUID, error) {
 	return uuid.Parse(val)
 }
 
+// GetRefreshToken retrieves an refresh token from redis.
+func (c *Client) GetRefreshToken(refreshTokenID string) (uuid.UUID, error) {
+	// get connection
+	conn := c.db.Get()
+	if conn == nil {
+		logger.Errorf("error connecting to redis")
+		return uuid.Nil, errCantConnect
+	}
+	defer conn.Close()
+
+	var (
+		reply interface{}
+		err   error
+		val   string
+	)
+
+	reply, err = conn.Do("GET", kv.KeyJwtRefresh(refreshTokenID))
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	val, err = redisCon.String(reply, nil)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return uuid.Parse(val)
+}
+
 // SetAccessToken adds an access token to redis.
 func (c *Client) SetAccessToken(accessTokenID, userID uuid.UUID, expire time.Duration) error {
 	// get connection

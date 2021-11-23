@@ -27,9 +27,9 @@ func (c *Client) ReadRecordsForDomain(domainID uuid.UUID, orderBy string, asc bo
 	}
 
 	if asc {
-		query = query + "ASC;"
+		query = query + "ASC, id ASC;"
 	} else {
-		query = query + "DESC;"
+		query = query + "DESC, id DESC;"
 	}
 
 	// run query

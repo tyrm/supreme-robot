@@ -7,14 +7,14 @@ import (
 	"testing"
 )
 
-func TestClient_ReadRecordsForDomain_OrderBy_Name(t *testing.T) {
+func TestClient_ReadRecordsForDomain(t *testing.T) {
 	client, err := testCreateClient()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil", err.Error())
 		return
 	}
 
-	tests.DoReadRecordsForDomainOrderByName(t, client)
+	tests.DoReadRecordsForDomain(t, client)
 }
 
 func TestClient_ReadRecordsForDomain_OrderBy_Unknown(t *testing.T) {

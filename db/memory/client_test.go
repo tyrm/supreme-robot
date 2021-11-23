@@ -13,6 +13,9 @@ func TestNewClient(t *testing.T) {
 	if reflect.TypeOf(client) != reflect.TypeOf(&Client{}) {
 		t.Fatalf("unexpected client type, got: %s, want: %s", reflect.TypeOf(client), reflect.TypeOf(&Client{}))
 	}
+	if client == nil {
+		t.Fatalf("expected client, got: nil")
+	}
 }
 
 func testCreateClient() (*Client, error) {

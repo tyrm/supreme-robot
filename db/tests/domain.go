@@ -146,9 +146,9 @@ func DoReadDomainsForUser(t *testing.T, client db.DB) {
 
 	// create domains
 	domains := []string{
-		"doreaddomainsforuseradmin1.",
-		"doreaddomainsforuseradmin2.",
-		"doreaddomainsforuseradmin3.",
+		"doreaddomainsforuser1.",
+		"doreaddomainsforuser2.",
+		"doreaddomainsforuser3.",
 	}
 	searchDomains := make([]models.Domain, 3)
 	for i, d := range domains {

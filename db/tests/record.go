@@ -108,18 +108,20 @@ func DoReadRecordsForDomain(t *testing.T, client db.DB) {
 	}{
 		{"name", true, nameAscOrder},
 		{"name", false, nameDescOrder},
+		{"created_at", true, []*models.Record{&newRecordABill, &newRecordNS, &newRecordACharlie, &newRecordSOA, &newRecordAAlice}},
+		{"created_at", false, []*models.Record{&newRecordAAlice, &newRecordSOA, &newRecordACharlie, &newRecordNS, &newRecordABill}},
 	}
 
 	for _, table := range tables {
 		receivedRecords, err := client.ReadRecordsForDomain(newDomain.ID, table.orderBy, table.asc)
 		if err != nil {
 			t.Errorf("[%s,%v] unexpected error, got: %s, want: nil", table.orderBy, table.asc, err.Error())
-			break
+			continue
 		}
 		receivedRecordsCount := len(*receivedRecords)
 		if receivedRecordsCount != 5 {
 			t.Errorf("[%s,%v] invalid number of records returned, got: %d, want: 5", table.orderBy, table.asc, receivedRecordsCount)
-			break
+			continue
 		}
 
 		// check records

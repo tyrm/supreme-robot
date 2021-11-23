@@ -18,6 +18,50 @@ func (c *Client) ReadRecordsForDomain(domainID uuid.UUID, orderBy string, asc bo
 
 	switch strings.ToLower(orderBy) {
 	case "created_at":
+		foundRecords := make(map[int]map[uuid.UUID]models.Record)
+
+		// find records
+		for _, record := range c.records {
+			if record.DomainID == domainID {
+				if foundRecords[int(record.CreatedAt.Unix())] == nil {
+					foundRecords[int(record.CreatedAt.Unix())] = make(map[uuid.UUID]models.Record)
+				}
+				foundRecords[int(record.CreatedAt.Unix())][record.ID] = record
+			}
+		}
+
+		// get keys and sort
+		var foundTimes sort.IntSlice = make([]int, len(foundRecords))
+		i := 0
+		for k := range foundRecords {
+			foundTimes[i] = k
+			i++
+		}
+		if asc {
+			sort.Sort(foundTimes)
+		} else {
+			sort.Sort(sort.Reverse(foundTimes))
+		}
+
+		// make a list
+		for _, t := range foundTimes {
+			var foundIDs sort.StringSlice = make([]string, len(foundRecords[t]))
+			i = 0
+			for k := range foundRecords[t] {
+				foundIDs[i] = k.String()
+				i++
+			}
+
+			if asc {
+				sort.Sort(foundIDs)
+			} else {
+				sort.Sort(sort.Reverse(foundIDs))
+			}
+
+			for _, id := range foundIDs {
+				records = append(records, foundRecords[t][uuid.MustParse(id)])
+			}
+		}
 	case "name":
 		foundRecords := make(map[string]map[uuid.UUID]models.Record)
 
@@ -62,9 +106,7 @@ func (c *Client) ReadRecordsForDomain(domainID uuid.UUID, orderBy string, asc bo
 			for _, id := range foundIDs {
 				records = append(records, foundRecords[n][uuid.MustParse(id)])
 			}
-
 		}
-
 	default:
 		return nil, db.ErrUnknownAttribute
 	}

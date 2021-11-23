@@ -9,7 +9,8 @@ import (
 // DoDeleteDomain tests the Delete function for a models.Domain type
 func DoDeleteDomain(t *testing.T, client db.DB) {
 	newDomain := models.Domain{
-		Domain: "dodeletedomain.",
+		Domain:  "dodeletedomain.",
+		OwnerID: userAdmin.ID,
 	}
 	err := client.Create(&newDomain)
 	if err != nil {

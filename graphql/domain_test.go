@@ -3,6 +3,7 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
 	"github.com/tyrm/supreme-robot/models"
 	"net/http"
@@ -266,12 +267,31 @@ func TestDomainQuery(t *testing.T) {
 
 func TestMyDomainsQuery(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, _, db, _, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
 	if server == nil {
 		t.Errorf("expected server, got: nil, want: *Server.")
+	}
+
+	domains := []string{
+		"testmydomainsquery1.",
+		"testmydomainsquery2.",
+		"testmydomainsquery3.",
+	}
+
+	// create domains
+	for _, d := range domains {
+		newDomain := models.Domain{
+			Domain:  d,
+			OwnerID: uuid.MustParse("8c504483-1e11-4243-b6c8-14499877a641"),
+		}
+		dbErr := db.Create(&newDomain)
+		if dbErr != nil {
+			t.Errorf("unexpected error, got: %s, want: nil.", dbErr.Error())
+			return
+		}
 	}
 
 	// do login
@@ -287,13 +307,6 @@ func TestMyDomainsQuery(t *testing.T) {
 	metadata, err := server.extractTokenMetadata(&req)
 	if err != nil {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
-	}
-
-	// add domain
-	domains := []string{
-		"test1.",
-		"test2.",
-		"test3.",
 	}
 
 	// prepare query

@@ -202,8 +202,8 @@ func TestMeQuery(t *testing.T) {
 	if err != nil {
 		t.Errorf("can't parse me id %s, got: %s, want: nil.", meID, err.Error())
 	}
-	if meIDUUID != uuid.Must(uuid.Parse("44892097-2c97-4c16-b4d1-e8522586df48")) {
-		t.Errorf("got wrong id, got: %s, want: '44892097-2c97-4c16-b4d1-e8522586df48'.", meID)
+	if meIDUUID != uuid.Must(uuid.Parse("8c504483-1e11-4243-b6c8-14499877a641")) {
+		t.Errorf("got wrong id, got: %s, want: '8c504483-1e11-4243-b6c8-14499877a641'.", meID)
 	}
 
 	username, usernameOk := me["username"].(string)
@@ -273,7 +273,7 @@ func TestUserQuery(t *testing.T) {
 			}
 		}`,
 		Variables: map[string]interface{}{
-			"id": "69706e10-fe5a-4bd3-a494-75d5c4230f5f",
+			"id": "8c504483-1e11-4243-b6c8-14499877a641",
 		},
 	}
 
@@ -307,23 +307,23 @@ func TestUserQuery(t *testing.T) {
 	if !userIDOk {
 		t.Errorf("no id data returned")
 	}
-	if userID != "69706e10-fe5a-4bd3-a494-75d5c4230f5f" {
-		t.Errorf("got invalid updatedAt, got: %s, want: '69706e10-fe5a-4bd3-a494-75d5c4230f5f'", userID)
+	if userID != "8c504483-1e11-4243-b6c8-14499877a641" {
+		t.Errorf("got invalid updatedAt, got: %s, want: '8c504483-1e11-4243-b6c8-14499877a641'", userID)
 	}
 
 	userUsername, userUsernameOk := user["username"].(string)
 	if !userUsernameOk {
 		t.Errorf("no username data returned")
 	}
-	if userUsername != "user" {
-		t.Errorf("got invalid updatedAt, got: %s, want: 'user'", userID)
+	if userUsername != "admin" {
+		t.Errorf("got invalid updatedAt, got: %s, want: 'user'", userUsername)
 	}
 
 	userGroups, userGroupsOk := user["groups"].([]interface{})
 	if !userGroupsOk {
 		t.Errorf("no groups data returned")
 	}
-	if len(userGroups) != 0 {
+	if len(userGroups) != 1 {
 		t.Errorf("got invalid updatedAt, got: %d, want: 0'", len(userGroups))
 	}
 

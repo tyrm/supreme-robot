@@ -28,7 +28,11 @@ func TestClient_ReadUser_Admin(t *testing.T) {
 		return
 	}
 	if reflect.TypeOf(receivedUser) != reflect.TypeOf(&models.User{}) {
-		t.Errorf("unexpected client type, got: %s, want: %s", reflect.TypeOf(receivedUser), reflect.TypeOf(&models.User{}))
+		t.Errorf("unexpected type, got: %s, want: %s", reflect.TypeOf(receivedUser), reflect.TypeOf(&models.User{}))
+		return
+	}
+	if receivedUser == nil {
+		t.Errorf("expected object, got: nil")
 		return
 	}
 
@@ -84,7 +88,11 @@ func TestClient_ReadUserByUsername_Admin(t *testing.T) {
 		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
 	}
 	if reflect.TypeOf(receivedUser) != reflect.TypeOf(&models.User{}) {
-		t.Errorf("unexpected client type, got: %s, want: %s", reflect.TypeOf(receivedUser), reflect.TypeOf(&models.User{}))
+		t.Errorf("unexpected type, got: %s, want: %s", reflect.TypeOf(receivedUser), reflect.TypeOf(&models.User{}))
+		return
+	}
+	if receivedUser == nil {
+		t.Errorf("expected object, got: nil")
 		return
 	}
 

@@ -37,11 +37,11 @@ func TestClient_ReadUser_Admin(t *testing.T) {
 	}
 
 	if receivedUser.ID != uuid.MustParse("44892097-2c97-4c16-b4d1-e8522586df48") {
-		t.Errorf("unexpected username, got: %s, want: 44892097-2c97-4c16-b4d1-e8522586df48", err.Error())
+		t.Errorf("unexpected username, got: %s, want: 44892097-2c97-4c16-b4d1-e8522586df48", receivedUser.ID)
 	}
 
 	if receivedUser.Username != "admin" {
-		t.Errorf("unexpected username, got: %s, want: admin", err.Error())
+		t.Errorf("unexpected username, got: %s, want: admin", receivedUser.Username)
 	}
 
 	if !receivedUser.CheckPasswordHash("password") {
@@ -97,11 +97,11 @@ func TestClient_ReadUserByUsername_Admin(t *testing.T) {
 	}
 
 	if receivedUser.ID != uuid.MustParse("44892097-2c97-4c16-b4d1-e8522586df48") {
-		t.Errorf("unexpected username, got: %s, want: 44892097-2c97-4c16-b4d1-e8522586df48", err.Error())
+		t.Errorf("unexpected username, got: %s, want: 44892097-2c97-4c16-b4d1-e8522586df48", receivedUser.ID)
 	}
 
 	if receivedUser.Username != "admin" {
-		t.Errorf("unexpected username, got: %s, want: admin", err.Error())
+		t.Errorf("unexpected username, got: %s, want: admin", receivedUser.Username)
 	}
 
 	if !receivedUser.CheckPasswordHash("password") {

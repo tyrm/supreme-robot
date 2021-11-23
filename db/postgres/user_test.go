@@ -21,7 +21,7 @@ func TestClient_ReadUser_Admin(t *testing.T) {
 		return
 	}
 
-	id := uuid.MustParse("44892097-2c97-4c16-b4d1-e8522586df48")
+	id := uuid.MustParse("8c504483-1e11-4243-b6c8-14499877a641")
 	receivedUser, err := client.ReadUser(id)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
@@ -36,8 +36,8 @@ func TestClient_ReadUser_Admin(t *testing.T) {
 		return
 	}
 
-	if receivedUser.ID != uuid.MustParse("44892097-2c97-4c16-b4d1-e8522586df48") {
-		t.Errorf("unexpected username, got: %s, want: 44892097-2c97-4c16-b4d1-e8522586df48", receivedUser.ID)
+	if receivedUser.ID != uuid.MustParse("8c504483-1e11-4243-b6c8-14499877a641") {
+		t.Errorf("unexpected username, got: %s, want: 8c504483-1e11-4243-b6c8-14499877a641", receivedUser.ID)
 	}
 
 	if receivedUser.Username != "admin" {
@@ -96,8 +96,8 @@ func TestClient_ReadUserByUsername_Admin(t *testing.T) {
 		return
 	}
 
-	if receivedUser.ID != uuid.MustParse("44892097-2c97-4c16-b4d1-e8522586df48") {
-		t.Errorf("unexpected username, got: %s, want: 44892097-2c97-4c16-b4d1-e8522586df48", receivedUser.ID)
+	if receivedUser.ID != uuid.MustParse("8c504483-1e11-4243-b6c8-14499877a641") {
+		t.Errorf("unexpected username, got: %s, want: 8c504483-1e11-4243-b6c8-14499877a641", receivedUser.ID)
 	}
 
 	if receivedUser.Username != "admin" {

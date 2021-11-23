@@ -1,18 +1,21 @@
 pipeline {
   environment {
-    registry = "tyrm/supreme-robot-be"
+    networkName = "network-${env.BUILD_TAG}"
+    registry = 'tyrm/supreme-robot-be'
     registryCredential = 'docker-io-tyrm'
     dockerImage = ''
     gitDescribe = ''
   }
 
-  agent any;
+  agent any
 
   stages {
 
     stage('Setup') {
       steps {
         script {
+          echo "creating network ${networkName}"
+          sh "docker network create ${networkName}"
           gitDescribe = sh(returnStdout: true, script: 'git describe --tag').trim()
           writeFile file: "./version/version.go", text: """package version
 
@@ -20,8 +23,20 @@ pipeline {
 const Version = "${gitDescribe}"
 
           """
-          sh "mkdir -p ${WORKSPACE}/embedded-postgres-go"
-          sh "chmod 777 ${WORKSPACE}/embedded-postgres-go"
+        }
+      }
+    }
+
+    stage('Start Postgres'){
+      steps{
+        script{
+          retry(4) {
+            echo 'trying to start postgres'
+            withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
+              sh """NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml pull
+              NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml up -d"""
+            }
+          }
         }
       }
     }
@@ -30,17 +45,23 @@ const Version = "${gitDescribe}"
       agent {
         docker {
           image 'golang:1.17'
-          args '-e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache '
+          args '--network ${networkName} -e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache'
         }
       }
       steps {
         script {
-          sh "go get -t -v ./..."
-          sh "go test -race -coverprofile=coverage.txt -covermode=atomic ./..."
+          withCredentials([
+            string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN'),
+            usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')
+          ]) {
+            pgConnectionDSN = "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/supremerobot?sslmode=disable"
 
-          withCredentials([string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN')]) {
             sh """#!/bin/bash
+            go get -t -v ./...
+            TEST_DSN="${pgConnectionDSN}" go test --tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
+            RESULT=\$?
             bash <(curl -s https://codecov.io/bash)
+            exit \$RESULT
             """
           }
         }
@@ -75,4 +96,13 @@ const Version = "${gitDescribe}"
     }
 
   }
+
+  post {
+    always {
+      withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
+        sh """NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml down"""
+      }
+    }
+  }
+
 }

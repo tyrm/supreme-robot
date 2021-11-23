@@ -130,8 +130,20 @@ func DoReadDomainByDomainUnknown(t *testing.T, client db.DB) {
 	}
 }
 
-// DoReadDomainsForUserAdmin tests the ReadDomainsForUser function
-func DoReadDomainsForUserAdmin(t *testing.T, client db.DB) {
+// DoReadDomainsForUser tests the ReadDomainsForUser function for a known user
+func DoReadDomainsForUser(t *testing.T, client db.DB) {
+	newUser := models.User{
+		Username: "doreaddomainsforuser",
+	}
+	err := newUser.SetPassword("newpassword")
+	if err != nil {
+		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+	err = client.Create(&newUser)
+	if err != nil {
+		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
 	// create domains
 	domains := []string{
 		"doreaddomainsforuseradmin1.",
@@ -142,7 +154,7 @@ func DoReadDomainsForUserAdmin(t *testing.T, client db.DB) {
 	for i, d := range domains {
 		newDomain := models.Domain{
 			Domain:  d,
-			OwnerID: userAdmin.ID,
+			OwnerID: newUser.ID,
 		}
 		err := client.Create(&newDomain)
 		if err != nil {
@@ -152,7 +164,7 @@ func DoReadDomainsForUserAdmin(t *testing.T, client db.DB) {
 		searchDomains[i] = newDomain
 	}
 
-	adminDomains, err := client.ReadDomainsForUser(userAdmin.ID)
+	adminDomains, err := client.ReadDomainsForUser(newUser.ID)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 		return

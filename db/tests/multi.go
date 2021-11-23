@@ -126,7 +126,7 @@ func DoCreateGroupsForUser(t *testing.T, client db.DB) {
 func DoCreateGroupsForUserUnknownUser(t *testing.T, client db.DB) {
 	id := uuid.MustParse("241a4327-a0ca-41df-855d-e0ecf552802c")
 	err := client.CreateGroupsForUser(id, models.GroupDNSAdmin, models.GroupUserAdmin)
-	if err.Error() != db.ErrUnknownUser.Error() {
-		t.Fatalf("unexpected error, got: %s, want: %s", err.Error(), db.ErrUnknownUser.Error())
+	if err == nil {
+		t.Fatalf("unexpected error, got: nil, want: err")
 	}
 }

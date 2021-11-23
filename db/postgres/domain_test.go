@@ -67,12 +67,12 @@ func TestClient_ReadDomainByDomain_Unknown(t *testing.T) {
 	tests.DoReadDomainByDomainUnknown(t, client)
 }
 
-func TestClient_ReadDomainsForUser_Admin(t *testing.T) {
+func TestClient_ReadDomainsForUser(t *testing.T) {
 	client, err := testCreateClient()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 		return
 	}
 
-	tests.DoReadDomainsForUserAdmin(t, client)
+	tests.DoReadDomainsForUser(t, client)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/tyrm/supreme-robot/config"
 	"github.com/tyrm/supreme-robot/models"
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -23,7 +24,12 @@ func TestClient_ReadUser_Admin(t *testing.T) {
 	id := uuid.MustParse("44892097-2c97-4c16-b4d1-e8522586df48")
 	receivedUser, err := client.ReadUser(id)
 	if err != nil {
-		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+		return
+	}
+	if reflect.TypeOf(receivedUser) != reflect.TypeOf(&models.User{}) {
+		t.Errorf("unexpected client type, got: %s, want: %s", reflect.TypeOf(receivedUser), reflect.TypeOf(&models.User{}))
+		return
 	}
 
 	if receivedUser.ID != uuid.MustParse("44892097-2c97-4c16-b4d1-e8522586df48") {
@@ -76,6 +82,10 @@ func TestClient_ReadUserByUsername_Admin(t *testing.T) {
 	receivedUser, err := client.ReadUserByUsername("admin")
 	if err != nil {
 		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+	if reflect.TypeOf(receivedUser) != reflect.TypeOf(&models.User{}) {
+		t.Errorf("unexpected client type, got: %s, want: %s", reflect.TypeOf(receivedUser), reflect.TypeOf(&models.User{}))
+		return
 	}
 
 	if receivedUser.ID != uuid.MustParse("44892097-2c97-4c16-b4d1-e8522586df48") {

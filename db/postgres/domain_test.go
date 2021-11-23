@@ -1,4 +1,6 @@
-package memory
+//go:build integration
+
+package postgres
 
 import (
 	"github.com/tyrm/supreme-robot/db/tests"

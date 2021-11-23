@@ -1,4 +1,6 @@
-package memory
+//go:build integration
+
+package redis
 
 import (
 	"github.com/tyrm/supreme-robot/kv/tests"

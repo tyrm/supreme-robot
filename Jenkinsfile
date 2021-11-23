@@ -54,11 +54,12 @@ const Version = "${gitDescribe}"
             string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN'),
             usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')
           ]) {
+            redisAddress = "redis:6379"
             pgConnectionDSN = "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/supremerobot?sslmode=disable"
 
             sh """#!/bin/bash
             go get -t -v ./...
-            TEST_DSN="${pgConnectionDSN}" go test --tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
+            TEST_DSN="${pgConnectionDSN}" TEST_REDIS="${redisAddress}" go test --tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
             RESULT=\$?
             bash <(curl -s https://codecov.io/bash)
             exit \$RESULT

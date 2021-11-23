@@ -100,6 +100,46 @@ func DoGetAccessTokenNotFound(t *testing.T, client kv.Webapp) {
 	}
 }
 
+// DoGetRefreshToken tests the GetAccessToken function
+func DoGetRefreshToken(t *testing.T, client kv.Webapp) {
+	accessToken := uuid.MustParse("adce08f6-f8db-4a10-82d5-d65431d304c2")
+	userID := uuid.MustParse("f354042f-9c5f-44ad-a4f2-25d0723383ee")
+
+	refreshToken := accessToken.String() + "++" + userID.String()
+
+	err := client.SetRefreshToken(refreshToken, userID, 24*time.Hour)
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+		return
+	}
+
+	receivedUserID, err := client.GetRefreshToken(refreshToken)
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+		return
+	}
+	if receivedUserID != userID {
+		t.Errorf("unexpected user id, got: %v, want: %v", receivedUserID, userID)
+	}
+}
+
+// DoGetRefreshTokenNotFound tests the GetAccessToken for an unknown token
+func DoGetRefreshTokenNotFound(t *testing.T, client kv.Webapp) {
+	accessToken := uuid.MustParse("9c90aabe-c420-4c6f-9f9f-63f5a84244c9")
+	userID := uuid.MustParse("f1323130-8263-4386-98a6-2b9eb1749e0d")
+
+	refreshToken := accessToken.String() + "++" + userID.String()
+
+	receivedUserID, err := client.GetRefreshToken(refreshToken)
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+		return
+	}
+	if receivedUserID != uuid.Nil {
+		t.Errorf("unexpected user id, got: %v, want: nil", receivedUserID)
+	}
+}
+
 // DoSetAccessToken tests the SetAccessToken function
 func DoSetAccessToken(t *testing.T, client kv.Webapp) {
 	accessToken := uuid.MustParse("eb95d366-d178-4051-80f6-ac5fa6959d0a")
@@ -129,23 +169,6 @@ func DoSetAccessToken(t *testing.T, client kv.Webapp) {
 	if receivedUserID2 != uuid.Nil {
 		t.Errorf("expiration failed, got: %s, want: nil.", receivedUserID2)
 		return
-	}
-}
-
-// DoGetRefreshTokenNotFound tests the GetAccessToken for an unknown token
-func DoGetRefreshTokenNotFound(t *testing.T, client kv.Webapp) {
-	accessToken := uuid.MustParse("9c90aabe-c420-4c6f-9f9f-63f5a84244c9")
-	userID := uuid.MustParse("f1323130-8263-4386-98a6-2b9eb1749e0d")
-
-	refreshToken := accessToken.String() + "++" + userID.String()
-
-	receivedUserID, err := client.GetRefreshToken(refreshToken)
-	if err != nil {
-		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
-		return
-	}
-	if receivedUserID != uuid.Nil {
-		t.Errorf("unexpected user id, got: %v, want: nil", receivedUserID)
 	}
 }
 

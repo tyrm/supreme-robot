@@ -1,6 +1,9 @@
 package models
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestRegexIPv4Address(t *testing.T) {
 	tables := []struct {
@@ -21,12 +24,18 @@ func TestRegexIPv4Address(t *testing.T) {
 		{"::1234:5678", false},
 	}
 
-	for _, table := range tables {
-		match := reIPv4Address.MatchString(table.x)
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("[%d] Testing %s", i, table.x)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-		if match != table.n {
-			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, match, table.n)
-		}
+			match := reIPv4Address.MatchString(table.x)
+			if match != table.n {
+				t.Errorf("[%d] regex match on %s failed, got: %v, want: %v,", i, table.x, match, table.n)
+			}
+		})
 	}
 }
 
@@ -60,12 +69,18 @@ func TestRegexIPv6Address(t *testing.T) {
 		{"google.com", false},
 	}
 
-	for _, table := range tables {
-		match := reIPv6Address.MatchString(table.x)
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("[%d] Testing %s", i, table.x)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-		if match != table.n {
-			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, match, table.n)
-		}
+			match := reIPv6Address.MatchString(table.x)
+			if match != table.n {
+				t.Errorf("[%d] regex match on %s failed, got: %v, want: %v,", i, table.x, match, table.n)
+			}
+		})
 	}
 }
 
@@ -100,12 +115,18 @@ func TestRegexMXDomain(t *testing.T) {
 		{"_xmpp-server._tcp.a.long.sub.domain", false},
 	}
 
-	for _, table := range tables {
-		match := reMXDomain.MatchString(table.x)
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("[%d] Testing %s", i, table.x)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-		if match != table.n {
-			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, match, table.n)
-		}
+			match := reMXDomain.MatchString(table.x)
+			if match != table.n {
+				t.Errorf("[%d] regex match on %s failed, got: %v, want: %v,", i, table.x, match, table.n)
+			}
+		})
 	}
 }
 
@@ -138,12 +159,18 @@ func TestRegexNSDomain(t *testing.T) {
 		{"_xmpp-server._tcp.a.long.sub.domain", false},
 	}
 
-	for _, table := range tables {
-		match := reNSDomain.MatchString(table.x)
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("[%d] Testing %s", i, table.x)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-		if match != table.n {
-			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, match, table.n)
-		}
+			match := reNSDomain.MatchString(table.x)
+			if match != table.n {
+				t.Errorf("[%d] regex match on %s failed, got: %v, want: %v,", i, table.x, match, table.n)
+			}
+		})
 	}
 }
 
@@ -176,12 +203,18 @@ func TestRegexSRVDomain(t *testing.T) {
 		{"_xmpp-server._tcp.a.long.sub.domain", true},
 	}
 
-	for _, table := range tables {
-		match := reSRVDomain.MatchString(table.x)
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("[%d] Testing %s", i, table.x)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-		if match != table.n {
-			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, match, table.n)
-		}
+			match := reSRVDomain.MatchString(table.x)
+			if match != table.n {
+				t.Errorf("[%d] regex match on %s failed, got: %v, want: %v,", i, table.x, match, table.n)
+			}
+		})
 	}
 }
 
@@ -214,12 +247,18 @@ func TestRegexSubDomain(t *testing.T) {
 		{"_xmpp-server._tcp.a.long.sub.domain", false},
 	}
 
-	for _, table := range tables {
-		match := reSubDomain.MatchString(table.x)
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("[%d] Testing %s", i, table.x)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-		if match != table.n {
-			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, match, table.n)
-		}
+			match := reSubDomain.MatchString(table.x)
+			if match != table.n {
+				t.Errorf("[%d] regex match on %s failed, got: %v, want: %v,", i, table.x, match, table.n)
+			}
+		})
 	}
 }
 
@@ -249,11 +288,17 @@ func TestRegexTopDomain(t *testing.T) {
 		{"_xmpp-server._tcp.a.long.sub.domain", false},
 	}
 
-	for _, table := range tables {
-		match := reTopDomain.MatchString(table.x)
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("[%d] Testing %s", i, table.x)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-		if match != table.n {
-			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, match, table.n)
-		}
+			match := reTopDomain.MatchString(table.x)
+			if match != table.n {
+				t.Errorf("[%d] regex match on %s failed, got: %v, want: %v,", i, table.x, match, table.n)
+			}
+		})
 	}
 }

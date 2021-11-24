@@ -71,6 +71,12 @@ func (s *Server) addDomainMutator(params graphql.ResolveParams) (interface{}, er
 		return nil, err
 	}
 
+	err = s.scheduler.AddDomain(newDomain.ID)
+	if err != nil {
+		logger.Errorf("db: %s", err.Error())
+		return nil, err
+	}
+
 	return newDomain, nil
 }
 
@@ -101,25 +107,25 @@ func (s *Server) deleteDomainMutator(params graphql.ResolveParams) (interface{},
 		return nil, nil
 	}
 
-	// does user own domain
-	if domain.OwnerID == metadata.UserID {
-		err = s.db.Delete(domain)
-		if err != nil {
-			return nil, err
-		}
-		return success{Success: true}, nil
+	// acl
+	isOwner := domain.OwnerID == metadata.UserID
+	isDNSAdmin := util.ContainsOneOfUUIDs(&metadata.Groups, &models.GroupsDNSAdmin)
+	if !isOwner && !isDNSAdmin {
+		return nil, errUnauthorized
 	}
 
-	// is user a dns admin
-	if util.ContainsOneOfUUIDs(&metadata.Groups, &models.GroupsDNSAdmin) {
-		err = s.db.Delete(domain)
-		if err != nil {
-			return nil, err
-		}
-		return success{Success: true}, nil
+	err = s.db.Delete(domain)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, errUnauthorized
+	err = s.scheduler.RemoveDomain(domain.ID)
+	if err != nil {
+		logger.Errorf("db: %s", err.Error())
+		return nil, err
+	}
+
+	return success{Success: true}, nil
 }
 
 func (s *Server) domainQuery(params graphql.ResolveParams) (interface{}, error) {

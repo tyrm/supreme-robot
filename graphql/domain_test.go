@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/graphql-go/graphql"
 	"github.com/tyrm/supreme-robot/models"
+	"github.com/tyrm/supreme-robot/queue"
 	"net/http"
 	"reflect"
 	"testing"
@@ -35,7 +36,7 @@ func TestAddDomainMutator(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
-	domain := "test."
+	domain := "testadddomainmutator."
 	soa := map[string]interface{}{
 		"ttl":     300,
 		"mbox":    "hostmaster.test.",
@@ -43,7 +44,7 @@ func TestAddDomainMutator(t *testing.T) {
 		"retry":   44,
 		"expire":  33,
 	}
-	_, newDomain, newRecords, err := testDoAddDomain(server, metadata, domain, soa)
+	newID, newDomain, newRecords, err := testDoAddDomain(server, metadata, domain, soa)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -111,6 +112,29 @@ func TestAddDomainMutator(t *testing.T) {
 			}
 		}
 	}
+
+	// check for job
+	testServerQueue.Lock()
+	defer testServerQueue.Unlock()
+
+	if len(testServerQueue.Jobs[queue.QueueDNS]) != 1 {
+		t.Errorf("unexpected number of jobs in queue %s, got: %d, want: 1", queue.QueueDNS, len(testServerQueue.Jobs[queue.QueueDNS]))
+		return
+	}
+	if len(testServerQueue.Jobs[queue.QueueDNS][0]) != 2 {
+		t.Errorf("unexpected number of parameters for job %s, got: %d, want: 2", queue.JobAddDomain, len(testServerQueue.Jobs[queue.QueueDNS][0]))
+		return
+	}
+
+	if testServerQueue.Jobs[queue.QueueDNS][0][0].(string) != queue.JobAddDomain {
+		t.Errorf("unexpected job type, got: %s, want: %s", testServerQueue.Jobs[queue.QueueDNS][0][0], queue.JobAddDomain)
+	}
+	if testServerQueue.Jobs[queue.QueueDNS][0][1].(string) != newID {
+		t.Errorf("unexpected domain id, got: %s, want: %s", testServerQueue.Jobs[queue.QueueDNS][0][1], newID)
+	}
+
+	// reset queue
+	testServerQueue.Jobs[queue.QueueDNS] = [][]interface{}{}
 }
 
 func TestDeleteDomainMutator(t *testing.T) {
@@ -154,13 +178,36 @@ func TestDeleteDomainMutator(t *testing.T) {
 
 	// delete domain
 	newSuccess, err := testDoDeleteDomain(server, metadata, newID)
+	t.Logf("testDoDeleteDomain: %v, %v", newSuccess, err)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
-
 	if newSuccess != true {
 		t.Errorf("delete unsuccessful, got: %v, want: true.", newSuccess)
 	}
+
+	// check for job
+	testServerQueue.Lock()
+	defer testServerQueue.Unlock()
+
+	if len(testServerQueue.Jobs[queue.QueueDNS]) != 2 {
+		t.Errorf("unexpected number of jobs in queue %s, got: %d, want: 2", queue.QueueDNS, len(testServerQueue.Jobs[queue.QueueDNS]))
+		return
+	}
+	if len(testServerQueue.Jobs[queue.QueueDNS][1]) != 2 {
+		t.Errorf("unexpected number of parameters for job %s, got: %d, want: 2", queue.JobAddDomain, len(testServerQueue.Jobs[queue.QueueDNS][0]))
+		return
+	}
+
+	if testServerQueue.Jobs[queue.QueueDNS][1][0].(string) != queue.JobRemoveDomain {
+		t.Errorf("unexpected job type, got: %s, want: %s", testServerQueue.Jobs[queue.QueueDNS][0][0], queue.JobRemoveDomain)
+	}
+	if testServerQueue.Jobs[queue.QueueDNS][1][1].(string) != newID {
+		t.Errorf("unexpected domain id, got: %s, want: %s", testServerQueue.Jobs[queue.QueueDNS][0][1], newID)
+	}
+
+	// reset queue
+	testServerQueue.Jobs[queue.QueueDNS] = [][]interface{}{}
 }
 
 func TestDomainQuery(t *testing.T) {

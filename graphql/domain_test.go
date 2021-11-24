@@ -306,7 +306,6 @@ func TestDomainQuery(t *testing.T) {
 	if receivedName != domain {
 		t.Errorf("unexpected domain id, got: %s, want: %s", receivedName, domain)
 	}
-
 }
 
 func TestMyDomainsQuery(t *testing.T) {
@@ -321,7 +320,7 @@ func TestMyDomainsQuery(t *testing.T) {
 
 	// create new user
 	newUser := models.User{
-		Username: "newuser",
+		Username: "testmydomainsquery",
 	}
 	err = newUser.SetPassword("newpassword")
 	if err != nil {

@@ -7,6 +7,9 @@ lint:
 test-local: tidy fmt lint
 	go test -cover ./...
 
+test-local-race: tidy fmt lint
+	go test -race -cover ./...
+
 test-local-verbose: tidy fmt lint
 	go test -v -cover ./...
 

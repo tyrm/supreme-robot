@@ -16,6 +16,7 @@ type DB interface {
 	ReadDomainByDomain(string) (*models.Domain, error)
 	ReadDomainsForUser(uuid.UUID) (*[]models.Domain, error)
 	ReadRecordsForDomain(uuid.UUID, string, bool) (*[]models.Record, error)
+	ReadRecordsForDomainByName(uuid.UUID, string) (*[]models.Record, error)
 	ReadUser(uuid.UUID) (*models.User, error)
 	ReadUserByUsername(string) (*models.User, error)
 	Update(interface{}) error

@@ -190,3 +190,126 @@ func DoReadRecordsForDomainOrderByUnknown(t *testing.T, client db.DB) {
 		t.Errorf("unexpected records, got: %#v, want: nil", receivedRecords)
 	}
 }
+
+// DoReadRecordsForDomainByName tests the ReadRecordsForDomainByName function
+func DoReadRecordsForDomainByName(t *testing.T, client db.DB) {
+	// prep data for test
+	newDomain := models.Domain{
+		Domain:  "doreadrecordsfordomainbyname.",
+		OwnerID: userAdmin.ID,
+	}
+	err := client.Create(&newDomain)
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+		return
+	}
+
+	newRecordSOA := models.Record{
+		DomainID: newDomain.ID,
+		Name:     "@",
+		Type:     models.RecordTypeSOA,
+		Value:    "ns.example.com.",
+		TTL:      300,
+		MBox: sql.NullString{
+			String: "hostmaster.example.com.",
+			Valid:  true,
+		},
+		Refresh: sql.NullInt32{
+			Int32: 22,
+			Valid: true,
+		},
+		Retry: sql.NullInt32{
+			Int32: 44,
+			Valid: true,
+		},
+		Expire: sql.NullInt32{
+			Int32: 33,
+			Valid: true,
+		},
+	}
+	newRecordNS := models.Record{
+		DomainID: newDomain.ID,
+		Name:     "@",
+		Type:     models.RecordTypeNS,
+		Value:    "ns1.example.com.",
+		TTL:      300,
+	}
+	newRecordAAlice := models.Record{
+		DomainID: newDomain.ID,
+		Name:     "alice",
+		Type:     models.RecordTypeA,
+		Value:    "1.2.3.4",
+		TTL:      300,
+	}
+	newRecordABill := models.Record{
+		DomainID: newDomain.ID,
+		Name:     "bill",
+		Type:     models.RecordTypeA,
+		Value:    "4.5.6.7",
+		TTL:      300,
+	}
+	newRecordACharlie := models.Record{
+		DomainID: newDomain.ID,
+		Name:     "charlie",
+		Type:     models.RecordTypeA,
+		Value:    "8.9.1.2",
+		TTL:      300,
+	}
+
+	insertOrder := []*models.Record{
+		&newRecordABill,
+		&newRecordNS,
+		&newRecordACharlie,
+		&newRecordSOA,
+		&newRecordAAlice,
+	}
+	for _, r := range insertOrder {
+		err = client.Create(r)
+		if err != nil {
+			t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+			return
+		}
+		time.Sleep(1 * time.Second)
+	}
+
+	// do the tests
+	tables := []struct {
+		name          string
+		expectedOrder []*models.Record
+	}{
+		{"@", []*models.Record{&newRecordNS, &newRecordSOA}},
+		{"alice", []*models.Record{&newRecordAAlice}},
+		{"bill", []*models.Record{&newRecordABill}},
+		{"charlie", []*models.Record{&newRecordACharlie}},
+	}
+
+	for _, table := range tables {
+		receivedRecords, err := client.ReadRecordsForDomainByName(newDomain.ID, table.name)
+		if err != nil {
+			t.Errorf("[%s] unexpected error, got: %s, want: nil", table.name, err.Error())
+			continue
+		}
+		receivedRecordsCount := len(*receivedRecords)
+		expectedRecordsCount := len(table.expectedOrder)
+		if receivedRecordsCount != expectedRecordsCount {
+			t.Errorf("[%s] invalid number of records returned, got: %d, want: %d", table.name, receivedRecordsCount, expectedRecordsCount)
+			continue
+		}
+
+		// check records
+		for i, ar := range *receivedRecords {
+			if ar.ID != table.expectedOrder[i].ID {
+				t.Errorf("[%s][%d] unexpected ID, got: %s, want: %s", table.name, i, ar.ID, table.expectedOrder[i].ID)
+			}
+			if ar.Name != table.expectedOrder[i].Name {
+				t.Errorf("[%s][%d] unexpected Name, got: %s, want: %s", table.name, i, ar.Name, table.expectedOrder[i].Name)
+			}
+			if ar.Type != table.expectedOrder[i].Type {
+				t.Errorf("[%s][%d] unexpected Type, got: %s, want: %s", table.name, i, ar.Type, table.expectedOrder[i].Type)
+			}
+			if ar.Value != table.expectedOrder[i].Value {
+				t.Errorf("[%s][%d] unexpected Value, got: %s, want: %s", table.name, i, ar.Value, table.expectedOrder[i].Value)
+			}
+		}
+	}
+}

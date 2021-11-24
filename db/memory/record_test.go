@@ -24,3 +24,13 @@ func TestClient_ReadRecordsForDomain_OrderBy_Unknown(t *testing.T) {
 
 	tests.DoReadRecordsForDomainOrderByUnknown(t, client)
 }
+
+func TestClient_ReadRecordsForDomainByName(t *testing.T) {
+	client, err := testCreateClient()
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil", err.Error())
+		return
+	}
+
+	tests.DoReadRecordsForDomainByName(t, client)
+}

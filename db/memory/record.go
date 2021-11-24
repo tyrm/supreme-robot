@@ -113,3 +113,50 @@ func (c *Client) ReadRecordsForDomain(domainID uuid.UUID, orderBy string, asc bo
 
 	return &records, nil
 }
+
+// ReadRecordsForDomainByName will read records for a given domain matching the given name
+func (c *Client) ReadRecordsForDomainByName(domainID uuid.UUID, name string) (*[]models.Record, error) {
+	records := make([]models.Record, 0)
+
+	// Lock DB
+	c.RLock()
+	defer c.RUnlock()
+
+	foundRecords := make(map[int]map[uuid.UUID]models.Record)
+
+	// find records
+	for _, record := range c.records {
+		if record.DomainID == domainID && record.Name == name {
+			if foundRecords[int(record.CreatedAt.Unix())] == nil {
+				foundRecords[int(record.CreatedAt.Unix())] = make(map[uuid.UUID]models.Record)
+			}
+			foundRecords[int(record.CreatedAt.Unix())][record.ID] = record
+		}
+	}
+
+	// get keys and sort
+	var foundTimes sort.IntSlice = make([]int, len(foundRecords))
+	i := 0
+	for k := range foundRecords {
+		foundTimes[i] = k
+		i++
+	}
+	sort.Sort(foundTimes)
+
+	// make a list
+	for _, t := range foundTimes {
+		var foundIDs sort.StringSlice = make([]string, len(foundRecords[t]))
+		i = 0
+		for k := range foundRecords[t] {
+			foundIDs[i] = k.String()
+			i++
+		}
+		sort.Sort(foundIDs)
+
+		for _, id := range foundIDs {
+			records = append(records, foundRecords[t][uuid.MustParse(id)])
+		}
+	}
+
+	return &records, nil
+}

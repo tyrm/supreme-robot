@@ -32,7 +32,10 @@ const Version = "${gitDescribe}"
         script{
           retry(4) {
             echo 'trying to start postgres'
-            withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
+            withCredentials([
+              usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD'),
+              string(credentialsId: 'integration-redis-test', variable: 'REDIS_PASSWORD')
+            ]) {
               sh """NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml pull
               NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml up -d"""
             }
@@ -52,14 +55,14 @@ const Version = "${gitDescribe}"
         script {
           withCredentials([
             string(credentialsId: 'codecov-tyrm-supreme-robot', variable: 'CODECOV_TOKEN'),
-            usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')
+            usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD'),
+            string(credentialsId: 'integration-redis-test', variable: 'REDIS_PASSWORD')
           ]) {
-            redisAddress = "redis:6379"
             pgConnectionDSN = "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/supremerobot?sslmode=disable"
 
             sh """#!/bin/bash
             go get -t -v ./...
-            TEST_DSN="${pgConnectionDSN}" TEST_REDIS="${redisAddress}" go test --tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
+            TEST_DSN="${pgConnectionDSN}" TEST_REDIS="redis:6379" TEST_REDIS_PASS="${REDIS_PASSWORD}" go test --tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
             RESULT=\$?
             bash <(curl -s https://codecov.io/bash)
             exit \$RESULT
@@ -100,7 +103,10 @@ const Version = "${gitDescribe}"
 
   post {
     always {
-      withCredentials([usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD')]) {
+      withCredentials([
+        usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD'),
+        string(credentialsId: 'integration-redis-test', variable: 'REDIS_PASSWORD')
+      ]) {
         sh """NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml down"""
       }
     }

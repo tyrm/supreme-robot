@@ -22,5 +22,5 @@ func TestNewClient(t *testing.T) {
 }
 
 func testCreateClient() (*Client, error) {
-	return NewClient(os.Getenv("TEST_REDIS"), 0, "")
+	return NewClient(os.Getenv("TEST_REDIS"), 0, os.Getenv("TEST_REDIS_PASS"))
 }

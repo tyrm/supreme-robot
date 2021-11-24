@@ -10,7 +10,7 @@ services:
       - integration
   redis:
     image: redis:6
-    command: redis-server
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     networks:
       - integration
 

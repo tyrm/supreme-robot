@@ -2,6 +2,7 @@ package tests
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/tyrm/supreme-robot/db"
 	"github.com/tyrm/supreme-robot/models"
 	"testing"
@@ -113,32 +114,39 @@ func DoReadRecordsForDomain(t *testing.T, client db.DB) {
 	}
 
 	for _, table := range tables {
-		receivedRecords, err := client.ReadRecordsForDomain(newDomain.ID, table.orderBy, table.asc)
-		if err != nil {
-			t.Errorf("[%s,%v] unexpected error, got: %s, want: nil", table.orderBy, table.asc, err.Error())
-			continue
-		}
-		receivedRecordsCount := len(*receivedRecords)
-		if receivedRecordsCount != 5 {
-			t.Errorf("[%s,%v] invalid number of records returned, got: %d, want: 5", table.orderBy, table.asc, receivedRecordsCount)
-			continue
-		}
+		table := table
+		name := fmt.Sprintf("[%s,%v] Test", table.orderBy, table.asc)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-		// check records
-		for i, ar := range *receivedRecords {
-			if ar.ID != table.expectedOrder[i].ID {
-				t.Errorf("[%s,%v][%d] unexpected ID, got: %s, want: %s", table.orderBy, table.asc, i, ar.ID, table.expectedOrder[i].ID)
+			receivedRecords, err := client.ReadRecordsForDomain(newDomain.ID, table.orderBy, table.asc)
+			if err != nil {
+				t.Errorf("[%s,%v] unexpected error, got: %s, want: nil", table.orderBy, table.asc, err.Error())
+				return
 			}
-			if ar.Name != table.expectedOrder[i].Name {
-				t.Errorf("[%s,%v][%d] unexpected Name, got: %s, want: %s", table.orderBy, table.asc, i, ar.Name, table.expectedOrder[i].Name)
+			receivedRecordsCount := len(*receivedRecords)
+			if receivedRecordsCount != 5 {
+				t.Errorf("[%s,%v] invalid number of records returned, got: %d, want: 5", table.orderBy, table.asc, receivedRecordsCount)
+				return
 			}
-			if ar.Type != table.expectedOrder[i].Type {
-				t.Errorf("[%s,%v][%d] unexpected Type, got: %s, want: %s", table.orderBy, table.asc, i, ar.Type, table.expectedOrder[i].Type)
+
+			// check records
+			for i, ar := range *receivedRecords {
+				if ar.ID != table.expectedOrder[i].ID {
+					t.Errorf("[%s,%v][%d] unexpected ID, got: %s, want: %s", table.orderBy, table.asc, i, ar.ID, table.expectedOrder[i].ID)
+				}
+				if ar.Name != table.expectedOrder[i].Name {
+					t.Errorf("[%s,%v][%d] unexpected Name, got: %s, want: %s", table.orderBy, table.asc, i, ar.Name, table.expectedOrder[i].Name)
+				}
+				if ar.Type != table.expectedOrder[i].Type {
+					t.Errorf("[%s,%v][%d] unexpected Type, got: %s, want: %s", table.orderBy, table.asc, i, ar.Type, table.expectedOrder[i].Type)
+				}
+				if ar.Value != table.expectedOrder[i].Value {
+					t.Errorf("[%s,%v][%d] unexpected Value, got: %s, want: %s", table.orderBy, table.asc, i, ar.Value, table.expectedOrder[i].Value)
+				}
 			}
-			if ar.Value != table.expectedOrder[i].Value {
-				t.Errorf("[%s,%v][%d] unexpected Value, got: %s, want: %s", table.orderBy, table.asc, i, ar.Value, table.expectedOrder[i].Value)
-			}
-		}
+
+		})
 	}
 }
 
@@ -284,32 +292,38 @@ func DoReadRecordsForDomainByName(t *testing.T, client db.DB) {
 	}
 
 	for _, table := range tables {
-		receivedRecords, err := client.ReadRecordsForDomainByName(newDomain.ID, table.name)
-		if err != nil {
-			t.Errorf("[%s] unexpected error, got: %s, want: nil", table.name, err.Error())
-			continue
-		}
-		receivedRecordsCount := len(*receivedRecords)
-		expectedRecordsCount := len(table.expectedOrder)
-		if receivedRecordsCount != expectedRecordsCount {
-			t.Errorf("[%s] invalid number of records returned, got: %d, want: %d", table.name, receivedRecordsCount, expectedRecordsCount)
-			continue
-		}
+		table := table
+		name := fmt.Sprintf("Testing %s", table.name)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-		// check records
-		for i, ar := range *receivedRecords {
-			if ar.ID != table.expectedOrder[i].ID {
-				t.Errorf("[%s][%d] unexpected ID, got: %s, want: %s", table.name, i, ar.ID, table.expectedOrder[i].ID)
+			receivedRecords, err := client.ReadRecordsForDomainByName(newDomain.ID, table.name)
+			if err != nil {
+				t.Errorf("[%s] unexpected error, got: %s, want: nil", table.name, err.Error())
+				return
 			}
-			if ar.Name != table.expectedOrder[i].Name {
-				t.Errorf("[%s][%d] unexpected Name, got: %s, want: %s", table.name, i, ar.Name, table.expectedOrder[i].Name)
+			receivedRecordsCount := len(*receivedRecords)
+			expectedRecordsCount := len(table.expectedOrder)
+			if receivedRecordsCount != expectedRecordsCount {
+				t.Errorf("[%s] invalid number of records returned, got: %d, want: %d", table.name, receivedRecordsCount, expectedRecordsCount)
+				return
 			}
-			if ar.Type != table.expectedOrder[i].Type {
-				t.Errorf("[%s][%d] unexpected Type, got: %s, want: %s", table.name, i, ar.Type, table.expectedOrder[i].Type)
+
+			// check records
+			for i, ar := range *receivedRecords {
+				if ar.ID != table.expectedOrder[i].ID {
+					t.Errorf("[%s][%d] unexpected ID, got: %s, want: %s", table.name, i, ar.ID, table.expectedOrder[i].ID)
+				}
+				if ar.Name != table.expectedOrder[i].Name {
+					t.Errorf("[%s][%d] unexpected Name, got: %s, want: %s", table.name, i, ar.Name, table.expectedOrder[i].Name)
+				}
+				if ar.Type != table.expectedOrder[i].Type {
+					t.Errorf("[%s][%d] unexpected Type, got: %s, want: %s", table.name, i, ar.Type, table.expectedOrder[i].Type)
+				}
+				if ar.Value != table.expectedOrder[i].Value {
+					t.Errorf("[%s][%d] unexpected Value, got: %s, want: %s", table.name, i, ar.Value, table.expectedOrder[i].Value)
+				}
 			}
-			if ar.Value != table.expectedOrder[i].Value {
-				t.Errorf("[%s][%d] unexpected Value, got: %s, want: %s", table.name, i, ar.Value, table.expectedOrder[i].Value)
-			}
-		}
+		})
 	}
 }

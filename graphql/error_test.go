@@ -8,7 +8,7 @@ import (
 
 func TestMethodNotAllowedHandler(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -38,7 +38,7 @@ func TestMethodNotAllowedHandler(t *testing.T) {
 
 func TestNotFoundHandler(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -68,7 +68,7 @@ func TestNotFoundHandler(t *testing.T) {
 
 func TestReturnErrorPage(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}

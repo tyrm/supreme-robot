@@ -9,6 +9,8 @@ import (
 	"testing"
 )
 
+var testClient *Client
+
 func TestNewClient(t *testing.T) {
 	client, err := testCreateClient()
 	if err != nil {
@@ -23,9 +25,18 @@ func TestNewClient(t *testing.T) {
 }
 
 func testCreateClient() (*Client, error) {
+	if testClient != nil {
+		return testClient, nil
+	}
+
 	cfg := config.Config{
 		PostgresDsn: os.Getenv("TEST_DSN"),
 	}
+	newClient, err := NewClient(&cfg)
+	if err != nil {
+		return nil, err
+	}
+	testClient = newClient
 
-	return NewClient(&cfg)
+	return testClient, nil
 }

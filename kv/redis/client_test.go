@@ -8,6 +8,8 @@ import (
 	"testing"
 )
 
+var testClient *Client
+
 func TestNewClient(t *testing.T) {
 	client, err := testCreateClient()
 	if err != nil {
@@ -22,5 +24,15 @@ func TestNewClient(t *testing.T) {
 }
 
 func testCreateClient() (*Client, error) {
-	return NewClient(os.Getenv("TEST_REDIS"), 0, os.Getenv("TEST_REDIS_PASS"))
+	if testClient != nil {
+		return testClient, nil
+	}
+
+	newClient, err := NewClient(os.Getenv("TEST_REDIS"), 0, os.Getenv("TEST_REDIS_PASS"))
+	if err != nil {
+		return nil, err
+	}
+	testClient = newClient
+
+	return testClient, nil
 }

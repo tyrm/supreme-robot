@@ -29,8 +29,9 @@ func NewWorker(k kv.DNS, m queue.Manager, d db.DB) (*Worker, error) {
 
 	worker.manager.ProcessStrictPriorityQueues(queue.QueueDNS)
 
-	worker.manager.Register("AddDomain", worker.addDomainHandler)
-	worker.manager.Register("RemoveDomain", worker.removeDomainHandler)
+	worker.manager.Register(queue.JobAddDomain, worker.addDomainHandler)
+	worker.manager.Register(queue.JobRemoveDomain, worker.removeDomainHandler)
+	worker.manager.Register(queue.JobUpdateSubDomain, worker.updateSubDomainHandler)
 
 	return &worker, nil
 }

@@ -11,7 +11,7 @@ import (
 
 func TestAddUserMutator(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -20,7 +20,7 @@ func TestAddUserMutator(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -34,13 +34,13 @@ func TestAddUserMutator(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
-	_, _, _, _, _, err = testDoAddUser(server, metadata, "newuser", "newpassword", []string{})
+	_, _, _, _, _, err = testDoAddUser(server, metadata, "testaddusermutator", "newpassword", []string{})
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
 
 	// do login
-	_, _, err = testDoLogin(server, "newuser", "newpassword")
+	_, _, err = testDoLogin(server, "testaddusermutator", "newpassword")
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -48,7 +48,7 @@ func TestAddUserMutator(t *testing.T) {
 
 func TestChangePasswordMutator(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -57,7 +57,7 @@ func TestChangePasswordMutator(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -71,8 +71,28 @@ func TestChangePasswordMutator(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
+	_, _, _, _, _, err = testDoAddUser(server, metadata, "testchangepasswordmutator", "newpassword", []string{})
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// do login
+	accessToken2, _, err := testDoLogin(server, "testchangepasswordmutator", "newpassword")
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// extract metadata
+	req2 := http.Request{}
+	req2.Header = http.Header{}
+	req2.Header.Set("Authorization", "Bearer "+accessToken2)
+	metadata2, err := server.extractTokenMetadata(&req2)
+	if err != nil {
+		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
+	}
+
 	// prepare query
-	ctx := context.WithValue(context.Background(), metadataKey, metadata)
+	ctx := context.WithValue(context.Background(), metadataKey, metadata2)
 	p := postData{
 		Query: `mutation (
 			$password: String!
@@ -123,7 +143,7 @@ func TestChangePasswordMutator(t *testing.T) {
 	}
 
 	// do login
-	_, _, err = testDoLogin(server, "admin", "aD1fferentPassword!")
+	_, _, err = testDoLogin(server, "testchangepasswordmutator", "aD1fferentPassword!")
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -131,7 +151,7 @@ func TestChangePasswordMutator(t *testing.T) {
 
 func TestMeQuery(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -140,7 +160,7 @@ func TestMeQuery(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -233,7 +253,7 @@ func TestMeQuery(t *testing.T) {
 
 func TestUserQuery(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -242,7 +262,7 @@ func TestUserQuery(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}

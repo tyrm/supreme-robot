@@ -9,7 +9,7 @@ import (
 
 func TestAddRecordAMutator_NoMetadata(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -18,7 +18,7 @@ func TestAddRecordAMutator_NoMetadata(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -32,7 +32,7 @@ func TestAddRecordAMutator_NoMetadata(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
-	domain := "test."
+	domain := "testaddrecordamutatornometadata."
 	soa := map[string]interface{}{
 		"ttl":     300,
 		"mbox":    "hostmaster.test.",
@@ -94,7 +94,7 @@ func TestAddRecordAMutator_NoMetadata(t *testing.T) {
 
 func TestAddRecordAMutator_Valid(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -103,7 +103,7 @@ func TestAddRecordAMutator_Valid(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -117,7 +117,7 @@ func TestAddRecordAMutator_Valid(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
-	domain := "test."
+	domain := "testaddrecordamutatorvalid."
 	soa := map[string]interface{}{
 		"ttl":     300,
 		"mbox":    "hostmaster.test.",
@@ -181,7 +181,7 @@ func TestAddRecordAMutator_Valid(t *testing.T) {
 
 func TestAddRecordAAAAMutator_Valid(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -190,7 +190,7 @@ func TestAddRecordAAAAMutator_Valid(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -204,7 +204,7 @@ func TestAddRecordAAAAMutator_Valid(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
-	domain := "test."
+	domain := "testaddrecordaaaamutatorvalid."
 	soa := map[string]interface{}{
 		"ttl":     300,
 		"mbox":    "hostmaster.test.",
@@ -266,7 +266,7 @@ func TestAddRecordAAAAMutator_Valid(t *testing.T) {
 
 func TestAddRecordCNAMEMutator_Valid(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -275,7 +275,7 @@ func TestAddRecordCNAMEMutator_Valid(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -289,7 +289,7 @@ func TestAddRecordCNAMEMutator_Valid(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
-	domain := "test."
+	domain := "testaddrecordcnamemutatorvalid."
 	soa := map[string]interface{}{
 		"ttl":     300,
 		"mbox":    "hostmaster.test.",
@@ -351,7 +351,7 @@ func TestAddRecordCNAMEMutator_Valid(t *testing.T) {
 
 func TestAddRecordMXMutator_Valid(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -360,7 +360,7 @@ func TestAddRecordMXMutator_Valid(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -374,7 +374,7 @@ func TestAddRecordMXMutator_Valid(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
-	domain := "test."
+	domain := "testaddrecordmxmutatorvalid."
 	soa := map[string]interface{}{
 		"ttl":     300,
 		"mbox":    "hostmaster.test.",
@@ -440,7 +440,7 @@ func TestAddRecordMXMutator_Valid(t *testing.T) {
 
 func TestAddRecordNSMutator_Valid(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -449,7 +449,7 @@ func TestAddRecordNSMutator_Valid(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -463,7 +463,7 @@ func TestAddRecordNSMutator_Valid(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
-	domain := "test."
+	domain := "testaddrecordnsmutatorvalid."
 	soa := map[string]interface{}{
 		"ttl":     300,
 		"mbox":    "hostmaster.test.",
@@ -525,7 +525,7 @@ func TestAddRecordNSMutator_Valid(t *testing.T) {
 
 func TestAddRecordSRVMutator_Valid(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -534,7 +534,7 @@ func TestAddRecordSRVMutator_Valid(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -548,7 +548,7 @@ func TestAddRecordSRVMutator_Valid(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
-	domain := "test."
+	domain := "testaddrecordsrvmutatorvalid."
 	soa := map[string]interface{}{
 		"ttl":     300,
 		"mbox":    "hostmaster.test.",

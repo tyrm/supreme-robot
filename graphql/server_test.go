@@ -26,7 +26,7 @@ func (w *mockResponseWriter) WriteHeader(status int) {
 }
 
 func TestNewServer(t *testing.T) {
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())

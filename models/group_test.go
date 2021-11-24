@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"testing"
 )
@@ -16,10 +17,17 @@ func TestGroupTitle(t *testing.T) {
 		{uuid.Must(uuid.Parse("1d34fcbd-a027-40cc-91d6-bf42a7f2122a")), ""},
 	}
 
-	for _, table := range tables {
-		str := GroupTitle(table.x)
-		if str != table.n {
-			t.Errorf("function return for %s wrong, got: %v, want: %v,", table.x, str, table.n)
-		}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("Testing GroupTitle for %s", table.x)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			title := GroupTitle(table.x)
+
+			if title != table.n {
+				t.Errorf("[%d] function return for %s wrong, got: %v, want: %v,", i, table.x, title, table.n)
+			}
+		})
 	}
 }

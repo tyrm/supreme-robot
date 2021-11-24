@@ -1,15 +1,16 @@
 package models
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"testing"
 )
 
 func TestUser_IsMemberOfGroup(t *testing.T) {
 	tables := []struct {
-		x []uuid.UUID
-		y []uuid.UUID
-		n bool
+		userGroups   []uuid.UUID
+		searchGroups []uuid.UUID
+		found        bool
 	}{
 		// Check GroupsAll
 		{[]uuid.UUID{GroupDNSAdmin}, GroupsAll, true},
@@ -54,15 +55,21 @@ func TestUser_IsMemberOfGroup(t *testing.T) {
 		}, GroupsAll, false},
 	}
 
-	for _, table := range tables {
-		u := User{
-			Groups: table.x,
-		}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("[%d] IsMemberOfGroup", i)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			u := User{
+				Groups: table.userGroups,
+			}
 
-		valid := u.IsMemberOfGroup(table.y...)
-		if valid != table.n {
-			t.Errorf("check password failed matching %s to %s, got: %v, want: %v,", table.x, table.y, valid, table.n)
-		}
+			valid := u.IsMemberOfGroup(table.searchGroups...)
+			if valid != table.found {
+				t.Errorf("[%d] failed matching %s to %s, got: %v, want: %v,", i, table.userGroups, table.searchGroups, valid, table.found)
+			}
+		})
 	}
 }
 
@@ -78,18 +85,26 @@ func TestUserPasswordHash(t *testing.T) {
 		{"password", "Password", false},
 	}
 
-	for _, table := range tables {
-		u := User{}
+	for i, table := range tables {
+		i := i
+		table := table
 
-		err := u.SetPassword(table.x)
-		if err != nil {
-			t.Errorf("got error setting password %s: %s", table.x, err.Error())
+		name := fmt.Sprintf("[%d] Comparing %s to %s", i, table.x, table.y)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-		}
+			u := User{}
 
-		valid := u.CheckPasswordHash(table.y)
-		if valid != table.n {
-			t.Errorf("check password failed matching %s to %s, got: %v, want: %v,", table.x, table.y, valid, table.n)
-		}
+			err := u.SetPassword(table.x)
+			if err != nil {
+				t.Errorf("[%d] got error setting password %s: %s", i, table.x, err.Error())
+				return
+			}
+
+			valid := u.CheckPasswordHash(table.y)
+			if valid != table.n {
+				t.Errorf("[%d] check password failed matching %s to %s, got: %v, want: %v,", i, table.x, table.y, valid, table.n)
+			}
+		})
 	}
 }

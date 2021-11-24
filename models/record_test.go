@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"testing"
 )
 
@@ -31,12 +32,17 @@ func TestRecordValidateTypeA(t *testing.T) {
 		{Record{Type: RecordTypeA, Name: "sub.test1", Value: "125.45.155.7", TTL: -300}, errInvalidTTL},
 	}
 
-	for _, table := range tables {
-		err := table.x.Validate()
-
-		if err != table.n {
-			t.Errorf("validation failed, got: %v, want: %v,", err, table.n)
-		}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("[%d] Validate S record Name: %s, IP: %s TTL: %d", i, table.x.Name, table.x.Value, table.x.TTL)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := table.x.Validate()
+			if err != table.n {
+				t.Errorf("[%d] validation failed, got: %v, want: %v,", i, err, table.n)
+			}
+		})
 	}
 }
 
@@ -67,12 +73,17 @@ func TestRecordValidateTypeAAAA(t *testing.T) {
 		{Record{Type: RecordTypeAAAA, Name: "sub.test1", Value: "d157:59cb:2224:914f:3ec5:3ee2:1159:684a", TTL: -300}, errInvalidTTL},
 	}
 
-	for _, table := range tables {
-		err := table.x.Validate()
-
-		if err != table.n {
-			t.Errorf("validation failed, got: %v, want: %v,", err, table.n)
-		}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("Validate AAAA record Name: %s, IP: %s TTL: %d", table.x.Name, table.x.Value, table.x.TTL)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := table.x.Validate()
+			if err != table.n {
+				t.Errorf("[%d] validation failed, got: %v, want: %v,", i, err, table.n)
+			}
+		})
 	}
 }
 
@@ -95,16 +106,21 @@ func TestRecordValidateTypeCNAME(t *testing.T) {
 		{Record{Type: RecordTypeCNAME, Name: ".test1", Value: "example.com.", TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeCNAME, Name: "-test1", Value: "example.com.", TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeCNAME, Name: "test1-", Value: "example.com.", TTL: 300}, errInvalidName},
-		{Record{Type: RecordTypeCNAME, Name: "sub.test1", Value: "x.google.com.", TTL: 300}, nil},
-		{Record{Type: RecordTypeCNAME, Name: "sub.test1", Value: "x.google.com.", TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeCNAME, Name: "sub.test1", Value: "userGroups.google.com.", TTL: 300}, nil},
+		{Record{Type: RecordTypeCNAME, Name: "sub.test1", Value: "userGroups.google.com.", TTL: -300}, errInvalidTTL},
 	}
 
-	for _, table := range tables {
-		err := table.x.Validate()
-
-		if err != table.n {
-			t.Errorf("validation failed, got: %v, want: %v,", err, table.n)
-		}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("Validate CNAME record Name: %s, Host: %s TTL: %d", table.x.Name, table.x.Value, table.x.TTL)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := table.x.Validate()
+			if err != table.n {
+				t.Errorf("[%d] validation failed, got: %v, want: %v,", i, err, table.n)
+			}
+		})
 	}
 }
 
@@ -128,19 +144,23 @@ func TestRecordValidateTypeMX(t *testing.T) {
 		{Record{Type: RecordTypeMX, Name: ".test1", Value: "example.com.", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeMX, Name: "-test1", Value: "example.com.", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeMX, Name: "test1-", Value: "example.com.", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, errInvalidName},
-		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "x.google.com", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, nil},
-		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "x.google.com", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: -300}, errInvalidTTL},
-		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "x.google.com", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: -300}, errInvalidTTL},
-		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "x.google.com", Priority: sql.NullInt32{Int32: -3, Valid: true}, TTL: 300}, errInvalidPriority},
+		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "userGroups.google.com", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: 300}, nil},
+		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "userGroups.google.com", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "userGroups.google.com", Priority: sql.NullInt32{Int32: 10, Valid: true}, TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeMX, Name: "sub.test1", Value: "userGroups.google.com", Priority: sql.NullInt32{Int32: -3, Valid: true}, TTL: 300}, errInvalidPriority},
 	}
 
-	for _, table := range tables {
-		err := table.x.Validate()
-
-		if err != table.n {
-			t.Errorf("validation failed for Record(Name: %s, Host: %s, Priority %d(%v), TTL: %d) , got: %v, want: %v,",
-				table.x.Name, table.x.Value, table.x.Priority.Int32, table.x.Priority.Valid, table.x.TTL, err, table.n)
-		}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("Validate MX record Name: %s, Host: %s TTL: %d", table.x.Name, table.x.Value, table.x.TTL)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := table.x.Validate()
+			if err != table.n {
+				t.Errorf("[%d] validation failed, got: %v, want: %v,", i, err, table.n)
+			}
+		})
 	}
 }
 
@@ -163,16 +183,21 @@ func TestRecordValidateTypeNS(t *testing.T) {
 		{Record{Type: RecordTypeNS, Name: ".test1", Value: "example.com.", TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeNS, Name: "-test1", Value: "example.com.", TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeNS, Name: "test1-", Value: "example.com.", TTL: 300}, errInvalidName},
-		{Record{Type: RecordTypeNS, Name: "sub.test1", Value: "x.google.com.", TTL: 300}, nil},
-		{Record{Type: RecordTypeNS, Name: "sub.test1", Value: "x.google.com.", TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeNS, Name: "sub.test1", Value: "userGroups.google.com.", TTL: 300}, nil},
+		{Record{Type: RecordTypeNS, Name: "sub.test1", Value: "userGroups.google.com.", TTL: -300}, errInvalidTTL},
 	}
 
-	for _, table := range tables {
-		err := table.x.Validate()
-
-		if err != table.n {
-			t.Errorf("validation failed, got: %v, want: %v,", err, table.n)
-		}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("Validate NS record Name: %s, Host: %s TTL: %d", table.x.Name, table.x.Value, table.x.TTL)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := table.x.Validate()
+			if err != table.n {
+				t.Errorf("[%d] validation failed, got: %v, want: %v,", i, err, table.n)
+			}
+		})
 	}
 }
 
@@ -199,22 +224,26 @@ func TestRecordValidateTypeSOA(t *testing.T) {
 		{Record{Type: RecordTypeSOA, Name: ".test1", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeSOA, Name: "-test1", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeSOA, Name: "test1-", Value: "example.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidName},
-		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, nil},
-		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster@example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidMBox},
-		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "testy@mctest.com", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidMBox},
-		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: -300}, errInvalidTTL},
-		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: -66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidExpire},
-		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: -44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidRefresh},
-		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "x.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: -44, Valid: true}, TTL: 300}, errInvalidRetry},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "userGroups.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, nil},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "userGroups.google.com.", MBox: sql.NullString{String: "hostmaster@example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidMBox},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "userGroups.google.com.", MBox: sql.NullString{String: "testy@mctest.com", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidMBox},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "userGroups.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "userGroups.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: -66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidExpire},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "userGroups.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: -44, Valid: true}, Retry: sql.NullInt32{Int32: 44, Valid: true}, TTL: 300}, errInvalidRefresh},
+		{Record{Type: RecordTypeSOA, Name: "sub.test1", Value: "userGroups.google.com.", MBox: sql.NullString{String: "hostmaster.example.com.", Valid: true}, Expire: sql.NullInt32{Int32: 66, Valid: true}, Refresh: sql.NullInt32{Int32: 44, Valid: true}, Retry: sql.NullInt32{Int32: -44, Valid: true}, TTL: 300}, errInvalidRetry},
 	}
 
-	for _, table := range tables {
-		err := table.x.Validate()
-
-		if err != table.n {
-			t.Errorf("validation failed for Record(Name: %s, NS: %s, MBox: %s(%v), Expire %d(%v), Refresh %d(%v), Retry %d(%v), TTL: %d) , got: %v, want: %v,",
-				table.x.Name, table.x.Value, table.x.MBox.String, table.x.MBox.Valid, table.x.Expire.Int32, table.x.Expire.Valid, table.x.Refresh.Int32, table.x.Refresh.Valid, table.x.Retry.Int32, table.x.Retry.Valid, table.x.TTL, err, table.n)
-		}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("Validate SOA record Name: %s, NS: %s TTL: %d", table.x.Name, table.x.Value, table.x.TTL)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := table.x.Validate()
+			if err != table.n {
+				t.Errorf("[%d] validation failed, got: %v, want: %v,", i, err, table.n)
+			}
+		})
 	}
 }
 
@@ -237,22 +266,26 @@ func TestRecordValidateTypeSRV(t *testing.T) {
 		{Record{Type: RecordTypeSRV, Name: "www.-test1", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeSRV, Name: "-test1", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeSRV, Name: "test1-", Value: "example.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidName},
-		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, nil},
-		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: -300}, errInvalidTTL},
-		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: -300}, errInvalidTTL},
-		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: -3, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidPriority},
-		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: -1, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidPort},
-		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 100000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidPort},
-		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "x.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: -100, Valid: true}, TTL: 300}, errInvalidWeight},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "userGroups.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, nil},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "userGroups.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "userGroups.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "userGroups.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: -3, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidPriority},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "userGroups.google.com.", Port: sql.NullInt32{Int32: -1, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidPort},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "userGroups.google.com.", Port: sql.NullInt32{Int32: 100000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: 100, Valid: true}, TTL: 300}, errInvalidPort},
+		{Record{Type: RecordTypeSRV, Name: "_xmpp-server._tcp.a.long.sub.domain", Value: "userGroups.google.com.", Port: sql.NullInt32{Int32: 5000, Valid: true}, Priority: sql.NullInt32{Int32: 10, Valid: true}, Weight: sql.NullInt32{Int32: -100, Valid: true}, TTL: 300}, errInvalidWeight},
 	}
 
-	for _, table := range tables {
-		err := table.x.Validate()
-
-		if err != table.n {
-			t.Errorf("validation failed for Record(Name: %s, Host: %s, Port %d(%v), Priority %d(%v), Weight %d(%v), TTL: %d) , got: %v, want: %v,",
-				table.x.Name, table.x.Value, table.x.Port.Int32, table.x.Port.Valid, table.x.Priority.Int32, table.x.Priority.Valid, table.x.Weight.Int32, table.x.Weight.Valid, table.x.TTL, err, table.n)
-		}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("Validate SRV record Name: %s, Host: %s TTL: %d", table.x.Name, table.x.Value, table.x.TTL)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := table.x.Validate()
+			if err != table.n {
+				t.Errorf("[%d] validation failed, got: %v, want: %v,", i, err, table.n)
+			}
+		})
 	}
 }
 
@@ -276,16 +309,21 @@ func TestRecordValidateTypeTXT(t *testing.T) {
 		{Record{Type: RecordTypeTXT, Name: ".test1", Value: "example.com.", TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeTXT, Name: "-test1", Value: "example.com.", TTL: 300}, errInvalidName},
 		{Record{Type: RecordTypeTXT, Name: "test1-", Value: "example.com.", TTL: 300}, errInvalidName},
-		{Record{Type: RecordTypeTXT, Name: "sub.test1", Value: "x.google.com.", TTL: 300}, nil},
-		{Record{Type: RecordTypeTXT, Name: "sub.test1", Value: "x.google.com.", TTL: -300}, errInvalidTTL},
+		{Record{Type: RecordTypeTXT, Name: "sub.test1", Value: "userGroups.google.com.", TTL: 300}, nil},
+		{Record{Type: RecordTypeTXT, Name: "sub.test1", Value: "userGroups.google.com.", TTL: -300}, errInvalidTTL},
 	}
 
-	for _, table := range tables {
-		err := table.x.Validate()
-
-		if err != table.n {
-			t.Errorf("validation failed, got: %v, want: %v,", err, table.n)
-		}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("Validate TXT record Name: %s, Text: %s TTL: %d", table.x.Name, table.x.Value, table.x.TTL)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := table.x.Validate()
+			if err != table.n {
+				t.Errorf("[%d] validation failed, got: %v, want: %v,", i, err, table.n)
+			}
+		})
 	}
 }
 
@@ -299,11 +337,16 @@ func TestRecordValidateInvalidType(t *testing.T) {
 		{Record{Type: "NOTATYPE"}, errUnknownType},
 	}
 
-	for _, table := range tables {
-		err := table.x.Validate()
-
-		if err != table.n {
-			t.Errorf("validation failed, got: %v, want: %v,", err, table.n)
-		}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("Validate invalid type: '%s'", table.x.Type)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := table.x.Validate()
+			if err != table.n {
+				t.Errorf("[%d] validation failed, got: %v, want: %v,", i, err, table.n)
+			}
+		})
 	}
 }

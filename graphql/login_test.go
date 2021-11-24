@@ -8,9 +8,12 @@ import (
 	"testing"
 )
 
+var testUserAdminAccessToken = ""
+var testUserAdminRefreshToken = ""
+
 func TestLoginMutator_BadPassword(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -33,7 +36,7 @@ func TestLoginMutator_BadPassword(t *testing.T) {
 
 func TestLoginMutator_BadUsername(t *testing.T) {
 	// create web server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -56,7 +59,7 @@ func TestLoginMutator_BadUsername(t *testing.T) {
 
 func TestLoginMutator_ValidLogin(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -79,7 +82,7 @@ func TestLoginMutator_ValidLogin(t *testing.T) {
 
 func TestLogoutMutator_NoMetadata(t *testing.T) {
 	// create web server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -119,7 +122,7 @@ func TestLogoutMutator_NoMetadata(t *testing.T) {
 
 func TestLogoutMutator_Valid(t *testing.T) {
 	// create web server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -192,7 +195,7 @@ func TestLogoutMutator_Valid(t *testing.T) {
 
 func TestRefreshAccessTokenMutator_Valid(t *testing.T) {
 	// create web server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -330,4 +333,19 @@ func testDoLogin(server *Server, username, password string) (string, string, err
 	}
 
 	return accessToken, refreshToken, nil
+}
+
+func testDoLoginAdmin(server *Server) (string, string, error) {
+	if testUserAdminAccessToken != "" && testUserAdminRefreshToken != "" {
+		return testUserAdminAccessToken, testUserAdminRefreshToken, nil
+	}
+
+	newAccessToken, newRefreshToken, err := testDoLogin(server, "admin", "password")
+	if err != nil {
+		return "", "", err
+	}
+	testUserAdminAccessToken = newAccessToken
+	testUserAdminRefreshToken = newRefreshToken
+
+	return testUserAdminAccessToken, testUserAdminRefreshToken, nil
 }

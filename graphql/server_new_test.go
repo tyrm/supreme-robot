@@ -8,7 +8,14 @@ import (
 	"time"
 )
 
-func newTestServer() (*Server, *queueMem.Scheduler, *dbMem.Client, *kvMem.Client, error) {
+var (
+	testServer      *Server
+	testServerQueue *queueMem.Scheduler
+	testServerDB    *dbMem.Client
+	testServerKv    *kvMem.Client
+)
+
+func newTestServer() (*Server, error) {
 	cnf := config.Config{
 		AccessExpiration:  time.Hour * 24,
 		AccessSecret:      "test",
@@ -18,22 +25,37 @@ func newTestServer() (*Server, *queueMem.Scheduler, *dbMem.Client, *kvMem.Client
 		RefreshSecret:     "test1234",
 	}
 
-	db, err := dbMem.NewClient()
-	if err != nil {
-		return nil, nil, nil, nil, err
+	if testServerQueue == nil {
+		qc, err := queueMem.NewScheduler()
+		if err != nil {
+			return nil, err
+		}
+		testServerQueue = qc
 	}
 
-	kv, err := kvMem.NewClient()
-	if err != nil {
-		return nil, nil, nil, nil, err
+	if testServerDB == nil {
+		db, err := dbMem.NewClient()
+		if err != nil {
+			return nil, err
+		}
+		testServerDB = db
 	}
 
-	qc, err := queueMem.NewScheduler()
-	if err != nil {
-		return nil, nil, nil, nil, err
+	if testServerKv == nil {
+		kv, err := kvMem.NewClient()
+		if err != nil {
+			return nil, err
+		}
+		testServerKv = kv
 	}
 
-	ws, err := NewServer(&cnf, qc, db, kv)
+	if testServer == nil {
+		ws, err := NewServer(&cnf, testServerQueue, testServerDB, testServerKv)
+		if err != nil {
+			return nil, err
+		}
+		testServer = ws
+	}
 
-	return ws, qc, db, kv, nil
+	return testServer, nil
 }

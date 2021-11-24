@@ -9,7 +9,7 @@ import (
 
 func TestStatusQuery(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}

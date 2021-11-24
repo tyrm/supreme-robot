@@ -3,7 +3,6 @@ package graphql
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
 	"github.com/tyrm/supreme-robot/models"
 	"net/http"
@@ -13,7 +12,7 @@ import (
 
 func TestAddDomainMutator(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -22,7 +21,7 @@ func TestAddDomainMutator(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -59,8 +58,6 @@ func TestAddDomainMutator(t *testing.T) {
 			t.Errorf("record %#v is not map[string]interface{}", record)
 			continue
 		}
-
-		fmt.Printf("%#v\n", r)
 
 		switch record["type"].(string) {
 		case models.RecordTypeSOA:
@@ -118,7 +115,7 @@ func TestAddDomainMutator(t *testing.T) {
 
 func TestDeleteDomainMutator(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -127,7 +124,7 @@ func TestDeleteDomainMutator(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -142,7 +139,7 @@ func TestDeleteDomainMutator(t *testing.T) {
 	}
 
 	// add domain
-	domain := "test."
+	domain := "testdeletedomainmutator."
 	soa := map[string]interface{}{
 		"ttl":     300,
 		"mbox":    "hostmaster.test.",
@@ -168,7 +165,7 @@ func TestDeleteDomainMutator(t *testing.T) {
 
 func TestDomainQuery(t *testing.T) {
 	// create server
-	server, _, _, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
@@ -177,7 +174,7 @@ func TestDomainQuery(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLoginAdmin(server)
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -191,7 +188,7 @@ func TestDomainQuery(t *testing.T) {
 		t.Errorf("unexpected error, got: %#v, want: nil.", err.Error())
 	}
 
-	domain := "test."
+	domain := "testdomainquery."
 	soa := map[string]interface{}{
 		"ttl":     300,
 		"mbox":    "hostmaster.test.",
@@ -267,13 +264,23 @@ func TestDomainQuery(t *testing.T) {
 
 func TestMyDomainsQuery(t *testing.T) {
 	// create server
-	server, _, db, _, err := newTestServer()
+	server, err := newTestServer()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: error.", err.Error())
 	}
 	if server == nil {
 		t.Errorf("expected server, got: nil, want: *Server.")
 	}
+
+	// create new user
+	newUser := models.User{
+		Username: "newuser",
+	}
+	err = newUser.SetPassword("newpassword")
+	if err != nil {
+		t.Fatalf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+	err = testServerDB.Create(&newUser)
 
 	domains := []string{
 		"testmydomainsquery1.",
@@ -285,9 +292,9 @@ func TestMyDomainsQuery(t *testing.T) {
 	for _, d := range domains {
 		newDomain := models.Domain{
 			Domain:  d,
-			OwnerID: uuid.MustParse("8c504483-1e11-4243-b6c8-14499877a641"),
+			OwnerID: newUser.ID,
 		}
-		dbErr := db.Create(&newDomain)
+		dbErr := testServerDB.Create(&newDomain)
 		if dbErr != nil {
 			t.Errorf("unexpected error, got: %s, want: nil.", dbErr.Error())
 			return
@@ -295,7 +302,7 @@ func TestMyDomainsQuery(t *testing.T) {
 	}
 
 	// do login
-	accessToken, _, err := testDoLogin(server, "admin", "password")
+	accessToken, _, err := testDoLogin(server, newUser.Username, "newpassword")
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
@@ -339,8 +346,6 @@ func TestMyDomainsQuery(t *testing.T) {
 	if !dataOk {
 		t.Fatalf("no data returned")
 	}
-
-	t.Logf("myDomains data: %#v", data)
 
 	myDomains, myDomainsOk := data["myDomains"].([]interface{})
 	if !myDomainsOk {

@@ -1,6 +1,9 @@
 package models
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestDomain_Validate(t *testing.T) {
 	tables := []struct {
@@ -26,5 +29,22 @@ func TestDomain_Validate(t *testing.T) {
 		if valid != table.n {
 			t.Errorf("regex match on %s failed, got: %v, want: %v,", table.x, valid, table.n)
 		}
+	}
+	for i, table := range tables {
+		i := i
+		table := table
+		name := fmt.Sprintf("[%d] IsMemberOfGroup", i)
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			d := Domain{
+				Domain: table.x,
+			}
+
+			valid := d.Validate()
+			if valid != table.n {
+				t.Errorf("[%d] domain validation on %s failed, got: %v, want: %v,", i, table.x, valid, table.n)
+			}
+		})
 	}
 }

@@ -3,7 +3,7 @@ package graphql
 import (
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
 )

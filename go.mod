@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/contribsys/faktory v1.5.5
 	github.com/contribsys/faktory_worker_go v1.5.0
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gomodule/redigo v1.8.6
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0

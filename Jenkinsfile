@@ -47,7 +47,7 @@ const Version = "${gitDescribe}"
     stage('Test') {
       agent {
         docker {
-          image 'golang:1.17'
+          image 'gobuild:1.17'
           args '--network ${networkName} -e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache'
         }
       }
@@ -64,6 +64,7 @@ const Version = "${gitDescribe}"
             go get -t -v ./...
             TEST_DSN="${pgConnectionDSN}" TEST_REDIS="redis:6379" TEST_REDIS_PASS="${REDIS_PASSWORD}" go test --tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
             RESULT=\$?
+            gosec ./...
             bash <(curl -s https://codecov.io/bash)
             exit \$RESULT
             """

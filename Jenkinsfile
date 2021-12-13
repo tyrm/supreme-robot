@@ -69,6 +69,7 @@ const Version = "${gitDescribe}"
             exit \$RESULT
             """
           }
+          junit allowEmptyResults: true, checksName: 'Security', testResults: "gosec.xml"
         }
       }
     }
@@ -110,7 +111,6 @@ const Version = "${gitDescribe}"
       ]) {
         sh """NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml down"""
       }
-      junit "**/gosec.xml"
     }
   }
 

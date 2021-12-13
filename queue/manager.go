@@ -9,4 +9,5 @@ type Manager interface {
 	ProcessStrictPriorityQueues(...string)
 	Register(string, faktory.Perform)
 	Run()
+	Terminate(bool)
 }

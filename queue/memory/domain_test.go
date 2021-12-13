@@ -5,15 +5,16 @@ import (
 	"github.com/tyrm/supreme-robot/queue"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestScheduler_AddDomain(t *testing.T) {
-	scheduler, err := NewScheduler()
+	scheduler, err := NewMemQueue()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil", err.Error())
 	}
-	if reflect.TypeOf(scheduler) != reflect.TypeOf(&Scheduler{}) {
-		t.Errorf("unexpected scheduler type, got: %s, want: %s", reflect.TypeOf(scheduler), reflect.TypeOf(&Scheduler{}))
+	if reflect.TypeOf(scheduler) != reflect.TypeOf(&MemQueue{}) {
+		t.Errorf("unexpected scheduler type, got: %s, want: %s", reflect.TypeOf(scheduler), reflect.TypeOf(&MemQueue{}))
 	}
 
 	domainID := uuid.MustParse("5c664d04-5d00-4a7b-be37-fa62538985a1")
@@ -23,30 +24,38 @@ func TestScheduler_AddDomain(t *testing.T) {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
 
-	if len(scheduler.Jobs[queue.QueueDNS]) != 1 {
-		t.Errorf("unexpected number of jobs in queue %s, got: %d, want: 1", queue.QueueDNS, len(scheduler.Jobs[queue.QueueDNS]))
-		return
-	}
-	if len(scheduler.Jobs[queue.QueueDNS][0]) != 2 {
-		t.Errorf("unexpected number of parameters for job %s, got: %d, want: 2", queue.JobAddDomain, len(scheduler.Jobs[queue.QueueDNS][0]))
+	// wait for job
+	var incomingJob []interface{}
+	select {
+	case incomingJob = <-scheduler.Queues[queue.QueueDNS]:
+	case <-time.After(60 * time.Second):
+		t.Errorf("job not queued")
 		return
 	}
 
-	if scheduler.Jobs[queue.QueueDNS][0][0].(string) != queue.JobAddDomain {
-		t.Errorf("unexpected job type, got: %s, want: %s", scheduler.Jobs[queue.QueueDNS][0][0], queue.JobAddDomain)
+	if len(incomingJob) != 3 {
+		t.Errorf("unexpected number of parameters for job %s, got: %d, want: 2", queue.JobAddDomain, len(incomingJob))
+		return
 	}
-	if scheduler.Jobs[queue.QueueDNS][0][1].(string) != domainID.String() {
-		t.Errorf("unexpected domain id, got: %s, want: %s", scheduler.Jobs[queue.QueueDNS][0][1], domainID.String())
+
+	if incomingJob[0].(string) != queue.JobAddDomain {
+		t.Errorf("unexpected job type, got: %s, want: %s", incomingJob[0], queue.JobAddDomain)
+	}
+	if len(incomingJob[1].(string)) != 16 {
+		t.Errorf("unexpected jid, got: %d, want: 24", len(incomingJob[1].(string)))
+	}
+	if incomingJob[2].(string) != domainID.String() {
+		t.Errorf("unexpected domain id, got: %s, want: %s", incomingJob[1], domainID.String())
 	}
 }
 
 func TestScheduler_RemoveDomain(t *testing.T) {
-	scheduler, err := NewScheduler()
+	scheduler, err := NewMemQueue()
 	if err != nil {
 		t.Errorf("unexpected error, got: %s, want: nil", err.Error())
 	}
-	if reflect.TypeOf(scheduler) != reflect.TypeOf(&Scheduler{}) {
-		t.Errorf("unexpected scheduler type, got: %s, want: %s", reflect.TypeOf(scheduler), reflect.TypeOf(&Scheduler{}))
+	if reflect.TypeOf(scheduler) != reflect.TypeOf(&MemQueue{}) {
+		t.Errorf("unexpected scheduler type, got: %s, want: %s", reflect.TypeOf(scheduler), reflect.TypeOf(&MemQueue{}))
 	}
 
 	domainID := uuid.MustParse("5c664d04-5d00-4a7b-be37-fa62538985a1")
@@ -56,22 +65,72 @@ func TestScheduler_RemoveDomain(t *testing.T) {
 		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
 	}
 
-	if len(scheduler.Jobs[queue.QueueDNS]) != 1 {
-		t.Errorf("unexpected number of jobs in queue %s, got: %d, want: 1", queue.QueueDNS, len(scheduler.Jobs[queue.QueueDNS]))
-		return
-	}
-	if len(scheduler.Jobs[queue.QueueDNS][0]) != 2 {
-		t.Errorf("unexpected number of parameters for job %s, got: %d, want: 2", queue.JobAddDomain, len(scheduler.Jobs[queue.QueueDNS][0]))
-		return
-	}
-
-	if scheduler.Jobs[queue.QueueDNS][0][0].(string) != queue.JobRemoveDomain {
-		t.Errorf("unexpected job type, got: %s, want: %s", scheduler.Jobs[queue.QueueDNS][0][0], queue.JobRemoveDomain)
-		return
-	}
-	if scheduler.Jobs[queue.QueueDNS][0][1].(string) != domainID.String() {
-		t.Errorf("unexpected domain id, got: %s, want: %s", scheduler.Jobs[queue.QueueDNS][0][1], domainID.String())
+	// wait for job
+	var incomingJob []interface{}
+	select {
+	case incomingJob = <-scheduler.Queues[queue.QueueDNS]:
+	case <-time.After(60 * time.Second):
+		t.Errorf("job not queued")
 		return
 	}
 
+	if len(incomingJob) != 3 {
+		t.Errorf("unexpected number of parameters for job %s, got: %d, want: 2", queue.JobAddDomain, len(incomingJob))
+		return
+	}
+
+	if incomingJob[0].(string) != queue.JobRemoveDomain {
+		t.Errorf("unexpected job type, got: %s, want: %s", incomingJob[0], queue.JobAddDomain)
+	}
+	if len(incomingJob[1].(string)) != 16 {
+		t.Errorf("unexpected jid, got: %d, want: 24", len(incomingJob[1].(string)))
+	}
+	if incomingJob[2].(string) != domainID.String() {
+		t.Errorf("unexpected domain id, got: %s, want: %s", incomingJob[1], domainID.String())
+	}
+}
+
+func TestScheduler_UpdateSubDomain(t *testing.T) {
+	scheduler, err := NewMemQueue()
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil", err.Error())
+	}
+	if reflect.TypeOf(scheduler) != reflect.TypeOf(&MemQueue{}) {
+		t.Errorf("unexpected scheduler type, got: %s, want: %s", reflect.TypeOf(scheduler), reflect.TypeOf(&MemQueue{}))
+	}
+
+	domainID := uuid.MustParse("5c664d04-5d00-4a7b-be37-fa62538985a1")
+	name := "@"
+
+	err = scheduler.UpdateSubDomain(domainID, name)
+	if err != nil {
+		t.Errorf("unexpected error, got: %s, want: nil.", err.Error())
+	}
+
+	// wait for job
+	var incomingJob []interface{}
+	select {
+	case incomingJob = <-scheduler.Queues[queue.QueueDNS]:
+	case <-time.After(60 * time.Second):
+		t.Errorf("job not queued")
+		return
+	}
+
+	if len(incomingJob) != 4 {
+		t.Errorf("unexpected number of parameters for job %s, got: %d, want: 2", queue.JobAddDomain, len(incomingJob))
+		return
+	}
+
+	if incomingJob[0].(string) != queue.JobUpdateSubDomain {
+		t.Errorf("unexpected job type, got: %s, want: %s", incomingJob[0], queue.JobAddDomain)
+	}
+	if len(incomingJob[1].(string)) != 16 {
+		t.Errorf("unexpected jid, got: %d, want: 24", len(incomingJob[1].(string)))
+	}
+	if incomingJob[2].(string) != domainID.String() {
+		t.Errorf("unexpected domain id, got: %s, want: %s", incomingJob[1], domainID.String())
+	}
+	if incomingJob[3].(string) != name {
+		t.Errorf("unexpected name, got: %s, want: %s", incomingJob[1], domainID.String())
+	}
 }

@@ -13,6 +13,12 @@ type Worker struct {
 	kv      kv.DNS
 }
 
+// Close closes the worker
+func (w *Worker) Close() error {
+	w.manager.Terminate(false)
+	return nil
+}
+
 // Run runs the worker
 func (w *Worker) Run() error {
 	w.manager.Run()

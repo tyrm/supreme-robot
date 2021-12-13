@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestAddDomainMutator(t *testing.T) {
@@ -113,28 +114,26 @@ func TestAddDomainMutator(t *testing.T) {
 		}
 	}
 
-	// check for job
-	testServerQueue.Lock()
-	defer testServerQueue.Unlock()
-
-	if len(testServerQueue.Jobs[queue.QueueDNS]) != 1 {
-		t.Errorf("unexpected number of jobs in queue %s, got: %d, want: 1", queue.QueueDNS, len(testServerQueue.Jobs[queue.QueueDNS]))
-		return
-	}
-	if len(testServerQueue.Jobs[queue.QueueDNS][0]) != 2 {
-		t.Errorf("unexpected number of parameters for job %s, got: %d, want: 2", queue.JobAddDomain, len(testServerQueue.Jobs[queue.QueueDNS][0]))
+	// wait for job
+	var incomingJob []interface{}
+	select {
+	case incomingJob = <-testServerQueue.Queues[queue.QueueDNS]:
+	case <-time.After(60 * time.Second):
+		t.Errorf("job not queued")
 		return
 	}
 
-	if testServerQueue.Jobs[queue.QueueDNS][0][0].(string) != queue.JobAddDomain {
-		t.Errorf("unexpected job type, got: %s, want: %s", testServerQueue.Jobs[queue.QueueDNS][0][0], queue.JobAddDomain)
-	}
-	if testServerQueue.Jobs[queue.QueueDNS][0][1].(string) != newID {
-		t.Errorf("unexpected domain id, got: %s, want: %s", testServerQueue.Jobs[queue.QueueDNS][0][1], newID)
+	if len(incomingJob) != 3 {
+		t.Errorf("unexpected number of parameters for job %s, got: %d, want: 3", queue.JobAddDomain, len(incomingJob))
+		return
 	}
 
-	// reset queue
-	testServerQueue.Jobs[queue.QueueDNS] = [][]interface{}{}
+	if incomingJob[0].(string) != queue.JobAddDomain {
+		t.Errorf("unexpected job type, got: %s, want: %s", incomingJob[0], queue.JobAddDomain)
+	}
+	if incomingJob[2].(string) != newID {
+		t.Errorf("unexpected domain id, got: %s, want: %s", incomingJob[1], newID)
+	}
 }
 
 func TestDeleteDomainMutator(t *testing.T) {
@@ -186,28 +185,32 @@ func TestDeleteDomainMutator(t *testing.T) {
 		t.Errorf("delete unsuccessful, got: %v, want: true.", newSuccess)
 	}
 
-	// check for job
-	testServerQueue.Lock()
-	defer testServerQueue.Unlock()
-
-	if len(testServerQueue.Jobs[queue.QueueDNS]) != 2 {
-		t.Errorf("unexpected number of jobs in queue %s, got: %d, want: 2", queue.QueueDNS, len(testServerQueue.Jobs[queue.QueueDNS]))
+	// wait for job
+	var incomingJob []interface{}
+	select {
+	case _ = <-testServerQueue.Queues[queue.QueueDNS]:
+	case <-time.After(60 * time.Second):
+		t.Errorf("job not queued")
 		return
 	}
-	if len(testServerQueue.Jobs[queue.QueueDNS][1]) != 2 {
-		t.Errorf("unexpected number of parameters for job %s, got: %d, want: 2", queue.JobAddDomain, len(testServerQueue.Jobs[queue.QueueDNS][0]))
+	select {
+	case incomingJob = <-testServerQueue.Queues[queue.QueueDNS]:
+	case <-time.After(60 * time.Second):
+		t.Errorf("job not queued")
 		return
 	}
 
-	if testServerQueue.Jobs[queue.QueueDNS][1][0].(string) != queue.JobRemoveDomain {
-		t.Errorf("unexpected job type, got: %s, want: %s", testServerQueue.Jobs[queue.QueueDNS][0][0], queue.JobRemoveDomain)
-	}
-	if testServerQueue.Jobs[queue.QueueDNS][1][1].(string) != newID {
-		t.Errorf("unexpected domain id, got: %s, want: %s", testServerQueue.Jobs[queue.QueueDNS][0][1], newID)
+	if len(incomingJob) != 3 {
+		t.Errorf("unexpected number of parameters for job %s, got: %d, want: 3", queue.JobAddDomain, len(incomingJob))
+		return
 	}
 
-	// reset queue
-	testServerQueue.Jobs[queue.QueueDNS] = [][]interface{}{}
+	if incomingJob[0].(string) != queue.JobRemoveDomain {
+		t.Errorf("unexpected job type, got: %s, want: %s", incomingJob[0], queue.JobAddDomain)
+	}
+	if incomingJob[2].(string) != newID {
+		t.Errorf("unexpected domain id, got: %s, want: %s", incomingJob[2], newID)
+	}
 }
 
 func TestDomainQuery(t *testing.T) {

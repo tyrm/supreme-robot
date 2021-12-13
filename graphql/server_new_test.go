@@ -10,7 +10,7 @@ import (
 
 var (
 	testServer      *Server
-	testServerQueue *queueMem.Scheduler
+	testServerQueue *queueMem.MemQueue
 	testServerDB    *dbMem.Client
 	testServerKv    *kvMem.Client
 )
@@ -26,7 +26,7 @@ func newTestServer() (*Server, error) {
 	}
 
 	if testServerQueue == nil {
-		qc, err := queueMem.NewScheduler()
+		qc, err := queueMem.NewMemQueue()
 		if err != nil {
 			return nil, err
 		}

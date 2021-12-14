@@ -42,7 +42,7 @@ const Version = "${gitDescribe}"
       }
     }
 
-    stage('Test') {
+    stage('Run Code Tests') {
       agent {
         docker {
           image 'gobuild:1.17'
@@ -66,6 +66,27 @@ const Version = "${gitDescribe}"
             gosec -fmt=junit-xml -out=gosec.xml  ./...
             bash <(curl -s https://codecov.io/bash)
             exit \$RESULT
+            """
+          }
+        }
+      }
+    }
+
+    stage('Run Security Tests') {
+      agent {
+        docker {
+          image 'gobuild:1.17'
+          args '--network ${networkName} -e GOPATH=/go -e HOME=${WORKSPACE} -v /var/lib/jenkins/go:/go'
+          reuseNode true
+        }
+      }
+      steps {
+        script {
+          withCredentials([
+            string(credentialsId: 'snyk-tyrm-token', variable: 'SNYK_TOKEN')
+          ]) {
+            sh """#!/bin/bash
+            snyk test
             """
           }
         }

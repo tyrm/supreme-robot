@@ -47,6 +47,7 @@ const Version = "${gitDescribe}"
         docker {
           image 'gobuild:1.17'
           args '--network ${networkName} -e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache'
+          reuseNode true
         }
       }
       steps {

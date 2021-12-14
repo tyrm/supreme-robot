@@ -14,8 +14,6 @@ pipeline {
     stage('Setup') {
       steps {
         script {
-          echo "creating network ${networkName}"
-          sh "docker network create ${networkName}"
           gitDescribe = sh(returnStdout: true, script: 'git describe --tag').trim()
           writeFile file: "./version/version.go", text: """package version
 
@@ -37,7 +35,7 @@ const Version = "${gitDescribe}"
               string(credentialsId: 'integration-redis-test', variable: 'REDIS_PASSWORD')
             ]) {
               sh """NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml pull
-              NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml up -d"""
+              NETWORK_NAME="${networkName}" docker-compose -p ${env.BUILD_TAG} -f docker-compose-integration.yaml up -d"""
             }
           }
         }
@@ -109,7 +107,7 @@ const Version = "${gitDescribe}"
         usernamePassword(credentialsId: 'integration-postgres-test', usernameVariable: 'POSTGRES_USER', passwordVariable: 'POSTGRES_PASSWORD'),
         string(credentialsId: 'integration-redis-test', variable: 'REDIS_PASSWORD')
       ]) {
-        sh """NETWORK_NAME="${networkName}" docker-compose -f docker-compose-integration.yaml down"""
+        sh """NETWORK_NAME="${networkName}" docker-compose -p ${env.BUILD_TAG} -f docker-compose-integration.yaml down"""
       }
     }
   }

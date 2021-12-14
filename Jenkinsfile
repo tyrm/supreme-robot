@@ -46,7 +46,7 @@ const Version = "${gitDescribe}"
       agent {
         docker {
           image 'gobuild:1.17'
-          args '--network ${networkName} -e GOCACHE=/gocache -e HOME=${WORKSPACE} -v /var/lib/jenkins/gocache:/gocache'
+          args '--network ${networkName} -e GOPATH=/go -e HOME=${WORKSPACE} -v /var/lib/jenkins/go:/go'
           reuseNode true
         }
       }
